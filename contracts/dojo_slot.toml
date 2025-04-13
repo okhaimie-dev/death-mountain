@@ -1,0 +1,10 @@
+[world]
+name = "Loot Survivor 2 Slot"
+description = "Slay The Beasts"
+seed = "lootsurvivor"
+
+[namespace]
+default = "ls_0_0_1"
+
+[writers]
+"ls_0_0_1" = ["ls_0_0_1-systems"]

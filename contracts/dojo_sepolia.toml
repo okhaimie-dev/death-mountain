@@ -1,0 +1,13 @@
+[world]
+name = "Loot Survivor 2"
+description = "Slay The Beasts"
+seed = "lootsurvivor"
+
+[env]
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+
+[namespace]
+default = "ls_0_0_1"
+
+[writers]
+"ls_0_0_1" = ["ls_0_0_1-systems"]

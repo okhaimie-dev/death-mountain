@@ -1,0 +1,17 @@
+[world]
+name = "Realms World"
+website = "https://realms.world/"
+description = "DNC"
+seed = "DNC"
+
+[env]
+chain_id = "SN_MAINNET"
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet"
+world_address = "0x06a9e4c6f0799160ea8ddc43ff982a5f83d7f633e9732ce42701de1288ff705f"
+world_block = 948010
+
+[namespace]
+default = "ls_0_0_1"
+
+[writers]
+"ls_0_0_1" = ["ls_0_0_1-systems"]
