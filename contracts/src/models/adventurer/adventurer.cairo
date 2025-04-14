@@ -1022,10 +1022,10 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param action_count: adventurer action count
     /// @param seed: seed
     /// @return (u8, u8, u8, u8): tuple of randomness
-    fn get_battle_randomness(xp: u16, action_count: u16, seed: felt252) -> (u8, u8, u8, u8) {
+    fn get_battle_randomness(xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8) {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(xp.into());
-        hash_span.append(seed);
+        hash_span.append(seed.into());
         hash_span.append(action_count.into());
         let poseidon = poseidon_hash_span(hash_span.span());
         let rnd1_u64 = Self::felt_to_u32(poseidon);
@@ -1035,12 +1035,12 @@ pub impl ImplAdventurer of IAdventurer {
     /// @title get_randomness
     /// @notice gets randomness for adventurer for use in other places
     /// @param adventurer_xp: adventurer xp
-    /// @param level_seed: level seed
+    /// @param seed: seed
     /// @return (u32, u32, u16, u16, u8, u8, u8, u8): tuple of randomness
-    fn get_randomness(adventurer_xp: u16, seed: felt252) -> (u32, u32, u16, u16, u8, u8, u8, u8) {
+    fn get_randomness(adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8) {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(adventurer_xp.into());
-        hash_span.append(seed);
+        hash_span.append(seed.into());
         let poseidon = poseidon_hash_span(hash_span.span());
         let (rnd1_u64, rnd2_u64) = Self::felt_to_two_u64(poseidon);
         let (rnd1_u32, rnd2_u32, rnd3_u32, rnd4_u32) = Self::split_two_u64(rnd1_u64, rnd2_u64);
@@ -1305,35 +1305,28 @@ const TWO_POW_128_NZ: NonZero<u256> = 0x100000000000000000000000000000000;
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
-    use adventurer::bag::{Bag, ImplBag};
-    use adventurer::constants::adventurer_constants::{
-        BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS, ITEM_MAX_XP,
-        JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_BLOCKS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP,
+    use core::panic_with_felt252;
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
+    use lootsurvivor::models::adventurer::bag::{ImplBag};
+    use lootsurvivor::constants::adventurer::{
+        BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS,
+        JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP,
         MAX_GOLD, MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
         MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
         SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
     };
-    use adventurer::constants::discovery_constants::DiscoveryEnums::{DiscoveryType, ExploreResult};
-    use adventurer::equipment::{Equipment, ImplEquipment};
-    use adventurer::item::{Item, MAX_PACKABLE_XP};
-    use adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats};
-    use array::ArrayTrait;
-    use beasts::beast::{Beast, ImplBeast};
-    use beasts::constants::{BeastId, BeastSettings};
-    use combat::combat::SpecialPowers;
-    use combat::constants::CombatEnums::{Slot, Type};
-    use core::result::ResultTrait;
-    use loot::constants::ItemSuffix::{
-        of_Anger, of_Brilliance, of_Detection, of_Enlightenment, of_Fury, of_Giant, of_Perfection, of_Power,
-        of_Protection, of_Rage, of_Reflection, of_Skill, of_Titans, of_Vitriol, of_the_Fox, of_the_Twins,
-    };
-    use loot::constants::{ItemId, ItemSuffix};
-    use loot::loot::{ILoot, ImplLoot, Loot};
-    use loot::utils::ItemUtils;
-    use option::OptionTrait;
-    use poseidon::poseidon_hash_span;
-    use traits::{Into, TryInto};
+    use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
+    use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment};
+    use lootsurvivor::models::adventurer::item::{Item, MAX_PACKABLE_XP};
+    use lootsurvivor::models::adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats};
+    use lootsurvivor::models::beast::{ImplBeast};
+    use lootsurvivor::constants::beast::{BeastId, BeastSettings};
+    use lootsurvivor::models::combat::SpecialPowers;
+    use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
+    use lootsurvivor::constants::loot::ItemSuffix::{of_Giant, of_Perfection, of_Power,of_Protection};
+    use lootsurvivor::constants::loot::{ItemId, ItemSuffix};
+    use lootsurvivor::models::loot::{ImplLoot};
+    use lootsurvivor::utils::loot::ItemUtils;
 
     #[test]
     #[available_gas(30020000)]
@@ -1912,7 +1905,7 @@ mod tests {
             }
 
             xp += 1;
-        }
+        };
 
         // assert beasts distributions are reasonably uniform
         let warlock_percentage = (warlock_count * 1000) / total_beasts;
@@ -2486,7 +2479,7 @@ mod tests {
             }
 
             level_seed += 1;
-        }
+        };
 
         // assert beasts distributions are reasonably uniform
         let warlock_percentage = (warlock_count * 1000) / total_beasts;
@@ -2713,81 +2706,6 @@ mod tests {
 
         let skeleton_percentage = (skeleton_count * 1000) / total_beasts;
         assert(skeleton_percentage >= 4 && skeleton_percentage <= 23, 'skeleton distribution');
-        // println!("warlock percentage: {}", warlock_percentage);
-    // println!("typhon percentage: {}", typhon_percentage);
-    // println!("jiangshi percentage: {}", jiangshi_percentage);
-    // println!("anansi percentage: {}", anansi_percentage);
-    // println!("basilisk percentage: {}", basilisk_percentage);
-    // println!("gorgon percentage: {}", gorgon_percentage);
-    // println!("kitsune percentage: {}", kitsune_percentage);
-    // println!("lich percentage: {}", lich_percentage);
-    // println!("chimera percentage: {}", chimera_percentage);
-    // println!("wendigo percentage: {}", wendigo_percentage);
-    // println!("raksasa percentage: {}", raksasa_percentage);
-    // println!("werewolf percentage: {}", werewolf_percentage);
-    // println!("banshee percentage: {}", banshee_percentage);
-    // println!("draugr percentage: {}", draugr_percentage);
-    // println!("vampire percentage: {}", vampire_percentage);
-    // println!("goblin percentage: {}", goblin_percentage);
-    // println!("ghoul percentage: {}", ghoul_percentage);
-    // println!("wraith percentage: {}", wraith_percentage);
-    // println!("sprite percentage: {}", sprite_percentage);
-    // println!("kappa percentage: {}", kappa_percentage);
-    // println!("fairy percentage: {}", fairy_percentage);
-    // println!("leprechaun percentage: {}", leprechaun_percentage);
-    // println!("kelpie percentage: {}", kelpie_percentage);
-    // println!("pixie percentage: {}", pixie_percentage);
-    // println!("gnome percentage: {}", gnome_percentage);
-    // println!("griffin percentage: {}", griffin_percentage);
-    // println!("manticore percentage: {}", manticore_percentage);
-    // println!("phoenix percentage: {}", phoenix_percentage);
-    // println!("dragon percentage: {}", dragon_percentage);
-    // println!("minotaur percentage: {}", minotaur_percentage);
-    // println!("qilin percentage: {}", qilin_percentage);
-    // println!("ammit percentage: {}", ammit_percentage);
-    // println!("nue percentage: {}", nue_percentage);
-    // println!("skinwalker percentage: {}", skinwalker_percentage);
-    // println!("chupacabra percentage: {}", chupacabra_percentage);
-    // println!("weretiger percentage: {}", weretiger_percentage);
-    // println!("wyvern percentage: {}", wyvern_percentage);
-    // println!("roc percentage: {}", roc_percentage);
-    // println!("harpy percentage: {}", harpy_percentage);
-    // println!("pegasus percentage: {}", pegasus_percentage);
-    // println!("hippogriff percentage: {}", hippogriff_percentage);
-    // println!("fenrir percentage: {}", fenrir_percentage);
-    // println!("jaguar percentage: {}", jaguar_percentage);
-    // println!("satori percentage: {}", satori_percentage);
-    // println!("direwolf percentage: {}", direwolf_percentage);
-    // println!("bear percentage: {}", bear_percentage);
-    // println!("wolf percentage: {}", wolf_percentage);
-    // println!("mantis percentage: {}", mantis_percentage);
-    // println!("spider percentage: {}", spider_percentage);
-    // println!("rat percentage: {}", rat_percentage);
-    // println!("kraken percentage: {}", kraken_percentage);
-    // println!("colossus percentage: {}", colossus_percentage);
-    // println!("balrog percentage: {}", balrog_percentage);
-    // println!("leviathan percentage: {}", leviathan_percentage);
-    // println!("tarrasque percentage: {}", tarrasque_percentage);
-    // println!("titan percentage: {}", titan_percentage);
-    // println!("nephilim percentage: {}", nephilim_percentage);
-    // println!("behemoth percentage: {}", behemoth_percentage);
-    // println!("hydra percentage: {}", hydra_percentage);
-    // println!("juggernaut percentage: {}", juggernaut_percentage);
-    // println!("oni percentage: {}", oni_percentage);
-    // println!("jotunn percentage: {}", jotunn_percentage);
-    // println!("ettin percentage: {}", ettin_percentage);
-    // println!("cyclops percentage: {}", cyclops_percentage);
-    // println!("giant percentage: {}", giant_percentage);
-    // println!("nemean_lion percentage: {}", nemean_lion_percentage);
-    // println!("berserker percentage: {}", berserker_percentage);
-    // println!("yeti percentage: {}", yeti_percentage);
-    // println!("golem percentage: {}", golem_percentage);
-    // println!("ent percentage: {}", ent_percentage);
-    // println!("troll percentage: {}", troll_percentage);
-    // println!("bigfoot percentage: {}", bigfoot_percentage);
-    // println!("ogre percentage: {}", ogre_percentage);
-    // println!("orc percentage: {}", orc_percentage);
-    // println!("skeleton percentage: {}", skeleton_percentage);
     }
 
 
@@ -4335,7 +4253,7 @@ mod tests {
             }
 
             rnd1 += 1;
-        }
+        };
 
         // assert T5 is greater than T4 is greater than T3 is greater than T2 is greater than T1
         assert(t5_count > t4_count, 'T5 should be more than T4');
@@ -4394,10 +4312,10 @@ mod tests {
                 }
 
                 discovery_type_rnd += 1;
-            }
+            };
             discovery_type_rnd = 0;
             adventurer_level += 1;
-        }
+        };
 
         // Calculate total count
         let total_count = gold_count + health_count + loot_count;

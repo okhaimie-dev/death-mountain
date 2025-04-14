@@ -487,9 +487,9 @@ const TWO_POW_240: u256 = 0x1000000000000000000000000000000000000000000000000000
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use adventurer::bag::{Bag, IBag, ImplBag};
-    use adventurer::item::{Item, IItemPrimitive};
-    use loot::constants::{ItemId, SUFFIX_UNLOCK_GREATNESS};
+    use lootsurvivor::models::adventurer::bag::{Bag, IBag, ImplBag};
+    use lootsurvivor::models::adventurer::item::{Item};
+    use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
 
     #[test]
     #[available_gas(97530)]

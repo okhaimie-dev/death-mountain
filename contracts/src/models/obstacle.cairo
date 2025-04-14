@@ -84,13 +84,9 @@ pub impl ImplObstacle of IObstacle {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use combat::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
-    use combat::constants::CombatEnums::{Slot, Tier, Type};
-    use combat::constants::CombatSettings;
-    use core::traits::{Into, TryInto};
-    use obstacles::constants::{ObstacleId, ObstacleSettings};
-    use obstacles::obstacle::{IObstacle, ImplObstacle};
-    use option::OptionTrait;
+    use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
+    use lootsurvivor::constants::obstacle::{ObstacleId};
+    use lootsurvivor::models::obstacle::{ImplObstacle};
 
     #[test]
     #[available_gas(1666510)]

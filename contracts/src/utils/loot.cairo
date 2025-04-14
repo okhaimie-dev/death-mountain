@@ -798,14 +798,13 @@ pub mod ItemUtils {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use core::array::ArrayTrait;
-    use loot::constants::ItemId;
-    use loot::utils::{ItemUtils, NameUtils};
+    use lootsurvivor::constants::loot::ItemId;
+    use lootsurvivor::utils::loot::{ItemUtils};
 
     #[test]
     #[available_gas(151130)]
     pub fn test_is_necklace() {
-        let necklace = array![ItemId::Pendant, ItemId::Necklace, ItemId::Amulet];
+        let necklace: Array<u8> = array![ItemId::Pendant, ItemId::Necklace, ItemId::Amulet];
 
         let mut item_index = 0;
         loop {
@@ -828,7 +827,7 @@ mod tests {
     #[test]
     #[available_gas(225210)]
     pub fn test_is_ring() {
-        let rings = array![
+        let rings: Array<u8> = array![
             ItemId::SilverRing, ItemId::BronzeRing, ItemId::PlatinumRing, ItemId::TitaniumRing, ItemId::GoldRing,
         ];
 
@@ -853,7 +852,7 @@ mod tests {
     #[test]
     #[available_gas(560070)]
     pub fn test_is_weapon() {
-        let weapons = array![
+        let weapons: Array<u8> = array![
             ItemId::GhostWand,
             ItemId::GraveWand,
             ItemId::BoneWand,
@@ -891,7 +890,7 @@ mod tests {
     #[test]
     #[available_gas(597210)]
     pub fn test_is_chest_armor() {
-        let chest_armor = array![
+        let chest_armor: Array<u8> = array![
             ItemId::DivineRobe,
             ItemId::SilkRobe,
             ItemId::LinenRobe,
@@ -930,7 +929,7 @@ mod tests {
     #[test]
     #[available_gas(597210)]
     pub fn test_is_head_armor() {
-        let head_armor = array![
+        let head_armor: Array<u8> = array![
             ItemId::Crown,
             ItemId::DivineHood,
             ItemId::SilkHood,
@@ -968,7 +967,7 @@ mod tests {
     #[test]
     #[available_gas(597210)]
     pub fn test_is_waist_armor() {
-        let waist_armor_items = array![
+        let waist_armor_items: Array<u8> = array![
             ItemId::BrightsilkSash,
             ItemId::SilkSash,
             ItemId::WoolSash,
@@ -1007,7 +1006,7 @@ mod tests {
     #[test]
     #[available_gas(597210)]
     pub fn test_is_hand_armor() {
-        let hand_armor_items = array![
+        let hand_armor_items: Array<u8> = array![
             ItemId::DivineGloves,
             ItemId::SilkGloves,
             ItemId::WoolGloves,
@@ -1046,7 +1045,7 @@ mod tests {
     #[test]
     #[available_gas(597210)]
     pub fn test_is_foot_armor() {
-        let foot_armor_items = array![
+        let foot_armor_items: Array<u8> = array![
             ItemId::DivineSlippers,
             ItemId::SilkSlippers,
             ItemId::WoolShoes,

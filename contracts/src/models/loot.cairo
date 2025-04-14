@@ -989,22 +989,18 @@ pub impl ImplLoot of ILoot {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use combat::combat::ImplCombat;
-    use combat::constants::CombatEnums::{Slot, Tier, Type};
-    use core::clone::Clone;
-    use core::serde::Serde;
-    use loot::constants::{
-        ItemId, ItemNamePrefix, ItemNameSuffix, ItemSlotLength, ItemSuffix, ItemSuffixLength, NUM_ITEMS,
+    use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
+    use lootsurvivor::constants::loot::{
+        ItemId, ItemNameSuffix, ItemSlotLength, ItemSuffixLength,
         NamePrefixLength, NameSuffixLength,
     };
-    use loot::loot::{ILoot, ImplLoot, Loot};
-    use loot::utils::ItemUtils;
-    use loot::utils::NameUtils::{
+    use lootsurvivor::models::loot::{ImplLoot};
+    use lootsurvivor::models::adventurer::item::{ImplItem};
+    use lootsurvivor::utils::loot::ItemUtils;
+    use lootsurvivor::utils::loot::NameUtils::{
         is_special1_set1, is_special1_set2, is_special2_set1, is_special2_set2, is_special2_set3, is_special3_set1,
         is_special3_set2, is_special3_set3,
     };
-    use option::OptionTrait;
-    use traits::{Into, TryInto};
 
     #[test]
     #[available_gas(3975111110)]
@@ -2903,7 +2899,7 @@ mod tests {
                 },
                 Option::None(_) => { break; },
             };
-        }
+        };
 
         let mut t2_items = ItemUtils::get_t2_items();
         loop {
@@ -2914,7 +2910,7 @@ mod tests {
                 },
                 Option::None(_) => { break; },
             };
-        }
+        };
 
         let mut t3_items = ItemUtils::get_t3_items();
         loop {
@@ -2925,7 +2921,7 @@ mod tests {
                 },
                 Option::None(_) => { break; },
             };
-        }
+        };
 
         let mut t4_items = ItemUtils::get_t4_items();
         loop {
@@ -2936,7 +2932,7 @@ mod tests {
                 },
                 Option::None(_) => { break; },
             };
-        }
+        };
 
         let mut t5_items = ItemUtils::get_t5_items();
 
@@ -2999,7 +2995,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.item_type == Type::Magic_or_Cloth(()), 'item is magic');
             item_index += 1;
-        }
+        };
 
         let blades_and_hide = array![
             ItemId::Katana,
@@ -3043,7 +3039,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.item_type == Type::Blade_or_Hide(()), 'item is blade or hide');
             item_index += 1;
-        }
+        };
 
         let bludgeon_and_metal = array![
             ItemId::Warhammer,
@@ -3114,7 +3110,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.slot == Slot::Weapon(()), 'item is a weapon');
             item_index += 1;
-        }
+        };
 
         let chest_armor = array![
             ItemId::DivineRobe,
@@ -3143,7 +3139,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.slot == Slot::Chest(()), 'item is chest armor');
             item_index += 1;
-        }
+        };
 
         let head_armor = array![
             ItemId::Crown,
@@ -3171,7 +3167,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.slot == Slot::Head(()), 'item is head armor');
             item_index += 1;
-        }
+        };
 
         let waist_armor_items = array![
             ItemId::BrightsilkSash,
@@ -3199,7 +3195,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.slot == Slot::Waist(()), 'item is waist armor');
             item_index += 1;
-        }
+        };
 
         let hand_armor_items = array![
             ItemId::DivineGloves,
@@ -3227,7 +3223,7 @@ mod tests {
             let item = ImplLoot::get_item(item_id);
             assert(item.slot == Slot::Hand(()), 'item is hand armor');
             item_index += 1;
-        }
+        };
 
         let foot_armor_items = array![
             ItemId::DivineSlippers,
@@ -3271,7 +3267,7 @@ mod tests {
             let item = ImplLoot::get_item(item_index);
             assert(item.id != 0, 'item should exist');
             item_index += 1;
-        }
+        };
     }
 
     #[test]

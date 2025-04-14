@@ -411,15 +411,13 @@ pub fn create_metadata(
 
 #[cfg(test)]
 mod tests {
-    use adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
-    use adventurer::bag::{Bag, IBag, ImplBag};
-    use adventurer::equipment::{Equipment, EquipmentPacking};
-    use adventurer::item::{ImplItem, Item};
-    use adventurer::stats::{ImplStats, Stats};
-    use beasts::constants::BeastSettings;
-    use core::array::ArrayTrait;
-    use snforge_std::start_cheat_block_timestamp_global;
-    use super::create_metadata;
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
+    use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
+    use lootsurvivor::models::adventurer::equipment::{Equipment};
+    use lootsurvivor::models::adventurer::item::{ImplItem, Item};
+    use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
+    use lootsurvivor::constants::beast::BeastSettings;
+    use lootsurvivor::utils::renderer::renderer_utils::create_metadata;
 
 
     #[test]
@@ -466,24 +464,19 @@ mod tests {
             mutated: false,
         };
 
-        let birth_date = 1421807737;
-        let delay_stat_reveal = false;
+        let current_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        start_cheat_block_timestamp_global(1721860860);
+        let current_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        let current_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 1, 1);
+        let current_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        let current_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 2, 2);
+        let historical_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        let current_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 3, 3);
+        let historical_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        let historical_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 1, 0);
+        let historical_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
-        let historical_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 2, 0);
-
-        let historical_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 3, 0);
-
-        let plain = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag, 10, 0, 0);
+        let plain = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
 
         println!("Current 1: {}", current_1);
         println!("Current 2: {}", current_2);

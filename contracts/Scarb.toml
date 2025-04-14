@@ -8,6 +8,7 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
+starknet = "=2.9.2"
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.20.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.20.0" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.0" }
@@ -17,6 +18,8 @@ graffiti = { git = "https://github.com/ponderingdemocritus/graffiti", rev = "bc5
 
 [dev-dependencies]
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.3.0" }
+starknet = "=2.9.2"
+cairo_test = "=2.9.2"
 
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]

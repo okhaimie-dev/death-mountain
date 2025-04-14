@@ -211,26 +211,13 @@ pub impl ImplBeast of IBeast {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use beasts::beast::{Beast, IBeast, ImplBeast};
-    use beasts::constants::BeastId::{
-        Ammit, Anansi, Balrog, Banshee, Basilisk, Bear, Behemoth, Berserker, Bigfoot, Chimera, Chupacabra, Colossus,
-        Cyclops, DireWolf, Dragon, Draugr, Ent, Ettin, Fairy, Fenrir, Ghoul, Giant, Gnome, Goblin, Golem, Gorgon,
-        Griffin, Harpy, Hippogriff, Hydra, Jaguar, Jiangshi, Jotunn, Juggernaut, Kappa, Kelpie, Kitsune, Kraken,
-        Leprechaun, Leviathan, Lich, MAX_ID, Manticore, Mantis, Minotaur, NemeanLion, Nephilim, Nue, Ogre, Oni, Orc,
-        Pegasus, Phoenix, Pixie, Qilin, Rakshasa, Rat, Roc, Satori, Skeleton, Skinwalker, Spider, Sprite, Tarrasque,
-        Titan, Troll, Typhon, Vampire, Warlock, Wendigo, Weretiger, Werewolf, Wolf, Wraith, Wyvern, Yeti,
+    use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
+    use lootsurvivor::constants::beast::BeastId::{Warlock, Juggernaut, Pegasus, Goblin, Bear, MAX_ID};
+    use lootsurvivor::constants::beast::BeastSettings::{
+        CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH,
     };
-    use beasts::constants::BeastSettings::{
-        CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH, MINIMUM_XP_REWARD,
-        STARTER_BEAST_HEALTH,
-    };
-    use combat::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
-    use combat::constants::CombatEnums::{Slot, Tier, Type};
-    use combat::constants::CombatSettings;
-    use core::serde::Serde;
-    use debug::PrintTrait;
-    use option::OptionTrait;
-    use traits::{Into, TryInto};
+    use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
+    use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
 
     #[test]
     #[available_gas(70000)]

@@ -1,4 +1,5 @@
 use core::num::traits::Sqrt;
+use core::panic_with_felt252;
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type, WeaponEffectiveness};
 use lootsurvivor::constants::combat::CombatSettings::{
     ELEMENTAL_DAMAGE_BONUS, MAX_XP_DECAY, SPECIAL2_DAMAGE_MULTIPLIER, SPECIAL3_DAMAGE_MULTIPLIER, STRENGTH_DAMAGE_BONUS,
@@ -341,7 +342,7 @@ pub impl ImplCombat of ICombat {
         let mut tier_multiplier = 0;
 
         match self.tier {
-            Tier::None => { panic!("get_base_reward: tier is none"); },
+            Tier::None => { panic_with_felt252('get_base_reward: tier is none'); },
             Tier::T1 => { tier_multiplier = XP_MULTIPLIER::T1.into(); },
             Tier::T2 => { tier_multiplier = XP_MULTIPLIER::T2.into(); },
             Tier::T3 => { tier_multiplier = XP_MULTIPLIER::T3.into(); },
@@ -483,11 +484,9 @@ pub impl ImplCombat of ICombat {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use combat::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
-    use combat::constants::CombatEnums::{Slot, Tier, Type, WeaponEffectiveness};
-    use combat::constants::CombatSettings::STRENGTH_DAMAGE_BONUS;
-    use core::option::OptionTrait;
-    use core::traits::{Into, TryInto};
+    use lootsurvivor::models::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
+    use lootsurvivor::constants::combat::CombatEnums::{Tier, Type, WeaponEffectiveness};
+    use lootsurvivor::constants::combat::CombatSettings::STRENGTH_DAMAGE_BONUS;
 
     const U16_MAX: u16 = 65535;
 

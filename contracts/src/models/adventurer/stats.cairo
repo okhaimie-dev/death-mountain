@@ -1,8 +1,9 @@
 use core::integer::u64_safe_divmod;
 use core::traits::DivRem;
+use core::panic_with_felt252;
 use lootsurvivor::constants::loot::ItemSuffix;
 
-const MAX_STAT_VALUE: u8 = 31;
+pub const MAX_STAT_VALUE: u8 = 31;
 
 #[derive(Drop, Copy, Serde, PartialEq)]
 pub struct Stats { // 30 bits total
@@ -366,7 +367,7 @@ pub impl ImplStats of IStat {
         } else if (stat == 5) {
             self.charisma += 1
         } else {
-            panic!("stat out of range");
+            panic_with_felt252('stat out of range');
         }
     }
 }
@@ -384,7 +385,7 @@ const TWO_POW_25: u256 = 0x2000000;
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats, IStat};
+    use lootsurvivor::models::adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats, IStat};
 
     #[test]
     #[available_gas(1039260)]

@@ -1,4 +1,5 @@
 use core::traits::DivRem;
+use core::panic_with_felt252;
 use lootsurvivor::constants::combat::CombatEnums::Slot;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
 use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
@@ -200,7 +201,7 @@ pub impl ImplEquipment of IEquipment {
             self.ring.id = 0;
             self.ring.xp = 0;
         } else {
-            panic!("item is not equipped")
+            panic_with_felt252('item is not equipped');
         }
     }
 
@@ -299,12 +300,11 @@ const TWO_POW_112: u256 = 0x10000000000000000000000000000;
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use adventurer::item::{MAX_ITEM_XP, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
-    use adventurer::stats::Stats;
-    use combat::constants::CombatEnums::Slot;
-    use loot::constants::ItemId;
-    use super::super::adventurer::ImplAdventurer;
-    use super::{Equipment, ImplEquipment, Item};
+    use lootsurvivor::constants::loot::ItemId;
+    use lootsurvivor::constants::combat::CombatEnums::Slot;
+    use lootsurvivor::models::adventurer::item::{MAX_ITEM_XP, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
+    use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
+    use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, Item};
 
     #[test]
     #[available_gas(1447420)]

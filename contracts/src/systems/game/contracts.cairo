@@ -58,7 +58,7 @@ mod game_systems {
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
     use lootsurvivor::constants::world::{DEFAULT_NS, SCORE_ATTRIBUTE, SCORE_MODEL, SETTINGS_MODEL};
 
-    use lootsurvivor::models::game::{AdventurerPacked, AdventurerSeed, BagPacked, AdventurerObituary};
+    use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked, AdventurerObituary};
     use lootsurvivor::models::adventurer::adventurer::{
         Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp, ItemSpecial,
     };
@@ -226,15 +226,18 @@ mod game_systems {
             _assert_not_in_battle(immutable_adventurer);
 
             // get random seed
-            let seed = _get_random_seed(world, adventurer_id, adventurer.xp);
+            let (explore_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             // go explore
             let mut explore_results = ArrayTrait::<ExploreResult>::new();
-            _explore(ref adventurer, ref bag, ref explore_results, seed, till_beast);
+            _explore(ref world, adventurer_id, ref adventurer, ref bag, ref explore_results, explore_seed, till_beast);
 
             // save state
+            if (adventurer.stat_upgrades_available != 0) {
+                _save_market_seed(ref world, adventurer_id, market_seed);
+            }
+
             adventurer.increment_action_count();
-            _save_seed(ref world, adventurer_id, adventurer.action_count, seed);
             _save_adventurer(ref world, ref adventurer, adventurer_id);
 
             if bag.mutated {
@@ -276,9 +279,9 @@ mod game_systems {
                 adventurer.item_specials_seed,
             );
 
-            // get random seed
-            let seed = _get_random_seed(world, adventurer_id, adventurer.xp);
-
+            // get previous entropy to fetch correct beast
+            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
+            
             // generate xp based randomness seeds
             let (
                 beast_seed,
@@ -289,8 +292,8 @@ mod game_systems {
                 beast_specials2_rnd,
                 _,
                 _,
-            ) = ImplAdventurer::get_randomness(adventurer.xp, seed);
-
+            ) = ImplAdventurer::get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+            
             // get beast based on entropy seeds
             let beast = ImplAdventurer::get_beast(
                 adventurer.get_level(),
@@ -301,7 +304,7 @@ mod game_systems {
                 beast_specials1_rnd,
                 beast_specials2_rnd,
             );
-
+            
             // get weapon details
             let weapon = ImplLoot::get_item(adventurer.equipment.weapon.id);
             let weapon_combat_spec = CombatSpec {
@@ -310,11 +313,13 @@ mod game_systems {
                 level: adventurer.equipment.weapon.get_greatness().into(),
                 specials: weapon_specials,
             };
+            
+            let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             _attack(
                 ref adventurer,
                 weapon_combat_spec,
-                seed,
+                level_seed,
                 beast,
                 beast_seed,
                 to_the_death,
@@ -322,8 +327,11 @@ mod game_systems {
             );
 
             // save state
+            if (adventurer.stat_upgrades_available != 0) {
+                _save_market_seed(ref world, adventurer_id, market_seed);
+            }
+            
             adventurer.increment_action_count();
-            _save_seed(ref world, adventurer_id, adventurer.action_count, seed);
             _save_adventurer(ref world, ref adventurer, adventurer_id);
         }
 
@@ -354,13 +362,13 @@ mod game_systems {
             _assert_not_starter_beast(immutable_adventurer, messages::CANT_FLEE_STARTER_BEAST);
             _assert_dexterity_not_zero(immutable_adventurer);
 
-            // get random seed
-            let seed = _get_random_seed(world, adventurer_id, adventurer.xp);
+            // get previous entropy to fetch correct beast
+            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
             // generate xp based randomness seeds
             let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
                 ImplAdventurer::get_randomness(
-                adventurer.xp, seed,
+                adventurer.xp, adventurer_entropy.beast_seed,
             );
 
             // get beast based on entropy seeds
@@ -374,12 +382,18 @@ mod game_systems {
                 beast_specials2_rnd,
             );
 
+            // get random seed
+            let (flee_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+
             // attempt to flee
-            _flee(ref adventurer, seed, beast_seed, beast, to_the_death);
+            _flee(ref adventurer, flee_seed, beast_seed, beast, to_the_death);
 
             // save state
+            if (adventurer.stat_upgrades_available != 0) {
+                _save_market_seed(ref world, adventurer_id, market_seed);
+            }
+            
             adventurer.increment_action_count();
-            _save_seed(ref world, adventurer_id, adventurer.action_count, seed);
             _save_adventurer(ref world, ref adventurer, adventurer_id);
         }
 
@@ -412,13 +426,13 @@ mod game_systems {
 
             // if the adventurer is equipping an item during battle, the beast will counter attack
             if (adventurer.in_battle()) {
-                // get random seed
-                let seed = _get_random_seed(world, adventurer_id, adventurer.xp);
+                // get previous entropy to fetch correct beast
+                let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
                 // generate xp based randomness seeds
                 let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
                     ImplAdventurer::get_randomness(
-                    adventurer.xp, seed,
+                    adventurer.xp, adventurer_entropy.beast_seed,
                 );
 
                 // get beast based on entropy seeds
@@ -432,13 +446,13 @@ mod game_systems {
                     beast_specials2_rnd,
                 );
 
+                // get random seed
+                let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp);
+
                 // get randomness for combat
                 let (_, _, beast_crit_hit_rnd, attack_location_rnd) = ImplAdventurer::get_battle_randomness(
                     adventurer.xp, adventurer.action_count, seed,
                 );
-
-                // increment battle action count (ensures each battle action has unique randomness)
-                adventurer.increment_action_count();
 
                 // process beast attack
                 let _beast_battle_details = _beast_attack(
@@ -449,12 +463,10 @@ mod game_systems {
                     attack_location_rnd,
                     false,
                 );
-
-                adventurer.increment_action_count();
-                _save_seed(ref world, adventurer_id, adventurer.action_count, seed);
             }
-
-
+            
+            // save state
+            adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id);
 
             // if the bag was mutated, pack and save it
@@ -548,10 +560,10 @@ mod game_systems {
 
             // if the player is buying items, process purchases
             if (items.len() != 0) {
-                let seed = _get_adventurer_seed(world, adventurer_id, adventurer.action_count);
+                let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
                 let (_purchases, _equipped_items, _unequipped_items) = _buy_items(
-                    seed, ref adventurer, ref bag, pre_upgrade_stat_points, items.clone(),
+                    adventurer_entropy.market_seed, ref adventurer, ref bag, pre_upgrade_stat_points, items.clone(),
                 );
             }
 
@@ -567,6 +579,7 @@ mod game_systems {
                 _save_bag(ref world, adventurer_id, bag);
             }
 
+            adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id);
         }
 
@@ -654,8 +667,8 @@ mod game_systems {
         fn get_market(self: @ContractState, adventurer_id: u64) -> Array<u8> {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let adventurer = _load_adventurer(world, adventurer_id);
-            let seed = _get_adventurer_seed(world, adventurer_id, adventurer.action_count);
-            _get_market(seed, adventurer.stat_upgrades_available)
+            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
+            _get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available)
         }
 
         fn get_potion_price(self: @ContractState, adventurer_id: u64) -> u16 {
@@ -692,11 +705,10 @@ mod game_systems {
     /// @title Reveal Starting Stats
     /// @notice Reveals and applies starting stats to the adventurer.
     /// @param adventurer A reference to the Adventurer object.
-    /// @param seed A felt252 representing the seed for the adventurer.
-    fn reveal_starting_stats(ref adventurer: Adventurer, seed: felt252) {
-        let (entropy, _) = ImplAdventurer::felt_to_two_u64(seed);
+    /// @param seed A u64 representing the seed for the adventurer.
+    fn reveal_starting_stats(ref adventurer: Adventurer, seed: u64) {
         // reveal and apply starting stats
-        adventurer.stats = ImplStats::generate_starting_stats(entropy);
+        adventurer.stats = ImplStats::generate_starting_stats(seed);
 
         // increase adventurer's health for any vitality they received
         adventurer.health += adventurer.stats.get_max_health() - STARTING_HEALTH.into();
@@ -717,7 +729,7 @@ mod game_systems {
         damage_dealt: u16,
         critical_hit: bool,
         item_specials_rnd: u16,
-        seed: felt252,
+        level_seed: u64,
     ) {
         // zero out beast health
         adventurer.beast_health = 0;
@@ -738,7 +750,7 @@ mod game_systems {
 
         // Reveal starting stats if adventurer is on level 1
         if (adventurer.get_level() == 1) {
-            reveal_starting_stats(ref adventurer, seed);
+            reveal_starting_stats(ref adventurer, level_seed);
         }
 
         // // if beast beast level is above collectible threshold
@@ -818,14 +830,16 @@ mod game_systems {
     /// @param explore_till_beast A bool representing whether to explore until a beast is
     /// encountered.
     fn _explore(
+        ref world: WorldStorage,
+        adventurer_id: u64,
         ref adventurer: Adventurer,
         ref bag: Bag,
         ref explore_results: Array<ExploreResult>,
-        seed: felt252,
+        explore_seed: u64,
         explore_till_beast: bool,
     ) {
         let (rnd1_u32, _, rnd3_u16, rnd4_u16, rnd5_u8, rnd6_u8, rnd7_u8, explore_rnd) = ImplAdventurer::get_randomness(
-            adventurer.xp, seed,
+            adventurer.xp, explore_seed,
         );
 
         // go exploring
@@ -844,6 +858,8 @@ mod game_systems {
                     specials1_rnd: rnd5_u8, // use same entropy for crit hit, initial attack location, and beast specials
                     specials2_rnd: rnd6_u8 // to create some fun organic lore for the beast special names
                 );
+                // save seed to get correct beast
+                _save_beast_seed(ref world, adventurer_id, explore_seed);
             },
             ExploreResult::Obstacle(()) => {
                 _obstacle_encounter(
@@ -866,7 +882,7 @@ mod game_systems {
         // if explore_till_beast is true and adventurer can still explore
         if explore_till_beast && adventurer.can_explore() {
             // Keep exploring
-            _explore(ref adventurer, ref bag, ref explore_results, seed, explore_till_beast);
+            _explore(ref world, adventurer_id, ref adventurer, ref bag, ref explore_results, explore_seed, explore_till_beast);
         }
     }
 
@@ -904,7 +920,7 @@ mod game_systems {
                     // we replace item discovery with gold based on market value of the item
                     let mut amount = 0;
                     match ImplLoot::get_tier(item_id) {
-                        Tier::None(()) => panic!("found invalid item"),
+                        Tier::None(()) => panic_with_felt252('found invalid item'),
                         Tier::T1(()) => amount = 20,
                         Tier::T2(()) => amount = 16,
                         Tier::T3(()) => amount = 12,
@@ -1201,7 +1217,7 @@ mod game_systems {
     fn _attack(
         ref adventurer: Adventurer,
         weapon_combat_spec: CombatSpec,
-        seed: felt252,
+        level_seed: u64,
         beast: Beast,
         beast_seed: u32,
         fight_to_the_death: bool,
@@ -1210,7 +1226,7 @@ mod game_systems {
         // get randomness for combat
         let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) =
             ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, seed,
+            adventurer.xp, adventurer.action_count, level_seed,
         );
 
         // increment battle action count (ensures each battle action has unique randomness)
@@ -1232,7 +1248,7 @@ mod game_systems {
                 combat_result.total_damage,
                 is_critical_hit,
                 item_specials_seed,
-                seed,
+                level_seed,
             );
         } else {
             // if beast survived the attack, deduct damage dealt
@@ -1259,7 +1275,7 @@ mod game_systems {
                 _attack(
                     ref adventurer,
                     weapon_combat_spec,
-                    seed,
+                    level_seed,
                     beast,
                     beast_seed,
                     true,
@@ -1329,14 +1345,14 @@ mod game_systems {
     /// @param flee_to_the_death A bool representing whether to flee until death.
     fn _flee(
         ref adventurer: Adventurer,
-        seed: felt252,
+        flee_seed: u64,
         beast_seed: u32,
         beast: Beast,
         flee_to_the_death: bool,
     ) {
         // get randomness for flee and ambush
         let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, seed,
+            adventurer.xp, adventurer.action_count, flee_seed,
         );
 
         // increment action count (ensures each battle action has unique randomness)
@@ -1366,7 +1382,7 @@ mod game_systems {
             // if player is still alive and elected to flee till death
             if (flee_to_the_death && adventurer.health != 0) {
                 // reattempt flee
-                _flee(ref adventurer, seed, beast_seed, beast, true);
+                _flee(ref adventurer, flee_seed, beast_seed, beast, true);
             }
         }
     }
@@ -1543,14 +1559,14 @@ mod game_systems {
     /// contains the items that were equipped as part of the purchase, and the third contains the
     /// items that were unequipped as a result of equipping the newly purchased items.
     fn _buy_items(
-        seed: felt252,
+        market_seed: u64,
         ref adventurer: Adventurer,
         ref bag: Bag,
         stat_upgrades_available: u8,
         items_to_purchase: Array<ItemPurchase>,
     ) -> (Array<LootWithPrice>, Array<u8>, Array<u8>) {
         // get adventurer entropy
-        let market_inventory = _get_market(seed, stat_upgrades_available);
+        let market_inventory = _get_market(market_seed, stat_upgrades_available);
 
         // mutable array for returning items that need to be equipped as part of this purchase
         let mut unequipped_items = ArrayTrait::<u8>::new();
@@ -1667,17 +1683,16 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param adventurer_xp A u16 representing the adventurer's XP.
     /// @return A felt252 representing the random seed.
-    fn _get_random_seed(world: WorldStorage, adventurer_id: u64, adventurer_xp: u16) -> felt252 {
-        if _network_supports_vrf() {
-            VRFImpl::seed()
-        } else {
-            ImplAdventurer::get_simple_entropy(adventurer_xp, adventurer_id)
-        }
-    }
+    fn _get_random_seed(world: WorldStorage, adventurer_id: u64, adventurer_xp: u16) -> (u64, u64) {
+        let mut seed: felt252 = 0;
 
-    fn _get_adventurer_seed(world: WorldStorage, adventurer_id: u64, action_count: u16) -> felt252 {
-        let mut adventurer_seed: AdventurerSeed = world.read_model((adventurer_id, action_count));
-        adventurer_seed.seed
+        if _network_supports_vrf() {
+            seed = VRFImpl::seed();
+        } else {
+            seed = ImplAdventurer::get_simple_entropy(adventurer_xp, adventurer_id);
+        }
+
+        ImplAdventurer::felt_to_two_u64(seed)
     }
 
     /// @title Load Adventurer
@@ -1705,9 +1720,22 @@ mod game_systems {
         let adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
         adventurer
     }
+    
+    fn _load_adventurer_entropy(world: WorldStorage, adventurer_id: u64) -> AdventurerEntropy {
+        let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
+        adventurer_entropy
+    }
 
-    fn _save_seed(ref world: WorldStorage, adventurer_id: u64, action_count: u16, seed: felt252) {
-        world.write_model(@AdventurerSeed { adventurer_id, action_count, seed });
+    fn _save_market_seed(ref world: WorldStorage, adventurer_id: u64, market_seed: u64) {
+        let mut adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
+        adventurer_entropy.market_seed = market_seed;
+        world.write_model(@adventurer_entropy);
+    }
+
+    fn _save_beast_seed(ref world: WorldStorage, adventurer_id: u64, beast_seed: u64) {
+        let mut adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
+        adventurer_entropy.beast_seed = beast_seed;
+        world.write_model(@adventurer_entropy);
     }
 
     /// @title Save Adventurer
@@ -1906,10 +1934,9 @@ mod game_systems {
         _assert_zero_luck(stat_upgrades);
     }
 
-    fn _get_market(seed: felt252, stat_upgrades_available: u8) -> Array<u8> {
-        let (market_seed, _) = ImplAdventurer::felt_to_two_u64(seed);
+    fn _get_market(seed: u64, stat_upgrades_available: u8) -> Array<u8> {
         let market_size = ImplMarket::get_market_size(stat_upgrades_available);
-        ImplMarket::get_available_items(market_seed, market_size)
+        ImplMarket::get_available_items(seed, market_size)
     }
 
     fn _get_attacking_beast(world: WorldStorage, adventurer_id: u64) -> Beast {
@@ -1921,12 +1948,12 @@ mod game_systems {
 
         if adventurer.get_level() > 1 {
             // get adventurer entropy
-            let seed = _get_adventurer_seed(world, adventurer_id, adventurer.action_count);
+            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
             // generate xp based randomness seeds
             let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
                 ImplAdventurer::get_randomness(
-                adventurer.xp, seed,
+                adventurer.xp, adventurer_entropy.beast_seed,
             );
 
             // get beast based on entropy seeds

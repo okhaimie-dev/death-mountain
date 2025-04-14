@@ -103,9 +103,9 @@ const TWO_POW_7: u256 = 0x80;
 const TWO_POW_7_Z: NonZero<u256> = 0x80;
 const TWO_POW_9_Z: NonZero<u256> = 0x200;
 const MAX_GREATNESS: u8 = 20;
-const MAX_PACKABLE_ITEM_ID: u8 = 127;
-const MAX_PACKABLE_XP: u16 = 511;
-const MAX_ITEM_XP: u16 = 400;
+pub const MAX_PACKABLE_ITEM_ID: u8 = 127;
+pub const MAX_PACKABLE_XP: u16 = 511;
+pub const MAX_ITEM_XP: u16 = 400;
 
 // ---------------------------
 // ---------- Tests ----------

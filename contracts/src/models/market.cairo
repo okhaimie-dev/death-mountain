@@ -225,15 +225,11 @@ pub impl ImplMarket of IMarket {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use array::{ArrayTrait, SpanTrait};
-    use combat::constants::CombatEnums::{Slot, Tier};
-    use core::clone::Clone;
-    use loot::constants::{ItemId, NUM_ITEMS};
-    use loot::loot::{ILoot, ImplLoot, Loot};
-    use market::constants::{NUMBER_OF_ITEMS_PER_LEVEL, NUM_LOOT_ITEMS, TIER_PRICE};
-    use market::market::ImplMarket;
-    use option::OptionTrait;
-    use traits::{Into, TryInto};
+    use lootsurvivor::constants::combat::CombatEnums::{Tier};
+    use lootsurvivor::constants::loot::{ItemId, NUM_ITEMS};
+    use lootsurvivor::models::loot::{ImplLoot};
+    use lootsurvivor::constants::market::{TIER_PRICE};
+    use lootsurvivor::models::market::ImplMarket;
     const TEST_MARKET_SEED: u256 = 515;
     const TEST_OFFSET: u8 = 3;
 
@@ -268,7 +264,7 @@ mod tests {
             // assert item id is within range of items
             assert(item_id != 0 && item_id <= NUM_ITEMS, 'offset out of bounds');
             i += 1;
-        }
+        };
 
         // test upper end of u64
         let mut i: u64 = 0xffffffffffffff0f;
@@ -329,7 +325,7 @@ mod tests {
                 }
                 assert(item != *market_items_clone.at(duplicate_check_index), 'duplicate item id');
                 duplicate_check_index += 1;
-            }
+            };
             item_index += 1;
         };
     }
