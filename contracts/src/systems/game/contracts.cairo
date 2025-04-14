@@ -1183,7 +1183,7 @@ mod game_systems {
 
     fn _network_supports_vrf() -> bool {
         let chain_id = get_tx_info().unbox().chain_id;
-        chain_id == MAINNET_CHAIN_ID || chain_id == SEPOLIA_CHAIN_ID
+        chain_id == MAINNET_CHAIN_ID //|| chain_id == SEPOLIA_CHAIN_ID
     }
 
     fn _get_and_apply_item_specials(

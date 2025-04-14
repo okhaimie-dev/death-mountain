@@ -22,7 +22,18 @@ starknet = "=2.9.2"
 cairo_test = "=2.9.2"
 
 [[target.starknet-contract]]
-build-external-contracts = ["dojo::world::world_contract::world"]
+sierra = true
+casm = true
+build-external-contracts = [
+    "dojo::world::world_contract::world",
+    "tournaments::components::models::game::m_GameMetadata",
+    "tournaments::components::models::game::m_TokenMetadata",
+    "tournaments::components::models::game::m_GameCounter",
+    "tournaments::components::models::game::m_Score",
+    "tournaments::components::models::game::m_Settings",
+    "tournaments::components::models::game::m_SettingsDetails",
+    "tournaments::components::models::game::m_SettingsCounter",
+]
 
 [tool.fmt]
 sort-module-level-items = true

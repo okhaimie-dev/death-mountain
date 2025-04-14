@@ -1,7 +1,7 @@
 [world]
 name = "Loot Survivor 2"
 description = "Slay The Beasts"
-seed = "lootsurvivor"
+seed = "pg_test_ls"
 
 [env]
 rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
@@ -10,4 +10,9 @@ rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 default = "ls_0_0_1"
 
 [writers]
-"ls_0_0_1" = ["ls_0_0_1-systems"]
+"ls_0_0_1" = ["ls_0_0_1-game_systems"]
+
+[init_call_args]
+"ls_0_0_1-game_systems" = [
+    "0x0238df9Efd27Aba2ccB0bdC97a4cf440caA403e9ed3f1883294Ab6CDBA6C5282",
+]
