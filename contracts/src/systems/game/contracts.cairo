@@ -74,7 +74,6 @@ mod game_systems {
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
     use lootsurvivor::models::event::{BattleDetails, ObstacleDetails};
 
-    use lootsurvivor::utils::renderer::renderer_utils::create_metadata;
     use lootsurvivor::utils::cartridge::VRFImpl;
 
     use lootsurvivor::libs::game::{IGameLib, ImplGame, GameLibs};
@@ -2060,20 +2059,20 @@ mod game_systems {
             let bag = self.get_bag(adventurer_id);
 
             let game_libs = ImplGame::get_libs(self.world(@DEFAULT_NS()));
-            create_metadata(adventurer_id, adventurer, adventurer_name, bag, game_libs)
+            game_libs.create_metadata(adventurer_id, adventurer, adventurer_name, bag)
         }
     }
 
     #[generate_trait]
     impl InternalImpl of InternalTrait {
-        #[inline(always)]
+        
         fn validate_start_conditions(self: @ContractState, token_id: u64, token_metadata: @TokenMetadata) {
             self.assert_token_ownership(token_id);
             self.assert_game_not_started(token_id);
             token_metadata.lifecycle.assert_is_playable(token_id, starknet::get_block_timestamp());
         }
 
-        #[inline(always)]
+        
         fn assert_token_ownership(self: @ContractState, token_id: u64) {
             let token_owner = ERC721Impl::owner_of(self, token_id.into());
             assert!(
@@ -2083,7 +2082,7 @@ mod game_systems {
             );
         }
 
-        #[inline(always)]
+        
         fn assert_game_not_started(self: @ContractState, adventurer_id: u64) {
             let adventurer = _load_adventurer_no_boosts(self.world(@DEFAULT_NS()), adventurer_id);
             assert!(adventurer.xp == 0, "Loot Survivor: Adventurer {} has already started", adventurer_id);

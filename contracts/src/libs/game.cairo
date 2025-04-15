@@ -2,26 +2,31 @@ use dojo::world::{WorldStorage, WorldStorageTrait};
 
 use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
 use lootsurvivor::systems::market::contracts::{IMarketSystemsDispatcher, IMarketSystemsDispatcherTrait};
+use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
 use lootsurvivor::models::combat::{SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
+use lootsurvivor::models::adventurer::adventurer::Adventurer;
+use lootsurvivor::models::adventurer::bag::Bag;
 
 #[derive(Copy, Drop)]
 pub struct GameLibs {
     loot: ILootSystemsDispatcher,
     market: IMarketSystemsDispatcher,
+    renderer: IRendererSystemsDispatcher,
 }
 
 #[generate_trait]
 pub impl ImplGame of IGameLib {
-    #[inline(always)]
     fn get_libs(world: WorldStorage) -> GameLibs {
         let (loot_systems_address, _) = world.dns(@"loot_systems").unwrap();
         let (market_systems_address, _) = world.dns(@"market_systems").unwrap();
+        let (renderer_systems_address, _) = world.dns(@"renderer_systems").unwrap();
 
         GameLibs {
             loot: ILootSystemsDispatcher { contract_address: loot_systems_address },
             market: IMarketSystemsDispatcher { contract_address: market_systems_address },
+            renderer: IRendererSystemsDispatcher { contract_address: renderer_systems_address },
         }
     }
 
@@ -75,19 +80,12 @@ pub impl ImplGame of IGameLib {
         self.market.get_market_size(stat_upgrades_available)
     }
 
-    fn get_id(self: GameLibs, seed: u64) -> u8 {
-        self.market.get_id(seed)
-    }
-
     fn is_item_available(self: GameLibs, market_inventory: Span<u8>, item_id: u8) -> bool {
         self.market.is_item_available(market_inventory, item_id)
     }
 
-    fn get_all_items(self: GameLibs) -> Array<u8> {
-        self.market.get_all_items()
-    }
-
-    fn get_market_seed_and_offset(self: GameLibs, seed: u64) -> (u64, u8) {
-        self.market.get_market_seed_and_offset(seed)
+    // Renderer Functions
+    fn create_metadata(self: GameLibs, adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag) -> ByteArray {
+        self.renderer.create_metadata(adventurer_id, adventurer, adventurer_name, bag)
     }
 }
