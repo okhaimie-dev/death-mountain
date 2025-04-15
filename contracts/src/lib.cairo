@@ -5,6 +5,9 @@ pub mod systems {
     pub mod loot {
         pub mod contracts;
     }
+    pub mod market {
+        pub mod contracts;
+    }
 }
 
 pub mod models {
