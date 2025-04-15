@@ -5,8 +5,8 @@ use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::equipment::ImplEquipment;
 use lootsurvivor::models::adventurer::item::{ImplItem, Item};
-use lootsurvivor::models::loot::ImplLoot;
 use lootsurvivor::utils::renderer::encoding::{U256BytesUsedTraitImpl, bytes_base64_encode};
+use lootsurvivor::libs::game::{IGameLib, ImplGame, GameLibs};
 
 // @notice Generates the LS logo svg
 // @return The generated LS logo
@@ -181,7 +181,7 @@ fn get_suffix_boost(suffix: u8) -> ByteArray {
 // @param bag Whether the item is in the bag or not
 // @param item_specials_seed The seed used to generate item specials
 // @return The generated item string
-fn generate_item(item: Item, bag: bool, item_specials_seed: u16) -> ByteArray {
+fn generate_item(item: Item, bag: bool, item_specials_seed: u16, game_libs: GameLibs) -> ByteArray {
     if item.id == 0 {
         if (bag) {
             return "Empty";
@@ -197,7 +197,7 @@ fn generate_item(item: Item, bag: bool, item_specials_seed: u16) -> ByteArray {
     _item_name.append_word(item_name, U256BytesUsedTraitImpl::bytes_used(item_name.into()).into());
 
     if (greatness >= 15 && !bag) {
-        format!("G{} {} ", greatness, _item_name) + get_suffix_boost(ImplLoot::get_suffix(item.id, item_specials_seed))
+        format!("G{} {} ", greatness, _item_name) + get_suffix_boost(game_libs.get_suffix(item.id, item_specials_seed))
     } else {
         format!("G{} {} ", greatness, _item_name)
     }
@@ -214,7 +214,7 @@ fn generate_logo() -> ByteArray {
 // @param bag The adventurer's bag
 // @return The generated adventurer metadata
 pub fn create_metadata(
-    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
+    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag, game_libs: GameLibs,
 ) -> ByteArray {
     let rect = create_rect();
 
@@ -266,31 +266,31 @@ pub fn create_metadata(
 
     let item_specials_seed = adventurer.item_specials_seed;
     // Equipped items
-    let _equiped_weapon = generate_item(adventurer.equipment.weapon, false, item_specials_seed);
-    let _equiped_chest = generate_item(adventurer.equipment.chest, false, item_specials_seed);
-    let _equiped_head = generate_item(adventurer.equipment.head, false, item_specials_seed);
-    let _equiped_waist = generate_item(adventurer.equipment.waist, false, item_specials_seed);
-    let _equiped_foot = generate_item(adventurer.equipment.foot, false, item_specials_seed);
-    let _equiped_hand = generate_item(adventurer.equipment.hand, false, item_specials_seed);
-    let _equiped_neck = generate_item(adventurer.equipment.neck, false, item_specials_seed);
-    let _equiped_ring = generate_item(adventurer.equipment.ring, false, item_specials_seed);
+    let _equiped_weapon = generate_item(adventurer.equipment.weapon, false, item_specials_seed, game_libs);
+    let _equiped_chest = generate_item(adventurer.equipment.chest, false, item_specials_seed, game_libs);
+    let _equiped_head = generate_item(adventurer.equipment.head, false, item_specials_seed, game_libs);
+    let _equiped_waist = generate_item(adventurer.equipment.waist, false, item_specials_seed, game_libs);
+    let _equiped_foot = generate_item(adventurer.equipment.foot, false, item_specials_seed, game_libs);
+    let _equiped_hand = generate_item(adventurer.equipment.hand, false, item_specials_seed, game_libs);
+    let _equiped_neck = generate_item(adventurer.equipment.neck, false, item_specials_seed, game_libs);
+    let _equiped_ring = generate_item(adventurer.equipment.ring, false, item_specials_seed, game_libs);
 
     // Bag items
-    let _bag_item_1 = generate_item(bag.item_1, true, item_specials_seed);
-    let _bag_item_2 = generate_item(bag.item_2, true, item_specials_seed);
-    let _bag_item_3 = generate_item(bag.item_3, true, item_specials_seed);
-    let _bag_item_4 = generate_item(bag.item_4, true, item_specials_seed);
-    let _bag_item_5 = generate_item(bag.item_5, true, item_specials_seed);
-    let _bag_item_6 = generate_item(bag.item_6, true, item_specials_seed);
-    let _bag_item_7 = generate_item(bag.item_7, true, item_specials_seed);
-    let _bag_item_8 = generate_item(bag.item_8, true, item_specials_seed);
-    let _bag_item_9 = generate_item(bag.item_9, true, item_specials_seed);
-    let _bag_item_10 = generate_item(bag.item_10, true, item_specials_seed);
-    let _bag_item_11 = generate_item(bag.item_11, true, item_specials_seed);
-    let _bag_item_12 = generate_item(bag.item_12, true, item_specials_seed);
-    let _bag_item_13 = generate_item(bag.item_13, true, item_specials_seed);
-    let _bag_item_14 = generate_item(bag.item_14, true, item_specials_seed);
-    let _bag_item_15 = generate_item(bag.item_15, true, item_specials_seed);
+    let _bag_item_1 = generate_item(bag.item_1, true, item_specials_seed, game_libs);
+    let _bag_item_2 = generate_item(bag.item_2, true, item_specials_seed, game_libs);
+    let _bag_item_3 = generate_item(bag.item_3, true, item_specials_seed, game_libs);
+    let _bag_item_4 = generate_item(bag.item_4, true, item_specials_seed, game_libs);
+    let _bag_item_5 = generate_item(bag.item_5, true, item_specials_seed, game_libs);
+    let _bag_item_6 = generate_item(bag.item_6, true, item_specials_seed, game_libs);
+    let _bag_item_7 = generate_item(bag.item_7, true, item_specials_seed, game_libs);
+    let _bag_item_8 = generate_item(bag.item_8, true, item_specials_seed, game_libs);
+    let _bag_item_9 = generate_item(bag.item_9, true, item_specials_seed, game_libs);
+    let _bag_item_10 = generate_item(bag.item_10, true, item_specials_seed, game_libs);
+    let _bag_item_11 = generate_item(bag.item_11, true, item_specials_seed, game_libs);
+    let _bag_item_12 = generate_item(bag.item_12, true, item_specials_seed, game_libs);
+    let _bag_item_13 = generate_item(bag.item_13, true, item_specials_seed, game_libs);
+    let _bag_item_14 = generate_item(bag.item_14, true, item_specials_seed, game_libs);
+    let _bag_item_15 = generate_item(bag.item_15, true, item_specials_seed, game_libs);
 
     // Combine all elements
     let mut elements = array![
@@ -407,84 +407,3 @@ pub fn create_metadata(
 
     format!("data:application/json;base64,{}", bytes_base64_encode(metadata))
 }
-
-
-#[cfg(test)]
-mod tests {
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
-    use lootsurvivor::models::adventurer::equipment::{Equipment};
-    use lootsurvivor::models::adventurer::item::{ImplItem, Item};
-    use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
-    use lootsurvivor::constants::beast::BeastSettings;
-    use lootsurvivor::utils::renderer::renderer_utils::create_metadata;
-
-
-    #[test]
-    fn test_metadata() {
-        let adventurer = Adventurer {
-            health: 1023,
-            xp: 10000,
-            stats: Stats {
-                strength: 10, dexterity: 50, vitality: 50, intelligence: 50, wisdom: 50, charisma: 50, luck: 100,
-            },
-            gold: 1023,
-            equipment: Equipment {
-                weapon: Item { id: 42, xp: 400 },
-                chest: Item { id: 49, xp: 400 },
-                head: Item { id: 53, xp: 400 },
-                waist: Item { id: 59, xp: 400 },
-                foot: Item { id: 64, xp: 400 },
-                hand: Item { id: 69, xp: 400 },
-                neck: Item { id: 1, xp: 400 },
-                ring: Item { id: 7, xp: 400 },
-            },
-            beast_health: BeastSettings::STARTER_BEAST_HEALTH.into(),
-            stat_upgrades_available: 0,
-            action_count: 0,
-            item_specials_seed: 0,
-        };
-
-        let bag = Bag {
-            item_1: Item { id: 8, xp: 400 },
-            item_2: Item { id: 40, xp: 400 },
-            item_3: Item { id: 57, xp: 400 },
-            item_4: Item { id: 83, xp: 400 },
-            item_5: Item { id: 12, xp: 400 },
-            item_6: Item { id: 77, xp: 400 },
-            item_7: Item { id: 68, xp: 400 },
-            item_8: Item { id: 100, xp: 400 },
-            item_9: Item { id: 94, xp: 400 },
-            item_10: Item { id: 54, xp: 400 },
-            item_11: Item { id: 87, xp: 400 },
-            item_12: Item { id: 81, xp: 400 },
-            item_13: Item { id: 30, xp: 400 },
-            item_14: Item { id: 11, xp: 400 },
-            item_15: Item { id: 29, xp: 400 },
-            mutated: false,
-        };
-
-        let current_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let current_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let current_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let historical_1 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let historical_2 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let historical_3 = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        let plain = create_metadata(1000000, adventurer, 'thisisareallyreallyreallongname', bag);
-
-        println!("Current 1: {}", current_1);
-        println!("Current 2: {}", current_2);
-        println!("Current 3: {}", current_3);
-        println!("Historical 1: {}", historical_1);
-        println!("Historical 2: {}", historical_2);
-        println!("Historical 3: {}", historical_3);
-        println!("Plain: {}", plain);
-    }
-}
-

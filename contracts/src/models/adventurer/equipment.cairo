@@ -4,7 +4,6 @@ use lootsurvivor::constants::combat::CombatEnums::Slot;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
 use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
 use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
-use lootsurvivor::models::loot::ImplLoot;
 
 /// @notice The Equipment struct
 /// @dev The equipment struct is used to store the adventurer's equipment
@@ -84,18 +83,17 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the item to
     /// @param item: The item to equip
     #[inline(always)]
-    fn equip(ref self: Equipment, item: Item) {
-        let slot = ImplLoot::get_slot(item.id);
+    fn equip(ref self: Equipment, item: Item, slot: Slot) {
         match slot {
             Slot::None(()) => (),
-            Slot::Weapon(()) => self.equip_weapon(item),
-            Slot::Chest(()) => self.equip_chest_armor(item),
-            Slot::Head(()) => self.equip_head_armor(item),
-            Slot::Waist(()) => self.equip_waist_armor(item),
-            Slot::Foot(()) => self.equip_foot_armor(item),
-            Slot::Hand(()) => self.equip_hand_armor(item),
-            Slot::Neck(()) => self.equip_necklace(item),
-            Slot::Ring(()) => self.equip_ring(item),
+            Slot::Weapon(()) => self.equip_weapon(item, slot),
+            Slot::Chest(()) => self.equip_chest_armor(item, slot),
+            Slot::Head(()) => self.equip_head_armor(item, slot),
+            Slot::Waist(()) => self.equip_waist_armor(item, slot),
+            Slot::Foot(()) => self.equip_foot_armor(item, slot),
+            Slot::Hand(()) => self.equip_hand_armor(item, slot),
+            Slot::Neck(()) => self.equip_necklace(item, slot),
+            Slot::Ring(()) => self.equip_ring(item, slot),
         }
     }
 
@@ -103,8 +101,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the weapon to
     /// @param item: The weapon to equip
     #[inline(always)]
-    fn equip_weapon(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Weapon, 'Item is not weapon');
+    fn equip_weapon(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Weapon, 'Item is not weapon');
         self.weapon = item
     }
 
@@ -112,8 +110,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the chest armor to
     /// @param item: The chest armor to equip
     #[inline(always)]
-    fn equip_chest_armor(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Chest, 'Item is not chest armor');
+    fn equip_chest_armor(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Chest, 'Item is not chest armor');
         self.chest = item
     }
 
@@ -121,8 +119,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the head armor to
     /// @param item: The head armor to equip
     #[inline(always)]
-    fn equip_head_armor(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Head, 'Item is not head armor');
+    fn equip_head_armor(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Head, 'Item is not head armor');
         self.head = item
     }
 
@@ -130,8 +128,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the waist armor to
     /// @param item: The waist armor to equip
     #[inline(always)]
-    fn equip_waist_armor(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Waist, 'Item is not waist armor');
+    fn equip_waist_armor(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Waist, 'Item is not waist armor');
         self.waist = item
     }
 
@@ -139,8 +137,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the foot armor to
     /// @param item: The foot armor to equip
     #[inline(always)]
-    fn equip_foot_armor(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Foot, 'Item is not foot armor');
+    fn equip_foot_armor(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Foot, 'Item is not foot armor');
         self.foot = item
     }
 
@@ -148,8 +146,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the hand armor to
     /// @param item: The hand armor to equip
     #[inline(always)]
-    fn equip_hand_armor(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Hand, 'Item is not hand armor');
+    fn equip_hand_armor(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Hand, 'Item is not hand armor');
         self.hand = item
     }
 
@@ -157,8 +155,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the necklace to
     /// @param item: The necklace to equip
     #[inline(always)]
-    fn equip_necklace(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Neck, 'Item is not necklace');
+    fn equip_necklace(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Neck, 'Item is not necklace');
         self.neck = item
     }
 
@@ -166,8 +164,8 @@ pub impl ImplEquipment of IEquipment {
     /// @param self: The Equipment to equip the ring to
     /// @param item: The ring to equip
     #[inline(always)]
-    fn equip_ring(ref self: Equipment, item: Item) {
-        assert(ImplLoot::get_slot(item.id) == Slot::Ring, 'Item is not a ring');
+    fn equip_ring(ref self: Equipment, item: Item, slot: Slot) {
+        assert(slot == Slot::Ring, 'Item is not a ring');
         self.ring = item;
     }
 
@@ -252,35 +250,37 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Gets stat boosts based on item specials
     /// @param self: The Equipment to get stat boosts for
     /// @param specials_seed: The seed to use for generating item specials
+    /// @param game_libs: The game libraries to use for getting stat boosts
     /// @return Stats: The stat boosts for the equipment
-    fn get_stat_boosts(self: Equipment, specials_seed: u16) -> Stats {
+    fn get_stat_boosts(self: Equipment, specials_seed: u16, weapon_suffix: u8, chest_suffix: u8, head_suffix: u8,
+        waist_suffix: u8, foot_suffix: u8, hand_suffix: u8, neck_suffix: u8, ring_suffix: u8) -> Stats {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0,
         };
 
         if (self.weapon.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.weapon.id, specials_seed));
+            stats.apply_suffix_boost(weapon_suffix);
         }
         if (self.chest.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.chest.id, specials_seed));
+            stats.apply_suffix_boost(chest_suffix);
         }
         if (self.head.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.head.id, specials_seed));
+            stats.apply_suffix_boost(head_suffix);
         }
         if (self.waist.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.waist.id, specials_seed));
+            stats.apply_suffix_boost(waist_suffix);
         }
         if (self.foot.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.foot.id, specials_seed));
+            stats.apply_suffix_boost(foot_suffix);
         }
         if (self.hand.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.hand.id, specials_seed));
+            stats.apply_suffix_boost(hand_suffix);
         }
         if (self.neck.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.neck.id, specials_seed));
+            stats.apply_suffix_boost(neck_suffix);
         }
         if (self.ring.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.ring.id, specials_seed));
+            stats.apply_suffix_boost(ring_suffix);
         }
         stats
     }
@@ -305,6 +305,7 @@ mod tests {
     use lootsurvivor::models::adventurer::item::{MAX_ITEM_XP, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
     use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
     use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, Item};
+    use lootsurvivor::models::loot::ImplLoot;
 
     #[test]
     #[available_gas(1447420)]
@@ -536,7 +537,7 @@ mod tests {
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
         // try to equip demon crown as a weapon
         // should panic with 'Item is not weapon' message
-        adventurer.equipment.equip_weapon(item);
+        adventurer.equipment.equip_weapon(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -544,7 +545,7 @@ mod tests {
     fn test_equip_valid_weapon() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Katana, xp: 1 };
-        adventurer.equipment.equip_weapon(item);
+        adventurer.equipment.equip_weapon(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.weapon.id == ItemId::Katana, 'did not equip weapon');
         assert(adventurer.equipment.weapon.xp == 1, 'weapon xp is not 1');
     }
@@ -557,7 +558,7 @@ mod tests {
         // try to equip a Demon Crown as chest item
         // should panic with 'Item is not chest armor' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_chest_armor(item);
+        adventurer.equipment.equip_chest_armor(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -565,7 +566,7 @@ mod tests {
     fn test_equip_valid_chest() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::DivineRobe, xp: 1 };
-        adventurer.equipment.equip_chest_armor(item);
+        adventurer.equipment.equip_chest_armor(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.chest.id == ItemId::DivineRobe, 'did not equip chest armor');
         assert(adventurer.equipment.chest.xp == 1, 'chest armor xp is not 1');
     }
@@ -578,7 +579,7 @@ mod tests {
         // try to equip a Katana as head item
         // should panic with 'Item is not head armor' message
         let item = Item { id: ItemId::Katana, xp: 1 };
-        adventurer.equipment.equip_head_armor(item);
+        adventurer.equipment.equip_head_armor(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -586,7 +587,7 @@ mod tests {
     fn test_equip_valid_head() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Crown, xp: 1 };
-        adventurer.equipment.equip_head_armor(item);
+        adventurer.equipment.equip_head_armor(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.head.id == ItemId::Crown, 'did not equip head armor');
         assert(adventurer.equipment.head.xp == 1, 'head armor xp is not 1');
     }
@@ -600,7 +601,7 @@ mod tests {
         // try to equip a Demon Crown as waist item
         // should panic with 'Item is not waist armor' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_waist_armor(item);
+        adventurer.equipment.equip_waist_armor(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -608,7 +609,7 @@ mod tests {
     fn test_equip_valid_waist() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::WoolSash, xp: 1 };
-        adventurer.equipment.equip_waist_armor(item);
+        adventurer.equipment.equip_waist_armor(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.waist.id == ItemId::WoolSash, 'did not equip waist armor');
         assert(adventurer.equipment.waist.xp == 1, 'waist armor xp is not 1');
     }
@@ -621,7 +622,7 @@ mod tests {
         // try to equip a Demon Crown as foot item
         // should panic with 'Item is not foot armor' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_foot_armor(item);
+        adventurer.equipment.equip_foot_armor(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -629,7 +630,7 @@ mod tests {
     fn test_equip_valid_foot() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::SilkSlippers, xp: 1 };
-        adventurer.equipment.equip_foot_armor(item);
+        adventurer.equipment.equip_foot_armor(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.foot.id == ItemId::SilkSlippers, 'did not equip foot armor');
         assert(adventurer.equipment.foot.xp == 1, 'foot armor xp is not 1');
     }
@@ -642,7 +643,7 @@ mod tests {
         // try to equip a Demon Crown as hand item
         // should panic with 'Item is not hand armor' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_hand_armor(item);
+        adventurer.equipment.equip_hand_armor(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -650,7 +651,7 @@ mod tests {
     fn test_equip_valid_hand() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::DivineGloves, xp: 1 };
-        adventurer.equipment.equip_hand_armor(item);
+        adventurer.equipment.equip_hand_armor(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.hand.id == ItemId::DivineGloves, 'did not equip hand armor');
         assert(adventurer.equipment.hand.xp == 1, 'hand armor xp is not 1');
     }
@@ -663,7 +664,7 @@ mod tests {
         // try to equip a Demon Crown as necklace
         // should panic with 'Item is not necklace' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_necklace(item);
+        adventurer.equipment.equip_necklace(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -671,7 +672,7 @@ mod tests {
     fn test_equip_valid_neck() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Pendant, xp: 1 };
-        adventurer.equipment.equip_necklace(item);
+        adventurer.equipment.equip_necklace(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.neck.id == ItemId::Pendant, 'did not equip necklace');
         assert(adventurer.equipment.neck.xp == 1, 'necklace xp is not 1');
     }
@@ -684,7 +685,7 @@ mod tests {
         // try to equip a Demon Crown as ring
         // should panic with 'Item is not a ring' message
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
-        adventurer.equipment.equip_ring(item);
+        adventurer.equipment.equip_ring(item, ImplLoot::get_slot(item.id));
     }
 
     #[test]
@@ -692,7 +693,7 @@ mod tests {
     fn test_equip_valid_ring() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::PlatinumRing, xp: 1 };
-        adventurer.equipment.equip_ring(item);
+        adventurer.equipment.equip_ring(item, ImplLoot::get_slot(item.id));
         assert(adventurer.equipment.ring.id == ItemId::PlatinumRing, 'did not equip ring');
         assert(adventurer.equipment.ring.xp == 1, 'ring xp is not 1');
     }
@@ -728,14 +729,14 @@ mod tests {
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
 
         // equip item
-        adventurer.equipment.equip(weapon);
-        adventurer.equipment.equip(chest);
-        adventurer.equipment.equip(head);
-        adventurer.equipment.equip(waist);
-        adventurer.equipment.equip(foot);
-        adventurer.equipment.equip(hand);
-        adventurer.equipment.equip(neck);
-        adventurer.equipment.equip(ring);
+        adventurer.equipment.equip(weapon, ImplLoot::get_slot(weapon.id));
+        adventurer.equipment.equip(chest, ImplLoot::get_slot(chest.id));
+        adventurer.equipment.equip(head, ImplLoot::get_slot(head.id));
+        adventurer.equipment.equip(waist, ImplLoot::get_slot(waist.id));
+        adventurer.equipment.equip(foot, ImplLoot::get_slot(foot.id));
+        adventurer.equipment.equip(hand, ImplLoot::get_slot(hand.id));
+        adventurer.equipment.equip(neck, ImplLoot::get_slot(neck.id));
+        adventurer.equipment.equip(ring, ImplLoot::get_slot(ring.id));
 
         // assert items were equipped
         assert(adventurer.equipment.weapon.id == weapon.id, 'weapon should be equipped');
@@ -817,14 +818,14 @@ mod tests {
         let neck = Item { id: ItemId::Amulet, xp: 1 };
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
 
-        adventurer.equipment.equip(weapon);
-        adventurer.equipment.equip(chest);
-        adventurer.equipment.equip(head);
-        adventurer.equipment.equip(waist);
-        adventurer.equipment.equip(foot);
-        adventurer.equipment.equip(hand);
-        adventurer.equipment.equip(neck);
-        adventurer.equipment.equip(ring);
+        adventurer.equipment.equip(weapon, ImplLoot::get_slot(weapon.id));
+        adventurer.equipment.equip(chest, ImplLoot::get_slot(chest.id));
+        adventurer.equipment.equip(head, ImplLoot::get_slot(head.id));
+        adventurer.equipment.equip(waist, ImplLoot::get_slot(waist.id));
+        adventurer.equipment.equip(foot, ImplLoot::get_slot(foot.id));
+        adventurer.equipment.equip(hand, ImplLoot::get_slot(hand.id));
+        adventurer.equipment.equip(neck, ImplLoot::get_slot(neck.id));
+        adventurer.equipment.equip(ring, ImplLoot::get_slot(ring.id));
 
         // assert items were added
         assert(adventurer.equipment.weapon.id == weapon.id, 'weapon should be equipped');
@@ -869,7 +870,7 @@ mod tests {
         let gold_ring = Item { id: ItemId::GoldRing, xp: 1 };
 
         // Equip a katana and verify is_equipped returns true for katana and false everything else
-        adventurer.equipment.equip(katana);
+        adventurer.equipment.equip(katana, ImplLoot::get_slot(katana.id));
         assert(adventurer.equipment.is_equipped(katana.id) == true, 'weapon should be equipped');
         assert(adventurer.equipment.is_equipped(wand.id) == false, 'wand should not be equipped');
         assert(adventurer.equipment.is_equipped(crown.id) == false, 'crown should not be equipped');
@@ -882,7 +883,7 @@ mod tests {
 
         // equip a divine robe and verify is_equipped returns true for katana and divine robe and
         // false everything else
-        adventurer.equipment.equip(divine_robe);
+        adventurer.equipment.equip(divine_robe, ImplLoot::get_slot(divine_robe.id));
         assert(adventurer.equipment.is_equipped(divine_robe.id) == true, 'divine robe should be equipped');
         assert(adventurer.equipment.is_equipped(katana.id) == true, 'katana still equipped');
         assert(adventurer.equipment.is_equipped(crown.id) == false, 'crown should not be equipped');
@@ -894,7 +895,7 @@ mod tests {
 
         // equip a crown and verify is_equipped returns true for katana, divine robe, and crown and
         // false everything else
-        adventurer.equipment.equip(crown);
+        adventurer.equipment.equip(crown, ImplLoot::get_slot(crown.id));
         assert(adventurer.equipment.is_equipped(crown.id) == true, 'crown should be equipped');
         assert(adventurer.equipment.is_equipped(divine_robe.id) == true, 'divine robe should be equipped');
         assert(adventurer.equipment.is_equipped(katana.id) == true, 'katana still equipped');
@@ -906,7 +907,7 @@ mod tests {
 
         // equip a demonhide belt and verify is_equipped returns true for katana, divine robe,
         // crown, and demonhide belt and false everything else
-        adventurer.equipment.equip(demonhide_belt);
+        adventurer.equipment.equip(demonhide_belt, ImplLoot::get_slot(demonhide_belt.id));
         assert(adventurer.equipment.is_equipped(demonhide_belt.id) == true, 'demonhide belt is equipped');
         assert(adventurer.equipment.is_equipped(crown.id) == true, 'crown should be equipped');
         assert(adventurer.equipment.is_equipped(divine_robe.id) == true, 'divine robe should be equipped');
@@ -918,7 +919,7 @@ mod tests {
 
         // equip leather boots and verify is_equipped returns true for katana, divine robe, crown,
         // demonhide belt, and leather boots and false everything else
-        adventurer.equipment.equip(leather_boots);
+        adventurer.equipment.equip(leather_boots, ImplLoot::get_slot(leather_boots.id));
         assert(adventurer.equipment.is_equipped(leather_boots.id) == true, 'leather boots is equipped');
         assert(adventurer.equipment.is_equipped(demonhide_belt.id) == true, 'demonhide belt is equipped');
         assert(adventurer.equipment.is_equipped(crown.id) == true, 'crown should be equipped');
@@ -930,7 +931,7 @@ mod tests {
 
         // equip leather gloves and verify is_equipped returns true for katana, divine robe, crown,
         // demonhide belt, leather boots, and leather gloves and false everything else
-        adventurer.equipment.equip(leather_gloves);
+        adventurer.equipment.equip(leather_gloves, ImplLoot::get_slot(leather_gloves.id));
         assert(adventurer.equipment.is_equipped(leather_gloves.id) == true, 'leather gloves is equipped');
         assert(adventurer.equipment.is_equipped(leather_boots.id) == true, 'leather boots is equipped');
         assert(adventurer.equipment.is_equipped(demonhide_belt.id) == true, 'demonhide belt is equipped');
@@ -942,7 +943,7 @@ mod tests {
 
         // equip amulet and verify is_equipped returns true for katana, divine robe, crown,
         // demonhide belt, leather boots, leather gloves, and amulet and false everything else
-        adventurer.equipment.equip(amulet);
+        adventurer.equipment.equip(amulet, ImplLoot::get_slot(amulet.id));
         assert(adventurer.equipment.is_equipped(amulet.id) == true, 'amulet is equipped');
         assert(adventurer.equipment.is_equipped(leather_gloves.id) == true, 'leather gloves is equipped');
         assert(adventurer.equipment.is_equipped(leather_boots.id) == true, 'leather boots is equipped');
@@ -955,7 +956,7 @@ mod tests {
         // equip gold ring and verify is_equipped returns true for katana, divine robe, crown,
         // demonhide belt, leather boots, leather gloves, amulet, and gold ring and false everything
         // else
-        adventurer.equipment.equip(gold_ring);
+        adventurer.equipment.equip(gold_ring, ImplLoot::get_slot(gold_ring.id));
         assert(adventurer.equipment.is_equipped(gold_ring.id) == true, 'gold ring is equipped');
         assert(adventurer.equipment.is_equipped(amulet.id) == true, 'amulet is equipped');
         assert(adventurer.equipment.is_equipped(leather_gloves.id) == true, 'leather gloves is equipped');

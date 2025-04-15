@@ -223,7 +223,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let mut bag = _load_bag(world, adventurer_id);
 
 
@@ -248,7 +248,7 @@ mod game_systems {
             }
 
             adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag);
@@ -276,7 +276,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -346,7 +346,7 @@ mod game_systems {
             }
             
             adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
 
         /// @title Flee Function
@@ -368,7 +368,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -411,7 +411,7 @@ mod game_systems {
             }
             
             adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
 
         /// @title Equip Function
@@ -433,7 +433,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let mut bag = _load_bag(world, adventurer_id);
 
             // assert action is valid
@@ -488,7 +488,7 @@ mod game_systems {
             
             // save state
             adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
             // if the bag was mutated, pack and save it
             if bag.mutated {
@@ -514,7 +514,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let mut bag = _load_bag(world, adventurer_id);
 
             // assert action is valid (ownership of item is handled in internal function when we
@@ -527,7 +527,7 @@ mod game_systems {
             _drop(ref adventurer, ref bag, items.clone(), game_libs);
 
             // save state
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
             // if the bag was mutated, save it
             if bag.mutated {
@@ -560,7 +560,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
-            let mut adventurer = _load_adventurer(world, adventurer_id);
+            let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let mut bag = _load_bag(world, adventurer_id);
 
             let immutable_adventurer = adventurer.clone();
@@ -607,7 +607,7 @@ mod game_systems {
             }
 
             adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, adventurer_id);
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
 
         /// @title Set Adventurer Obituary
@@ -638,7 +638,8 @@ mod game_systems {
         // ------------------------------------------ //
         fn get_adventurer(self: @ContractState, adventurer_id: u64) -> Adventurer {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            _load_adventurer(world, adventurer_id)
+            let game_libs = ImplGame::get_libs(world);
+            _load_adventurer(world, adventurer_id, game_libs)
         }
 
         fn get_adventurer_obituary(self: @ContractState, adventurer_id: u64) -> ByteArray {
@@ -656,7 +657,7 @@ mod game_systems {
         fn get_item_specials(self: @ContractState, adventurer_id: u64) -> Array<ItemSpecial> {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
-            let adventurer: Adventurer = _load_adventurer(world, adventurer_id);
+            let adventurer: Adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let specials_seed = adventurer.item_specials_seed;
 
             // assert specials seed is not 0
@@ -694,21 +695,23 @@ mod game_systems {
 
         fn get_market(self: @ContractState, adventurer_id: u64) -> Array<u8> {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            let adventurer = _load_adventurer(world, adventurer_id);
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
             _get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available)
         }
 
         fn get_potion_price(self: @ContractState, adventurer_id: u64) -> u16 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            let adventurer = _load_adventurer(world, adventurer_id);
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             adventurer.charisma_adjusted_potion_price()
         }
 
         fn get_item_price(self: @ContractState, adventurer_id: u64, item_id: u8) -> u16 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id);
+            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let base_item_price = ImplMarket::get_price(game_libs.get_tier(item_id));
             adventurer.stats.charisma_adjusted_item_price(base_item_price)
         }
@@ -720,13 +723,15 @@ mod game_systems {
 
         fn obstacle_critical_hit_chance(self: @ContractState, adventurer_id: u64) -> u8 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            let adventurer = _load_adventurer(world, adventurer_id);
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             ImplAdventurer::get_dynamic_critical_hit_chance(adventurer.get_level())
         }
 
         fn beast_critical_hit_chance(self: @ContractState, adventurer_id: u64, is_ambush: bool) -> u8 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            let adventurer = _load_adventurer(world, adventurer_id);
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             ImplBeast::get_critical_hit_chance(adventurer.get_level(), is_ambush)
         }
     }
@@ -972,7 +977,8 @@ mod game_systems {
                     let item = ImplItem::new(item_id);
                     if slot_free {
                         // equip the item
-                        adventurer.equipment.equip(item);
+                        let slot = game_libs.get_slot(item.id);
+                        adventurer.equipment.equip(item, slot);
                         equipped_items.append(item.id);
                     } else {
                         // otherwise toss it in bag
@@ -1447,7 +1453,8 @@ mod game_systems {
         }
 
         // equip item
-        adventurer.equipment.equip(item);
+        let slot = game_libs.get_slot(item.id);
+        adventurer.equipment.equip(item, slot);
 
         // if item being equipped has stat boosts unlocked, apply it to adventurer
         if item.get_greatness() >= SUFFIX_UNLOCK_GREATNESS {
@@ -1735,10 +1742,10 @@ mod game_systems {
     /// @param world A reference to the WorldStorage object.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
-    fn _load_adventurer(world: WorldStorage, adventurer_id: u64) -> Adventurer {
+    fn _load_adventurer(world: WorldStorage, adventurer_id: u64, game_libs: GameLibs) -> Adventurer {
         let mut adventurer_packed: AdventurerPacked = world.read_model(adventurer_id);
         let mut adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
-        _apply_equipment_stat_boosts(world, ref adventurer, adventurer_id);
+        _apply_equipment_stat_boosts(ref adventurer, adventurer_id, game_libs);
         _apply_luck(world, ref adventurer, adventurer_id);
         adventurer
     }
@@ -1779,8 +1786,8 @@ mod game_systems {
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
-    fn _save_adventurer(ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64) {
-        _remove_equipment_stat_boosts(world, ref adventurer, adventurer_id);
+    fn _save_adventurer(ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
+        _remove_equipment_stat_boosts(ref adventurer, adventurer_id, game_libs);
         let packed = adventurer.pack();
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
@@ -1867,10 +1874,22 @@ mod game_systems {
     /// @param self A reference to the ContractState object.
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-    fn _apply_equipment_stat_boosts(world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64) {
-        if adventurer.equipment.has_specials() {
-            let item_specials_seed = adventurer.item_specials_seed;
-            let item_stat_boosts = adventurer.equipment.get_stat_boosts(item_specials_seed);
+    fn _apply_equipment_stat_boosts(ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
+        let item_specials_seed = adventurer.item_specials_seed;
+        if adventurer.equipment.has_specials() && item_specials_seed != 0 {
+            let weapon_suffix = game_libs.get_suffix(adventurer.equipment.weapon.id, item_specials_seed);
+            let chest_suffix = game_libs.get_suffix(adventurer.equipment.chest.id, item_specials_seed);
+            let head_suffix = game_libs.get_suffix(adventurer.equipment.head.id, item_specials_seed);
+            let waist_suffix = game_libs.get_suffix(adventurer.equipment.waist.id, item_specials_seed);
+            let foot_suffix = game_libs.get_suffix(adventurer.equipment.foot.id, item_specials_seed);
+            let hand_suffix = game_libs.get_suffix(adventurer.equipment.hand.id, item_specials_seed);
+            let neck_suffix = game_libs.get_suffix(adventurer.equipment.neck.id, item_specials_seed);
+            let ring_suffix = game_libs.get_suffix(adventurer.equipment.ring.id, item_specials_seed);
+
+            let item_stat_boosts = adventurer.equipment.get_stat_boosts(
+                item_specials_seed, weapon_suffix, chest_suffix, head_suffix,
+                waist_suffix, foot_suffix, hand_suffix, neck_suffix, ring_suffix
+            );
             adventurer.stats.apply_stats(item_stat_boosts);
         }
     }
@@ -1881,10 +1900,22 @@ mod game_systems {
     /// @param self A reference to the ContractState object.
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-    fn _remove_equipment_stat_boosts(world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64) {
+    fn _remove_equipment_stat_boosts(ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
         let item_specials_seed = adventurer.item_specials_seed;
         if adventurer.equipment.has_specials() && item_specials_seed != 0 {
-            let item_stat_boosts = adventurer.equipment.get_stat_boosts(item_specials_seed);
+            let weapon_suffix = game_libs.get_suffix(adventurer.equipment.weapon.id, item_specials_seed);
+            let chest_suffix = game_libs.get_suffix(adventurer.equipment.chest.id, item_specials_seed);
+            let head_suffix = game_libs.get_suffix(adventurer.equipment.head.id, item_specials_seed);
+            let waist_suffix = game_libs.get_suffix(adventurer.equipment.waist.id, item_specials_seed);
+            let foot_suffix = game_libs.get_suffix(adventurer.equipment.foot.id, item_specials_seed);
+            let hand_suffix = game_libs.get_suffix(adventurer.equipment.hand.id, item_specials_seed);
+            let neck_suffix = game_libs.get_suffix(adventurer.equipment.neck.id, item_specials_seed);
+            let ring_suffix = game_libs.get_suffix(adventurer.equipment.ring.id, item_specials_seed);
+
+            let item_stat_boosts = adventurer.equipment.get_stat_boosts(
+                item_specials_seed, weapon_suffix, chest_suffix, head_suffix,
+                waist_suffix, foot_suffix, hand_suffix, neck_suffix, ring_suffix
+            );
             adventurer.stats.remove_stats(item_stat_boosts);
         }
     }
@@ -2031,7 +2062,8 @@ mod game_systems {
             let adventurer_name = self.get_adventurer_name(adventurer_id);
             let bag = self.get_bag(adventurer_id);
 
-            create_metadata(adventurer_id, adventurer, adventurer_name, bag)
+            let game_libs = ImplGame::get_libs(self.world(@DEFAULT_NS()));
+            create_metadata(adventurer_id, adventurer, adventurer_name, bag, game_libs)
         }
     }
 

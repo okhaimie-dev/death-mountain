@@ -2773,7 +2773,7 @@ mod tests {
 
         // equip chest armor
         let chest = Item { id: ItemId::DivineRobe, xp: 1 };
-        adventurer.equipment.equip_chest_armor(chest);
+        adventurer.equipment.equip_chest_armor(chest, ImplLoot::get_slot(chest.id));
 
         // assert we now have two items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2783,7 +2783,7 @@ mod tests {
 
         // equip head armor
         let head = Item { id: ItemId::Crown, xp: 1 };
-        adventurer.equipment.equip_head_armor(head);
+        adventurer.equipment.equip_head_armor(head, ImplLoot::get_slot(head.id));
 
         // assert we now have three items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2794,7 +2794,7 @@ mod tests {
 
         // equip waist armor
         let waist = Item { id: ItemId::DemonhideBelt, xp: 1 };
-        adventurer.equipment.equip_waist_armor(waist);
+        adventurer.equipment.equip_waist_armor(waist, ImplLoot::get_slot(waist.id));
 
         // assert we now have four items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2806,7 +2806,7 @@ mod tests {
 
         // equip foot armor
         let foot = Item { id: ItemId::LeatherBoots, xp: 1 };
-        adventurer.equipment.equip_foot_armor(foot);
+        adventurer.equipment.equip_foot_armor(foot, ImplLoot::get_slot(foot.id));
 
         // assert we now have five items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2819,7 +2819,7 @@ mod tests {
 
         // equip hand armor
         let hand = Item { id: ItemId::LeatherGloves, xp: 1 };
-        adventurer.equipment.equip_hand_armor(hand);
+        adventurer.equipment.equip_hand_armor(hand, ImplLoot::get_slot(hand.id));
 
         // assert we now have six items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2833,7 +2833,7 @@ mod tests {
 
         // equip necklace
         let neck = Item { id: ItemId::Amulet, xp: 1 };
-        adventurer.equipment.equip_necklace(neck);
+        adventurer.equipment.equip_necklace(neck, ImplLoot::get_slot(neck.id));
 
         // assert we now have seven items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2848,7 +2848,7 @@ mod tests {
 
         // equip ring
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
-        adventurer.equipment.equip_ring(ring);
+        adventurer.equipment.equip_ring(ring, ImplLoot::get_slot(ring.id));
 
         // assert we now have eight items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2864,7 +2864,7 @@ mod tests {
 
         // equip a different weapon
         let weapon = Item { id: ItemId::Katana, xp: 1 };
-        adventurer.equipment.equip_weapon(weapon);
+        adventurer.equipment.equip_weapon(weapon, ImplLoot::get_slot(weapon.id));
 
         // assert we still have eight items equipped
         let equipped_items = adventurer.get_equipped_items();
@@ -2926,14 +2926,14 @@ mod tests {
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
 
         // equip items
-        adventurer.equipment.equip_weapon(weapon);
-        adventurer.equipment.equip_chest_armor(chest);
-        adventurer.equipment.equip_head_armor(head);
-        adventurer.equipment.equip_waist_armor(waist);
-        adventurer.equipment.equip_foot_armor(foot);
-        adventurer.equipment.equip_hand_armor(hand);
-        adventurer.equipment.equip_necklace(neck);
-        adventurer.equipment.equip_ring(ring);
+        adventurer.equipment.equip_weapon(weapon, ImplLoot::get_slot(weapon.id));
+        adventurer.equipment.equip_chest_armor(chest, ImplLoot::get_slot(chest.id));
+        adventurer.equipment.equip_head_armor(head, ImplLoot::get_slot(head.id));
+        adventurer.equipment.equip_waist_armor(waist, ImplLoot::get_slot(waist.id));
+        adventurer.equipment.equip_foot_armor(foot, ImplLoot::get_slot(foot.id));
+        adventurer.equipment.equip_hand_armor(hand, ImplLoot::get_slot(hand.id));
+        adventurer.equipment.equip_necklace(neck, ImplLoot::get_slot(neck.id));
+        adventurer.equipment.equip_ring(ring, ImplLoot::get_slot(ring.id));
 
         // verify getting item by slot returns correct items
         assert(adventurer.equipment.get_item_at_slot(Slot::Weapon(())) == weapon, 'wrong weapon');
@@ -3491,7 +3491,20 @@ mod tests {
             item_specials_seed: 0,
         };
 
-        let stat_boosts = adventurer.equipment.get_stat_boosts(1);
+        let weapon_suffix = ImplLoot::get_suffix(adventurer.equipment.weapon.id, 1);
+        let chest_suffix = ImplLoot::get_suffix(adventurer.equipment.chest.id, 1);
+        let head_suffix = ImplLoot::get_suffix(adventurer.equipment.head.id, 1);
+        let waist_suffix = ImplLoot::get_suffix(adventurer.equipment.waist.id, 1);
+        let foot_suffix = ImplLoot::get_suffix(adventurer.equipment.foot.id, 1);
+        let hand_suffix = ImplLoot::get_suffix(adventurer.equipment.hand.id, 1);
+        let neck_suffix = ImplLoot::get_suffix(adventurer.equipment.neck.id, 1);
+        let ring_suffix = ImplLoot::get_suffix(adventurer.equipment.ring.id, 1);
+
+        let stat_boosts = adventurer.equipment.get_stat_boosts(
+            1, weapon_suffix, chest_suffix, head_suffix,
+            waist_suffix, foot_suffix, hand_suffix, neck_suffix, ring_suffix
+        );
+
         assert(stat_boosts.strength == 1, 'wrong strength');
         assert(stat_boosts.vitality == 2, 'wrong vitality');
         assert(stat_boosts.dexterity == 4, 'wrong dexterity');
@@ -3803,17 +3816,17 @@ mod tests {
 
         // equip a greatness 1 necklace
         let neck = Item { id: ItemId::Amulet, xp: 1 };
-        adventurer.equipment.equip_necklace(neck);
+        adventurer.equipment.equip_necklace(neck, ImplLoot::get_slot(neck.id));
         assert(adventurer.equipment.calculate_luck(bag) == 2, 'still 2 luck');
 
         // equip a greatness 1 ring
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
-        adventurer.equipment.equip_ring(ring);
+        adventurer.equipment.equip_ring(ring, ImplLoot::get_slot(ring.id));
         assert(adventurer.equipment.calculate_luck(bag) == 2, 'still 2 luck');
 
         // equip a greatness 19 silver ring
         let mut silver_ring = Item { id: ItemId::SilverRing, xp: 399 };
-        adventurer.equipment.equip_ring(silver_ring);
+        adventurer.equipment.equip_ring(silver_ring, ImplLoot::get_slot(silver_ring.id));
         assert(adventurer.equipment.calculate_luck(bag) == 39, 'should be 39 luck');
 
         // increase silver ring to greatness 20 to unlock extra 20 luck
