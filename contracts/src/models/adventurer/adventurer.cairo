@@ -18,14 +18,14 @@ use lootsurvivor::constants::loot::ItemSuffix::{
     of_Anger, of_Brilliance, of_Detection, of_Enlightenment, of_Fury, of_Giant, of_Perfection, of_Power, of_Protection,
     of_Rage, of_Reflection, of_Skill, of_Titans, of_Vitriol, of_the_Fox, of_the_Twins,
 };
-use lootsurvivor::constants::loot::{ItemId, PREFIXES_UNLOCK_GREATNESS, SUFFIX_UNLOCK_GREATNESS};
+use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
 use lootsurvivor::models::adventurer::bag::{Bag, IBag, ImplBag};
 use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, IEquipment};
 use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
 use lootsurvivor::models::adventurer::stats::{ImplStats, Stats, IStat};
 use lootsurvivor::models::beast::{Beast, ImplBeast};
 use lootsurvivor::models::combat::{CombatResult, CombatSpec, ImplCombat, SpecialPowers};
-use lootsurvivor::models::loot::ImplLoot;
+use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::obstacle::{ImplObstacle, Obstacle};
 use lootsurvivor::utils::loot::ItemUtils;
 
@@ -241,31 +241,10 @@ pub impl ImplAdventurer of IAdventurer {
 
     /// @notice Checks if an item slot is free for an adventurer
     /// @param self: Equipment to check
-    /// @param item: Item to check
-    /// @return bool: True if slot is free, false if not
-    #[inline(always)]
-    fn is_slot_free(self: Equipment, item: Item) -> bool {
-        let slot = ImplLoot::get_slot(item.id);
-        match slot {
-            Slot::None(()) => false,
-            Slot::Weapon(()) => self.weapon.id == 0,
-            Slot::Chest(()) => self.chest.id == 0,
-            Slot::Head(()) => self.head.id == 0,
-            Slot::Waist(()) => self.waist.id == 0,
-            Slot::Foot(()) => self.foot.id == 0,
-            Slot::Hand(()) => self.hand.id == 0,
-            Slot::Neck(()) => self.neck.id == 0,
-            Slot::Ring(()) => self.ring.id == 0,
-        }
-    }
-
-    /// @notice Checks if an item slot is free for an adventurer
-    /// @param self: Equipment to check
     /// @param item_id: ID of the item to check
     /// @return bool: True if slot is free, false if not
     #[inline(always)]
-    fn is_slot_free_item_id(self: Equipment, item_id: u8) -> bool {
-        let slot = ImplLoot::get_slot(item_id);
+    fn is_slot_free_item_id(self: Equipment, item_id: u8, slot: Slot) -> bool {
         match slot {
             Slot::None(()) => false,
             Slot::Weapon(()) => self.weapon.id == 0,
@@ -298,7 +277,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @return A beast based on the provided entropy
     fn get_beast(
         adventurer_level: u8,
-        adventurer_weapon_id: u8,
+        weapon_type: Type,
         seed: u32,
         health_rnd: u16,
         level_rnd: u16,
@@ -306,7 +285,7 @@ pub impl ImplAdventurer of IAdventurer {
         special3_rnd: u8,
     ) -> Beast {
         if (adventurer_level == 1) {
-            ImplBeast::get_starter_beast(ImplLoot::get_type(adventurer_weapon_id), seed)
+            ImplBeast::get_starter_beast(weapon_type, seed)
         } else {
             let id = ImplBeast::get_beast_id(seed);
             let starting_health = ImplBeast::get_starting_health(adventurer_level, health_rnd);
@@ -736,14 +715,11 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param is_ambush: Whether the attack is an ambush
     /// @return A tuple containing the combat result and jewelry armor bonus
     fn defend(
-        self: Adventurer, beast: Beast, armor: Item, armor_specials: SpecialPowers, crit_hit_rnd: u8, is_ambush: bool,
+        self: Adventurer, beast: Beast, armor: Item, armor_specials: SpecialPowers, armor_details: Loot, crit_hit_rnd: u8, is_ambush: bool,
     ) -> (CombatResult, u16) {
         // adventurer strength isn't used for defense
         let attacker_strength = 0;
         let beast_strength = 0;
-
-        // get armor details
-        let armor_details = ImplLoot::get_item(armor.id);
 
         // get combat spec for armor
         let armor_combat_spec = CombatSpec {
@@ -808,14 +784,11 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param critical_hit_rnd A u8 random value used to determine if attack is a critical hit
     /// @return A tuple containing the combat result and jewelry armor bonus.
     fn get_obstacle_damage(
-        self: Adventurer, obstacle: Obstacle, armor: Item, critical_hit_rnd: u8,
+        self: Adventurer, obstacle: Obstacle, armor: Item, armor_details: Loot, critical_hit_rnd: u8,
     ) -> (CombatResult, u16) {
         // adventurer strength isn't used for obstacle encounters
         let attacker_strength = 0;
         let beast_strength = 0;
-
-        // get armor details
-        let armor_details = ImplLoot::get_item(armor.id);
 
         // get combat spec for armor, no need to fetch armor specials since they don't apply to
         // obstacles
@@ -1122,154 +1095,6 @@ pub impl ImplAdventurer of IAdventurer {
         poseidon_hash_span(hash_span.span()).into()
     }
 
-    /// @notice Generates item leveled up events
-    /// @param equipment: adventurer equipment
-    /// @param seed: seed for randomness
-    /// @return Array<ItemSpecial>: array of item specials
-    /// @dev this function is used immediately after receiving item specials entropy from VRF to let
-    /// the client know the specials of the items that triggered the specials
-    fn get_items_leveled_up(equipment: Equipment, seed: u16) -> Array<ItemLeveledUp> {
-        let mut items_leveled_up = ArrayTrait::<ItemLeveledUp>::new();
-        let weapon_level = ImplCombat::get_level_from_xp(equipment.weapon.xp);
-        if weapon_level >= SUFFIX_UNLOCK_GREATNESS {
-            let weapon_id = equipment.weapon.id;
-            let weapon_leveled_up_event = ItemLeveledUp {
-                item_id: weapon_id,
-                previous_level: weapon_level,
-                new_level: weapon_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: weapon_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(weapon_id, seed),
-                    special2: ImplLoot::get_prefix1(weapon_id, seed),
-                    special3: ImplLoot::get_prefix2(weapon_id, seed),
-                },
-            };
-
-            items_leveled_up.append(weapon_leveled_up_event);
-        }
-        let chest_level = ImplCombat::get_level_from_xp(equipment.chest.xp);
-        if chest_level >= SUFFIX_UNLOCK_GREATNESS {
-            let chest_id = equipment.chest.id;
-            let chest_leveled_up_event = ItemLeveledUp {
-                item_id: chest_id,
-                previous_level: chest_level,
-                new_level: chest_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: chest_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(chest_id, seed),
-                    special2: ImplLoot::get_prefix1(chest_id, seed),
-                    special3: ImplLoot::get_prefix2(chest_id, seed),
-                },
-            };
-            items_leveled_up.append(chest_leveled_up_event);
-        }
-        let head_level = ImplCombat::get_level_from_xp(equipment.head.xp);
-        if head_level >= SUFFIX_UNLOCK_GREATNESS {
-            let head_id = equipment.head.id;
-            let head_leveled_up_event = ItemLeveledUp {
-                item_id: head_id,
-                previous_level: head_level,
-                new_level: head_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: head_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(head_id, seed),
-                    special2: ImplLoot::get_prefix1(head_id, seed),
-                    special3: ImplLoot::get_prefix2(head_id, seed),
-                },
-            };
-            items_leveled_up.append(head_leveled_up_event);
-        }
-        let waist_level = ImplCombat::get_level_from_xp(equipment.waist.xp);
-        if waist_level >= SUFFIX_UNLOCK_GREATNESS {
-            let waist_id = equipment.waist.id;
-            let waist_leveled_up_event = ItemLeveledUp {
-                item_id: waist_id,
-                previous_level: waist_level,
-                new_level: waist_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: waist_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(waist_id, seed),
-                    special2: ImplLoot::get_prefix1(waist_id, seed),
-                    special3: ImplLoot::get_prefix2(waist_id, seed),
-                },
-            };
-            items_leveled_up.append(waist_leveled_up_event);
-        }
-        let foot_level = ImplCombat::get_level_from_xp(equipment.foot.xp);
-        if foot_level >= SUFFIX_UNLOCK_GREATNESS {
-            let foot_id = equipment.foot.id;
-            let foot_leveled_up_event = ItemLeveledUp {
-                item_id: foot_id,
-                previous_level: foot_level,
-                new_level: foot_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: foot_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(foot_id, seed),
-                    special2: ImplLoot::get_prefix1(foot_id, seed),
-                    special3: ImplLoot::get_prefix2(foot_id, seed),
-                },
-            };
-            items_leveled_up.append(foot_leveled_up_event);
-        }
-        let hand_level = ImplCombat::get_level_from_xp(equipment.hand.xp);
-        if hand_level >= SUFFIX_UNLOCK_GREATNESS {
-            let hand_id = equipment.hand.id;
-            let hand_leveled_up_event = ItemLeveledUp {
-                item_id: hand_id,
-                previous_level: hand_level,
-                new_level: hand_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: hand_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(hand_id, seed),
-                    special2: ImplLoot::get_prefix1(hand_id, seed),
-                    special3: ImplLoot::get_prefix2(hand_id, seed),
-                },
-            };
-            items_leveled_up.append(hand_leveled_up_event);
-        }
-        let neck_level = ImplCombat::get_level_from_xp(equipment.neck.xp);
-        if neck_level >= SUFFIX_UNLOCK_GREATNESS {
-            let neck_id = equipment.neck.id;
-            let neck_leveled_up_event = ItemLeveledUp {
-                item_id: neck_id,
-                previous_level: neck_level,
-                new_level: neck_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: neck_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(neck_id, seed),
-                    special2: ImplLoot::get_prefix1(neck_id, seed),
-                    special3: ImplLoot::get_prefix2(neck_id, seed),
-                },
-            };
-            items_leveled_up.append(neck_leveled_up_event);
-        }
-        let ring_level = ImplCombat::get_level_from_xp(equipment.ring.xp);
-        if ring_level >= SUFFIX_UNLOCK_GREATNESS {
-            let ring_id = equipment.ring.id;
-            let ring_leveled_up_event = ItemLeveledUp {
-                item_id: ring_id,
-                previous_level: ring_level,
-                new_level: ring_level,
-                suffix_unlocked: true,
-                prefixes_unlocked: ring_level > PREFIXES_UNLOCK_GREATNESS,
-                specials: SpecialPowers {
-                    special1: ImplLoot::get_suffix(ring_id, seed),
-                    special2: ImplLoot::get_prefix1(ring_id, seed),
-                    special3: ImplLoot::get_prefix2(ring_id, seed),
-                },
-            };
-            items_leveled_up.append(ring_leveled_up_event);
-        }
-        items_leveled_up
-    }
-
     #[inline(always)]
     fn apply_health_boost_from_vitality_unlock(ref self: Adventurer, item_specials: SpecialPowers) {
         // get the vitality boost for the special
@@ -1322,10 +1147,10 @@ mod tests {
     use lootsurvivor::models::beast::{ImplBeast};
     use lootsurvivor::constants::beast::{BeastId, BeastSettings};
     use lootsurvivor::models::combat::SpecialPowers;
+    use lootsurvivor::models::loot::{ImplLoot};
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
     use lootsurvivor::constants::loot::ItemSuffix::{of_Giant, of_Perfection, of_Power,of_Protection};
     use lootsurvivor::constants::loot::{ItemId, ItemSuffix};
-    use lootsurvivor::models::loot::{ImplLoot};
     use lootsurvivor::utils::loot::ItemUtils;
 
     #[test]
@@ -1616,13 +1441,13 @@ mod tests {
 
     #[test]
     fn test_get_beast() {
-        let beast = ImplAdventurer::get_beast(1, 12, 1, 1, 1, 1, 1);
+        let beast = ImplAdventurer::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
         assert(beast.combat_spec.level == 1, 'beast should be lvl1');
         assert(beast.combat_spec.specials.special1 == 0, 'beast should have no special1');
         assert(beast.combat_spec.specials.special2 == 0, 'beast should have no special2');
         assert(beast.combat_spec.specials.special3 == 0, 'beast should have no special3');
 
-        let beast = ImplAdventurer::get_beast(1, 12, 1, 1, 1, 1, 1);
+        let beast = ImplAdventurer::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
         assert(beast.combat_spec.level == 1, 'beast should be lvl1');
         assert(beast.combat_spec.specials.special1 == 0, 'beast should have no special1');
         assert(beast.combat_spec.specials.special2 == 0, 'beast should have no special2');
@@ -1740,7 +1565,7 @@ mod tests {
                     // generate randomness for beast
                     let beast = ImplAdventurer::get_beast(
                         adventurer.get_level(),
-                        adventurer.equipment.weapon.id,
+                        ImplLoot::get_type(adventurer.equipment.weapon.id),
                         beast_seed,
                         beast_health_rnd,
                         beast_level_rnd,
@@ -2315,7 +2140,7 @@ mod tests {
                     // get beast based on entropy seeds
                     let beast = ImplAdventurer::get_beast(
                         adventurer.get_level(),
-                        adventurer.equipment.weapon.id,
+                        ImplLoot::get_type(adventurer.equipment.weapon.id),
                         beast_seed,
                         beast_health_rnd,
                         beast_level_rnd,
@@ -3119,38 +2944,6 @@ mod tests {
         assert(adventurer.equipment.get_item_at_slot(Slot::Hand(())) == hand, 'wrong hand armor');
         assert(adventurer.equipment.get_item_at_slot(Slot::Neck(())) == neck, 'wrong necklace');
         assert(adventurer.equipment.get_item_at_slot(Slot::Ring(())) == ring, 'wrong ring');
-    }
-
-    #[test]
-    #[available_gas(353184)]
-    fn test_is_slot_free() {
-        let mut adventurer = ImplAdventurer::new(ItemId::Wand);
-
-        // stage items
-        let weapon = Item { id: ItemId::Katana, xp: 1 };
-        let chest = Item { id: ItemId::DivineRobe, xp: 1 };
-        let head = Item { id: ItemId::Crown, xp: 1 };
-        let waist = Item { id: ItemId::DemonhideBelt, xp: 1 };
-        let foot = Item { id: ItemId::LeatherBoots, xp: 1 };
-        let hand = Item { id: ItemId::LeatherGloves, xp: 1 };
-        let neck = Item { id: ItemId::Amulet, xp: 1 };
-        let ring = Item { id: ItemId::GoldRing, xp: 1 };
-
-        // equip half the items, adventurer will have nothing equipped for the other slots
-        adventurer.equipment.equip_weapon(weapon);
-        adventurer.equipment.equip_head_armor(head);
-        adventurer.equipment.equip_foot_armor(foot);
-        adventurer.equipment.equip_necklace(neck);
-
-        // verify is_slot_free returns correct values
-        assert(adventurer.equipment.is_slot_free(weapon) == false, 'weapon slot should be occupied');
-        assert(adventurer.equipment.is_slot_free(chest) == true, 'chest slot should be free');
-        assert(adventurer.equipment.is_slot_free(head) == false, 'head slot should be occupied');
-        assert(adventurer.equipment.is_slot_free(waist) == true, 'waist slot should be free');
-        assert(adventurer.equipment.is_slot_free(foot) == false, 'foot slot should be occupied');
-        assert(adventurer.equipment.is_slot_free(hand) == true, 'hand slot should be free');
-        assert(adventurer.equipment.is_slot_free(neck) == false, 'neck slot should be occupied');
-        assert(adventurer.equipment.is_slot_free(ring) == true, 'ring slot should be free');
     }
 
     #[test]

@@ -310,7 +310,7 @@ mod game_systems {
             // get beast based on entropy seeds
             let beast = ImplAdventurer::get_beast(
                 adventurer.get_level(),
-                adventurer.equipment.weapon.id,
+                game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
                 beast_health_rnd,
                 beast_level_rnd,
@@ -391,7 +391,7 @@ mod game_systems {
             // get beast based on entropy seeds
             let beast = ImplAdventurer::get_beast(
                 adventurer.get_level(),
-                adventurer.equipment.weapon.id,
+                game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
                 beast_health_rnd,
                 beast_level_rnd,
@@ -458,7 +458,7 @@ mod game_systems {
                 // get beast based on entropy seeds
                 let beast = ImplAdventurer::get_beast(
                     adventurer.get_level(),
-                    adventurer.equipment.weapon.id,
+                    game_libs.get_type(adventurer.equipment.weapon.id),
                     beast_seed,
                     beast_health_rnd,
                     beast_level_rnd,
@@ -943,7 +943,8 @@ mod game_systems {
             DiscoveryType::Loot(item_id) => {
                 let (item_in_bag, _) = bag.contains(item_id);
 
-                let slot_free = adventurer.equipment.is_slot_free_item_id(item_id);
+                let slot = game_libs.get_slot(item_id);
+                let slot_free = adventurer.equipment.is_slot_free_item_id(item_id, slot);
 
                 // if the bag is full and the slot is not free
                 let inventory_full = bag.is_full() && slot_free == false;
@@ -1009,7 +1010,7 @@ mod game_systems {
 
         let beast = ImplAdventurer::get_beast(
             adventurer.get_level(),
-            adventurer.equipment.weapon.id,
+            game_libs.get_type(adventurer.equipment.weapon.id),
             seed,
             health_rnd,
             level_rnd,
@@ -1062,9 +1063,10 @@ mod game_systems {
 
         // get armor at the location being attacked
         let armor = adventurer.equipment.get_item_at_slot(damage_slot);
+        let armor_details = game_libs.get_item(armor.id);
 
         // get damage from obstalce
-        let (combat_result, _) = adventurer.get_obstacle_damage(obstacle, armor, crit_hit_rnd);
+        let (combat_result, _) = adventurer.get_obstacle_damage(obstacle, armor, armor_details, crit_hit_rnd);
 
         // pull damage taken out of combat result for easy access
         let damage_taken = combat_result.total_damage;
@@ -1340,10 +1342,11 @@ mod game_systems {
 
         // get armor specials
         let armor_specials = game_libs.get_specials(armor.id, armor.get_greatness(), adventurer.item_specials_seed);
+        let armor_details = game_libs.get_item(armor.id);
 
         // process beast attack
         let (combat_result, _jewlery_armor_bonus) = adventurer
-            .defend(beast, armor, armor_specials, critical_hit_rnd, is_ambush);
+            .defend(beast, armor, armor_specials, armor_details, critical_hit_rnd, is_ambush);
 
         // deduct damage taken from adventurer's health
         adventurer.decrease_health(combat_result.total_damage);
@@ -1972,6 +1975,7 @@ mod game_systems {
         // assert adventurer is in battle
         assert(adventurer.beast_health != 0, messages::NOT_IN_BATTLE);
 
+        let adventurer_weapon_type = game_libs.get_type(adventurer.equipment.weapon.id);
         if adventurer.get_level() > 1 {
             // get adventurer entropy
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
@@ -1985,7 +1989,7 @@ mod game_systems {
             // get beast based on entropy seeds
             ImplAdventurer::get_beast(
                 adventurer.get_level(),
-                adventurer.equipment.weapon.id,
+                adventurer_weapon_type,
                 beast_seed,
                 beast_health_rnd,
                 beast_level_rnd,
@@ -1997,7 +2001,7 @@ mod game_systems {
             let beast_seed = (level_seed_u256 % TWO_POW_32.into()).try_into().unwrap();
             // generate starter beast which will have weak armor against the adventurers starter
             // weapon
-            ImplBeast::get_starter_beast(game_libs.get_type(adventurer.equipment.weapon.id), beast_seed)
+            ImplBeast::get_starter_beast(adventurer_weapon_type, beast_seed)
         }
     }
 

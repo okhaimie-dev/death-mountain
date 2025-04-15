@@ -3,7 +3,7 @@ use core::integer::u64_safe_divmod;
 use lootsurvivor::constants::combat::CombatEnums::Tier;
 use lootsurvivor::constants::loot::{NUM_ITEMS, NUM_ITEMS_NZ_MINUS_ONE};
 use lootsurvivor::constants::market::{NUMBER_OF_ITEMS_PER_LEVEL, TIER_PRICE};
-use lootsurvivor::models::loot::{ImplLoot, Loot};
+use lootsurvivor::models::loot::{Loot};
 
 #[derive(Drop, Serde)]
 pub struct LootWithPrice {
@@ -227,7 +227,6 @@ pub impl ImplMarket of IMarket {
 mod tests {
     use lootsurvivor::constants::combat::CombatEnums::{Tier};
     use lootsurvivor::constants::loot::{ItemId, NUM_ITEMS};
-    use lootsurvivor::models::loot::{ImplLoot};
     use lootsurvivor::constants::market::{TIER_PRICE};
     use lootsurvivor::models::market::ImplMarket;
     const TEST_MARKET_SEED: u256 = 515;
