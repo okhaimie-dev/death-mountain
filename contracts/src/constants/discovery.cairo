@@ -6,7 +6,7 @@ pub mod DiscoveryEnums {
         Discovery,
     }
 
-    #[derive(Copy, Drop, PartialEq)]
+    #[derive(Copy, Drop, Serde, PartialEq)]
     pub enum DiscoveryType {
         Gold: u16,
         Health: u16,

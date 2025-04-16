@@ -1,6 +1,7 @@
 use dojo::world::{WorldStorage, WorldStorageTrait};
 
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
+use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
 
 use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
 use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
@@ -87,6 +88,10 @@ pub impl ImplGame of IGameLib {
 
     fn unpack_adventurer(self: GameLibs, packed_adventurer: felt252) -> Adventurer {
         self.adventurer.unpack_adventurer(packed_adventurer)
+    }
+
+    fn get_discovery(self: GameLibs, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType {
+        self.adventurer.get_discovery(adventurer_level, discovery_type_rnd, amount_rnd1, amount_rnd2)
     }
 
     // Bag Functions

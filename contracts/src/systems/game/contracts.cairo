@@ -820,7 +820,7 @@ mod game_systems {
         ref adventurer: Adventurer, ref bag: Bag, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8, game_libs: GameLibs,
     ) {
         // get discovery type
-        let discovery_type = ImplAdventurer::get_discovery(
+        let discovery_type = game_libs.get_discovery(
             adventurer.get_level(), discovery_type_rnd, amount_rnd1, amount_rnd2,
         );
 
