@@ -3748,38 +3748,32 @@ mod tests {
     fn test_calculate_luck() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let bag = ImplBag::new();
-        let mut bag_jewelry_greatness = bag.get_jewelry_greatness();
-        assert(adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == 2, 'start with 2 luck');
+        assert(adventurer.equipment.calculate_luck(bag) == 2, 'start with 2 luck');
 
         // equip a greatness 1 necklace
         let neck = Item { id: ItemId::Amulet, xp: 1 };
         adventurer.equipment.equip_necklace(neck, ImplLoot::get_slot(neck.id));
-        bag_jewelry_greatness = bag.get_jewelry_greatness();
-        assert(adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == 2, 'still 2 luck');
+        assert(adventurer.equipment.calculate_luck(bag) == 2, 'still 2 luck');
 
         // equip a greatness 1 ring
         let ring = Item { id: ItemId::GoldRing, xp: 1 };
         adventurer.equipment.equip_ring(ring, ImplLoot::get_slot(ring.id));
-        bag_jewelry_greatness = bag.get_jewelry_greatness();
-        assert(adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == 2, 'still 2 luck');
+        assert(adventurer.equipment.calculate_luck(bag) == 2, 'still 2 luck');
 
         // equip a greatness 19 silver ring
         let mut silver_ring = Item { id: ItemId::SilverRing, xp: 399 };
         adventurer.equipment.equip_ring(silver_ring, ImplLoot::get_slot(silver_ring.id));
-        bag_jewelry_greatness = bag.get_jewelry_greatness();
-        assert(adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == 39, 'should be 39 luck');
+        assert(adventurer.equipment.calculate_luck(bag) == 39, 'should be 39 luck');
 
         // increase silver ring to greatness 20 to unlock extra 20 luck
         adventurer.equipment.ring.xp = 400;
-        bag_jewelry_greatness = bag.get_jewelry_greatness();
-        assert(adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == 41, 'should be 41 luck');
+        assert(adventurer.equipment.calculate_luck(bag) == 41, 'should be 41 luck');
 
         // overflow case
         adventurer.equipment.ring.xp = 65535;
         adventurer.equipment.neck.xp = 65535;
-        bag_jewelry_greatness = bag.get_jewelry_greatness();
         assert(
-            adventurer.equipment.calculate_luck(bag, bag_jewelry_greatness) == (ITEM_MAX_GREATNESS * 2) + SILVER_RING_G20_LUCK_BONUS,
+            adventurer.equipment.calculate_luck(bag) == (ITEM_MAX_GREATNESS * 2) + SILVER_RING_G20_LUCK_BONUS,
             'should be 60 luck',
         );
     }
