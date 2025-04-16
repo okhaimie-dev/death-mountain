@@ -70,7 +70,7 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::market::{ItemPurchase, LootWithPrice};
+    use lootsurvivor::models::market::{ItemPurchase, LootWithPrice, ImplMarket};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
     use lootsurvivor::models::event::{BattleDetails, ObstacleDetails};
 
@@ -702,7 +702,7 @@ mod game_systems {
             let game_libs = ImplGame::get_libs(world);
             let adventurer = _load_adventurer(world, adventurer_id, game_libs);
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
-            _get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available, game_libs)
+            _get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available)
         }
 
         fn get_potion_price(self: @ContractState, adventurer_id: u64) -> u16 {
@@ -716,7 +716,7 @@ mod game_systems {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
             let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let base_item_price = game_libs.get_price(game_libs.get_tier(item_id));
+            let base_item_price = ImplMarket::get_price(game_libs.get_tier(item_id));
             adventurer.stats.charisma_adjusted_item_price(base_item_price)
         }
 
@@ -1614,7 +1614,7 @@ mod game_systems {
         game_libs: GameLibs,
     ) -> (Array<LootWithPrice>, Array<u8>, Array<u8>) {
         // get adventurer entropy
-        let market_inventory = _get_market(market_seed, stat_upgrades_available, game_libs);
+        let market_inventory = _get_market(market_seed, stat_upgrades_available);
 
         // mutable array for returning items that need to be equipped as part of this purchase
         let mut unequipped_items = ArrayTrait::<u8>::new();
@@ -1635,7 +1635,7 @@ mod game_systems {
             let mut inventory = market_inventory.span();
 
             // assert item is available on market
-            assert(game_libs.is_item_available(inventory, item.item_id), messages::ITEM_DOES_NOT_EXIST);
+            assert(ImplMarket::is_item_available(ref inventory, item.item_id), messages::ITEM_DOES_NOT_EXIST);
 
             // buy it and store result in our purchases array for event
             purchases.append(_buy_item(ref adventurer, ref bag, item.item_id, game_libs));
@@ -1705,7 +1705,7 @@ mod game_systems {
         let item = game_libs.get_item(item_id);
 
         // get item price
-        let base_item_price = game_libs.get_price(item.tier);
+        let base_item_price = ImplMarket::get_price(item.tier);
 
         // get item price with charisma discount
         let charisma_adjusted_price = adventurer.stats.charisma_adjusted_item_price(base_item_price);
@@ -1997,9 +1997,9 @@ mod game_systems {
         _assert_zero_luck(stat_upgrades);
     }
 
-    fn _get_market(seed: u64, stat_upgrades_available: u8, game_libs: GameLibs) -> Array<u8> {
-        let market_size = game_libs.get_market_size(stat_upgrades_available);
-        game_libs.get_available_items(seed, market_size)
+    fn _get_market(seed: u64, stat_upgrades_available: u8) -> Array<u8> {
+        let market_size = ImplMarket::get_market_size(stat_upgrades_available);
+        ImplMarket::get_available_items(seed, market_size)
     }
     fn _get_attacking_beast(world: WorldStorage, adventurer_id: u64) -> Beast {
         // get game libaries

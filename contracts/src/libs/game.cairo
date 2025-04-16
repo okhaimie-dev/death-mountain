@@ -3,7 +3,6 @@ use dojo::world::{WorldStorage, WorldStorageTrait};
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
 
 use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
-use lootsurvivor::systems::market::contracts::{IMarketSystemsDispatcher, IMarketSystemsDispatcherTrait};
 use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
 use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait};
 
@@ -16,7 +15,6 @@ use lootsurvivor::models::adventurer::item::Item;
 #[derive(Copy, Drop)]
 pub struct GameLibs {
     loot: ILootSystemsDispatcher,
-    market: IMarketSystemsDispatcher,
     renderer: IRendererSystemsDispatcher,
     adventurer: IAdventurerSystemsDispatcher,
 }
@@ -25,13 +23,11 @@ pub struct GameLibs {
 pub impl ImplGame of IGameLib {
     fn get_libs(world: WorldStorage) -> GameLibs {
         let (loot_systems_address, _) = world.dns(@"loot_systems").unwrap();
-        let (market_systems_address, _) = world.dns(@"market_systems").unwrap();
         let (renderer_systems_address, _) = world.dns(@"renderer_systems").unwrap();
         let (adventurer_systems_address, _) = world.dns(@"adventurer_systems").unwrap();
 
         GameLibs {
             loot: ILootSystemsDispatcher { contract_address: loot_systems_address },
-            market: IMarketSystemsDispatcher { contract_address: market_systems_address },
             renderer: IRendererSystemsDispatcher { contract_address: renderer_systems_address },
             adventurer: IAdventurerSystemsDispatcher { contract_address: adventurer_systems_address },
         }
@@ -72,23 +68,6 @@ pub impl ImplGame of IGameLib {
 
     fn is_starting_weapon(self: GameLibs, item_id: u8) -> bool {
         self.loot.is_starting_weapon(item_id)
-    }
-
-    // Market Functions
-    fn get_price(self: GameLibs, tier: Tier) -> u16 {
-        self.market.get_price(tier)
-    }
-
-    fn get_available_items(self: GameLibs, seed: u64, market_size: u8) -> Array<u8> {
-        self.market.get_available_items(seed, market_size)
-    }
-
-    fn get_market_size(self: GameLibs, stat_upgrades_available: u8) -> u8 {
-        self.market.get_market_size(stat_upgrades_available)
-    }
-
-    fn is_item_available(self: GameLibs, market_inventory: Span<u8>, item_id: u8) -> bool {
-        self.market.is_item_available(market_inventory, item_id)
     }
 
     // Renderer Functions

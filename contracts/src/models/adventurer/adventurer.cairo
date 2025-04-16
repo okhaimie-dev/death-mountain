@@ -97,7 +97,7 @@ pub impl ImplAdventurer of IAdventurer {
         assert(adventurer.xp <= MAX_ADVENTURER_XP, 'xp overflow');
         assert(adventurer.gold <= MAX_GOLD, 'gold overflow');
         assert(adventurer.beast_health <= MAX_PACKABLE_BEAST_HEALTH, 'beast health overflow');
-        assert(adventurer.stat_upgrades_available <= MAX_STAT_UPGRADES_AVAILABLE, 'stats available overflow');
+        assert(adventurer.stat_upgrades_available <= MAX_STAT_UPGRADES_AVAILABLE, 'stat upgrades avail overflow');
 
         (adventurer.health.into()
             + adventurer.xp.into() * TWO_POW_10
@@ -1187,7 +1187,7 @@ mod tests {
             action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
-        let packed = adventurer.pack();
+        let packed = ImplAdventurer::pack(adventurer);
         let unpacked: Adventurer = ImplAdventurer::unpack(packed);
         assert(adventurer.health == unpacked.health, 'health');
         assert(adventurer.xp == unpacked.xp, 'xp');
@@ -1227,7 +1227,7 @@ mod tests {
             action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
-        let packed = adventurer.pack();
+        let packed = ImplAdventurer::pack(adventurer);
         let unpacked: Adventurer = ImplAdventurer::unpack(packed);
         assert(adventurer.health == unpacked.health, 'health');
         assert(adventurer.xp == unpacked.xp, 'xp');
@@ -2594,7 +2594,7 @@ mod tests {
     fn test_pack_protection_overflow_health() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.health = MAX_ADVENTURER_HEALTH + 1;
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
     }
 
     #[test]
@@ -2603,7 +2603,7 @@ mod tests {
     fn test_pack_protection_overflow_gold() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.gold = MAX_GOLD + 1;
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
     }
 
     #[test]
@@ -2612,7 +2612,7 @@ mod tests {
     fn test_pack_protection_overflow_xp() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.xp = MAX_ADVENTURER_XP + 1;
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
     }
 
     #[test]
@@ -2621,7 +2621,7 @@ mod tests {
     fn test_pack_protection_overflow_beast_health() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.beast_health = MAX_PACKABLE_BEAST_HEALTH + 1;
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
     }
 
     #[test]
@@ -2630,14 +2630,14 @@ mod tests {
     fn test_pack_protection_overflow_stat_points_available() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stat_upgrades_available = MAX_STAT_UPGRADES_AVAILABLE + 1;
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
     }
 
     #[test]
     #[available_gas(2000000)]
     fn test_new_adventurer() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
-        adventurer.pack();
+        ImplAdventurer::pack(adventurer);
         assert(adventurer.health == STARTING_HEALTH.into(), 'wrong starting health');
         assert(adventurer.gold == STARTING_GOLD.into(), 'wrong starting gold');
         assert(adventurer.xp == 0, 'wrong starting xp');
@@ -2679,7 +2679,7 @@ mod tests {
         assert(adventurer.gold == MAX_GOLD, 'gold should be max');
 
         // pack and unpack adventurer to test overflow in packing
-        let packed = adventurer.pack();
+        let packed = ImplAdventurer::pack(adventurer);
         let unpacked: Adventurer = ImplAdventurer::unpack(packed);
         assert(unpacked.gold == MAX_GOLD, 'should still be max gold');
     }
@@ -2758,7 +2758,7 @@ mod tests {
         assert(adventurer.stat_upgrades_available == MAX_STAT_UPGRADES_AVAILABLE, 'stat points should be max');
 
         // pack and unpack at max value to ensure our max values are correct for packing
-        let packed = adventurer.pack();
+        let packed = ImplAdventurer::pack(adventurer);
         let unpacked: Adventurer = ImplAdventurer::unpack(packed);
         assert(unpacked.stat_upgrades_available == MAX_STAT_UPGRADES_AVAILABLE, 'stat point should still be max');
     }
