@@ -308,7 +308,7 @@ mod game_systems {
             ) = ImplAdventurer::get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
             
             // get beast based on entropy seeds
-            let beast = ImplAdventurer::get_beast(
+            let beast = ImplBeast::get_beast(
                 adventurer.get_level(),
                 game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
@@ -389,7 +389,7 @@ mod game_systems {
             );
 
             // get beast based on entropy seeds
-            let beast = ImplAdventurer::get_beast(
+            let beast = ImplBeast::get_beast(
                 adventurer.get_level(),
                 game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
@@ -456,7 +456,7 @@ mod game_systems {
                 );
 
                 // get beast based on entropy seeds
-                let beast = ImplAdventurer::get_beast(
+                let beast = ImplBeast::get_beast(
                     adventurer.get_level(),
                     game_libs.get_type(adventurer.equipment.weapon.id),
                     beast_seed,
@@ -1018,7 +1018,7 @@ mod game_systems {
     ) {
         let adventurer_level = adventurer.get_level();
 
-        let beast = ImplAdventurer::get_beast(
+        let beast = ImplBeast::get_beast(
             adventurer.get_level(),
             game_libs.get_type(adventurer.equipment.weapon.id),
             seed,
@@ -1354,9 +1354,12 @@ mod game_systems {
         let armor_specials = game_libs.get_specials(armor.id, armor.get_greatness(), adventurer.item_specials_seed);
         let armor_details = game_libs.get_item(armor.id);
 
+        // get critical hit chance
+        let critical_hit_chance = ImplBeast::get_critical_hit_chance(adventurer.get_level(), is_ambush);
+
         // process beast attack
         let (combat_result, _jewlery_armor_bonus) = adventurer
-            .defend(beast, armor, armor_specials, armor_details, critical_hit_rnd, is_ambush);
+            .defend(beast, armor, armor_specials, armor_details, critical_hit_rnd, critical_hit_chance);
 
         // deduct damage taken from adventurer's health
         adventurer.decrease_health(combat_result.total_damage);
@@ -2023,7 +2026,7 @@ mod game_systems {
             );
 
             // get beast based on entropy seeds
-            ImplAdventurer::get_beast(
+            ImplBeast::get_beast(
                 adventurer.get_level(),
                 adventurer_weapon_type,
                 beast_seed,

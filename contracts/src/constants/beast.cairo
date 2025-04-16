@@ -4,6 +4,7 @@ pub mod BeastSettings {
     pub const MINIMUM_XP_REWARD: u16 = 4;
     pub const CRITICAL_HIT_LEVEL_MULTIPLIER: u8 = 1;
     pub const CRITICAL_HIT_AMBUSH_MULTIPLIER: u8 = 3;
+    pub const BEAST_SPECIAL_NAME_LEVEL_UNLOCK: u8 = 19;
 
     pub mod GOLD_MULTIPLIER {
         pub const T1: u8 = 5; // 5 * level

@@ -45,7 +45,6 @@ pub const CRITICAL_HIT_LEVEL_MULTIPLIER: u8 = 3;
 
 // Misc Settings
 pub const MAX_ADVENTURER_BLOCKS: u16 = 512; // 2^9
-pub const BEAST_SPECIAL_NAME_LEVEL_UNLOCK: u8 = 19;
 pub const XP_FOR_DISCOVERIES: u8 = 1;
 
 // controls how much faster items level up compared to the player

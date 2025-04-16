@@ -3,7 +3,7 @@ use core::panic_with_felt252;
 use core::poseidon::poseidon_hash_span;
 use core::traits::DivRem;
 use lootsurvivor::constants::adventurer::{
-    BASE_POTION_PRICE, BEAST_SPECIAL_NAME_LEVEL_UNLOCK, CHARISMA_ITEM_DISCOUNT, CHARISMA_POTION_DISCOUNT,
+    BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, CHARISMA_POTION_DISCOUNT,
     CRITICAL_HIT_LEVEL_MULTIPLIER, HEALTH_INCREASE_PER_VITALITY, JEWELRY_BONUS_BEAST_GOLD_PERCENT,
     JEWELRY_BONUS_CRITICAL_HIT_PERCENT_PER_GREATNESS, JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS,
     MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD, MAX_PACKABLE_BEAST_HEALTH, MAX_STAT_UPGRADES_AVAILABLE,
@@ -23,7 +23,7 @@ use lootsurvivor::models::adventurer::bag::{Bag};
 use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, IEquipment};
 use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
 use lootsurvivor::models::adventurer::stats::{ImplStats, Stats, IStat};
-use lootsurvivor::models::beast::{Beast, ImplBeast};
+use lootsurvivor::models::beast::{Beast};
 use lootsurvivor::models::combat::{CombatResult, CombatSpec, ImplCombat, SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::obstacle::{ImplObstacle, Obstacle};
@@ -264,45 +264,6 @@ pub impl ImplAdventurer of IAdventurer {
     #[inline(always)]
     fn get_level(self: Adventurer) -> u8 {
         ImplCombat::get_level_from_xp(self.xp)
-    }
-
-    /// @notice Gets the beast for the adventurer
-    /// @param adventurer_level: Level of the adventurer
-    /// @param adventurer_weapon_id: ID of the adventurer's weapon
-    /// @param seed: Seed for the beast
-    /// @param health_rnd: Random value used to generate beast's health
-    /// @param level_rnd: Random value used to generate beast's level
-    /// @param special2_rnd: Random value used to generate beast's special2
-    /// @param special3_rnd: Random value used to generate beast's special3
-    /// @return A beast based on the provided entropy
-    fn get_beast(
-        adventurer_level: u8,
-        weapon_type: Type,
-        seed: u32,
-        health_rnd: u16,
-        level_rnd: u16,
-        special2_rnd: u8,
-        special3_rnd: u8,
-    ) -> Beast {
-        if (adventurer_level == 1) {
-            ImplBeast::get_starter_beast(weapon_type, seed)
-        } else {
-            let id = ImplBeast::get_beast_id(seed);
-            let starting_health = ImplBeast::get_starting_health(adventurer_level, health_rnd);
-            let beast_tier = ImplBeast::get_tier(id);
-            let beast_type = ImplBeast::get_type(id);
-            let level = ImplBeast::get_level(adventurer_level, level_rnd);
-
-            let specials = if (level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK.into()) {
-                ImplBeast::get_specials(special2_rnd, special3_rnd)
-            } else {
-                SpecialPowers { special1: 0, special2: 0, special3: 0 }
-            };
-
-            let combat_spec = CombatSpec { tier: beast_tier, item_type: beast_type, level, specials };
-
-            Beast { id, starting_health, combat_spec }
-        }
     }
 
     /// @notice Checks if the adventurer was ambushed
@@ -716,7 +677,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param is_ambush: Whether the attack is an ambush
     /// @return A tuple containing the combat result and jewelry armor bonus
     fn defend(
-        self: Adventurer, beast: Beast, armor: Item, armor_specials: SpecialPowers, armor_details: Loot, crit_hit_rnd: u8, is_ambush: bool,
+        self: Adventurer, beast: Beast, armor: Item, armor_specials: SpecialPowers, armor_details: Loot, crit_hit_rnd: u8, critical_hit_chance: u8,
     ) -> (CombatResult, u16) {
         // adventurer strength isn't used for defense
         let attacker_strength = 0;
@@ -729,8 +690,6 @@ pub impl ImplAdventurer of IAdventurer {
             level: armor.get_greatness().into(),
             specials: armor_specials,
         };
-
-        let critical_hit_chance = ImplBeast::get_critical_hit_chance(self.get_level(), is_ambush);
 
         // calculate damage
         let mut combat_result = ImplCombat::calculate_damage(
@@ -1442,13 +1401,13 @@ mod tests {
 
     #[test]
     fn test_get_beast() {
-        let beast = ImplAdventurer::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
+        let beast = ImplBeast::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
         assert(beast.combat_spec.level == 1, 'beast should be lvl1');
         assert(beast.combat_spec.specials.special1 == 0, 'beast should have no special1');
         assert(beast.combat_spec.specials.special2 == 0, 'beast should have no special2');
         assert(beast.combat_spec.specials.special3 == 0, 'beast should have no special3');
 
-        let beast = ImplAdventurer::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
+        let beast = ImplBeast::get_beast(1, ImplLoot::get_type(12), 1, 1, 1, 1, 1);
         assert(beast.combat_spec.level == 1, 'beast should be lvl1');
         assert(beast.combat_spec.specials.special1 == 0, 'beast should have no special1');
         assert(beast.combat_spec.specials.special2 == 0, 'beast should have no special2');
@@ -1564,7 +1523,7 @@ mod tests {
                 ExploreResult::Beast(()) => {
                     total_beasts += 1;
                     // generate randomness for beast
-                    let beast = ImplAdventurer::get_beast(
+                    let beast = ImplBeast::get_beast(
                         adventurer.get_level(),
                         ImplLoot::get_type(adventurer.equipment.weapon.id),
                         beast_seed,
@@ -2139,7 +2098,7 @@ mod tests {
                 ExploreResult::Beast(()) => {
                     total_beasts += 1;
                     // get beast based on entropy seeds
-                    let beast = ImplAdventurer::get_beast(
+                    let beast = ImplBeast::get_beast(
                         adventurer.get_level(),
                         ImplLoot::get_type(adventurer.equipment.weapon.id),
                         beast_seed,

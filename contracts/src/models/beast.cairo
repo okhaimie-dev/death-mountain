@@ -2,7 +2,7 @@ use core::panic_with_felt252;
 use lootsurvivor::constants::beast::BeastId::{Bear, Fairy, Gnome, MAX_ID, Troll};
 use lootsurvivor::constants::beast::BeastSettings::{
     CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, GOLD_MULTIPLIER, GOLD_REWARD_DIVISOR, MAXIMUM_HEALTH,
-    MAX_SPECIAL2, MAX_SPECIAL3, MINIMUM_XP_REWARD, STARTER_BEAST_HEALTH,
+    MAX_SPECIAL2, MAX_SPECIAL3, MINIMUM_XP_REWARD, STARTER_BEAST_HEALTH, BEAST_SPECIAL_NAME_LEVEL_UNLOCK,
 };
 use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
 use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
@@ -41,6 +41,45 @@ pub impl ImplBeast of IBeast {
                 level: 1,
                 specials: SpecialPowers { special1: 0, special2: 0, special3: 0 },
             },
+        }
+    }
+
+    /// @notice Gets the beast for the adventurer
+    /// @param adventurer_level: Level of the adventurer
+    /// @param adventurer_weapon_id: ID of the adventurer's weapon
+    /// @param seed: Seed for the beast
+    /// @param health_rnd: Random value used to generate beast's health
+    /// @param level_rnd: Random value used to generate beast's level
+    /// @param special2_rnd: Random value used to generate beast's special2
+    /// @param special3_rnd: Random value used to generate beast's special3
+    /// @return A beast based on the provided entropy
+    fn get_beast(
+        adventurer_level: u8,
+        weapon_type: Type,
+        seed: u32,
+        health_rnd: u16,
+        level_rnd: u16,
+        special2_rnd: u8,
+        special3_rnd: u8,
+    ) -> Beast {
+        if (adventurer_level == 1) {
+            Self::get_starter_beast(weapon_type, seed)
+        } else {
+            let id = Self::get_beast_id(seed);
+            let starting_health = Self::get_starting_health(adventurer_level, health_rnd);
+            let beast_tier = Self::get_tier(id);
+            let beast_type = Self::get_type(id);
+            let level = Self::get_level(adventurer_level, level_rnd);
+
+            let specials = if (level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK.into()) {
+                Self::get_specials(special2_rnd, special3_rnd)
+            } else {
+                SpecialPowers { special1: 0, special2: 0, special3: 0 }
+            };
+
+            let combat_spec = CombatSpec { tier: beast_tier, item_type: beast_type, level, specials };
+
+            Beast { id, starting_health, combat_spec }
         }
     }
 
