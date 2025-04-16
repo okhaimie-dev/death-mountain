@@ -4,6 +4,7 @@ use lootsurvivor::constants::combat::CombatEnums::Slot;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
 use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
 use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
+use lootsurvivor::models::loot::ImplLoot;
 
 /// @notice The Equipment struct
 /// @dev The equipment struct is used to store the adventurer's equipment
@@ -252,35 +253,34 @@ pub impl ImplEquipment of IEquipment {
     /// @param specials_seed: The seed to use for generating item specials
     /// @param game_libs: The game libraries to use for getting stat boosts
     /// @return Stats: The stat boosts for the equipment
-    fn get_stat_boosts(self: Equipment, specials_seed: u16, weapon_suffix: u8, chest_suffix: u8, head_suffix: u8,
-        waist_suffix: u8, foot_suffix: u8, hand_suffix: u8, neck_suffix: u8, ring_suffix: u8) -> Stats {
+    fn get_stat_boosts(self: Equipment, specials_seed: u16) -> Stats {
         let mut stats = Stats {
-            strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0,
+            strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0
         };
 
         if (self.weapon.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(weapon_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.weapon.id, specials_seed));
         }
         if (self.chest.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(chest_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.chest.id, specials_seed));
         }
         if (self.head.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(head_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.head.id, specials_seed));
         }
         if (self.waist.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(waist_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.waist.id, specials_seed));
         }
         if (self.foot.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(foot_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.foot.id, specials_seed));
         }
         if (self.hand.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(hand_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.hand.id, specials_seed));
         }
         if (self.neck.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(neck_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.neck.id, specials_seed));
         }
         if (self.ring.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ring_suffix);
+            stats.apply_suffix_boost(ImplLoot::get_suffix(self.ring.id, specials_seed));
         }
         stats
     }

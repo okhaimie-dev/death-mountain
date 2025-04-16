@@ -408,8 +408,8 @@ pub impl ImplBag of IBag {
     // @notice Gets the total greatness of all jewelry items in the bag
     // @param self The instance of the Bag
     // @return The total greatness of all jewelry items in the bag
-    fn get_jewelry_greatness(bag: Bag) -> u8 {
-        let jewelry_items = Self::get_jewelry(bag);
+    fn get_jewelry_greatness(self: Bag) -> u8 {
+        let jewelry_items = Self::get_jewelry(self);
         let mut total_greatness = 0;
         let mut item_index = 0;
         loop {
@@ -522,7 +522,7 @@ mod tests {
             mutated: false,
         };
 
-        let jewelry_greatness = ImplBag::get_jewelry_greatness(bag);
+        let jewelry_greatness = bag.get_jewelry_greatness();
         assert(jewelry_greatness == 9, 'bagged jewlwery greatness is 9');
     }
 

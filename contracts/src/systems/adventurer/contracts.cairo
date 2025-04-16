@@ -5,8 +5,14 @@ use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
 
 #[starknet::interface]
 pub trait IAdventurerSystems<T> {
+    // ------ View Functions ------
+    fn load_assets(self: @T, adventurer_id: u64) -> (Adventurer, Bag);
+    fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
+    fn get_bag(self: @T, adventurer_id: u64) -> Bag;
+    fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
+
+    // ------ Library Functions ------
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
-    fn unpack_adventurer(self: @T, packed_adventurer: felt252) -> Adventurer;
     fn get_discovery(self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
     fn unpack_bag(self: @T, packed_bag: felt252) -> Bag;
@@ -17,26 +23,62 @@ pub trait IAdventurerSystems<T> {
     fn is_bag_full(self: @T, bag: Bag) -> bool;
     fn bag_contains(self: @T, bag: Bag, item_id: u8) -> (bool, Item);
     fn get_bag_jewelry(self: @T, bag: Bag) -> Array<Item>;
-    fn get_bag_jewelry_greatness(self: @T, bag: Bag) -> u8;
     fn bag_has_specials(self: @T, bag: Bag) -> bool;
 }
 
 #[dojo::contract]
 mod adventurer_systems {
     use super::IAdventurerSystems;
+    use dojo::model::ModelStorage;
+    use dojo::world::WorldStorage;
+
+    use tournaments::components::models::game::TokenMetadata;
+    use lootsurvivor::models::game::{AdventurerPacked, BagPacked};
     use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::item::Item;
+    use lootsurvivor::models::adventurer::stats::IStat;
+    use lootsurvivor::models::adventurer::equipment::IEquipment;
+    
+    use lootsurvivor::constants::world::{DEFAULT_NS};
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
 
     #[abi(embed_v0)]
     impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
-        fn pack_adventurer(self: @ContractState, adventurer: Adventurer) -> felt252 {
-            ImplAdventurer::pack(adventurer)
+        // ------ View Functions ------
+        fn load_assets(self: @ContractState, adventurer_id: u64) -> (Adventurer, Bag) {
+            let world: WorldStorage = self.world(@DEFAULT_NS());
+            let mut adventurer = _load_adventurer(world, adventurer_id);
+            
+            if adventurer.equipment.has_specials() {
+                let item_stat_boosts = adventurer.equipment.get_stat_boosts(adventurer.item_specials_seed);
+                adventurer.stats.apply_stats(item_stat_boosts);
+            }
+
+            let bag = _load_bag(world, adventurer_id);
+            adventurer.set_luck(bag);
+
+            (adventurer, bag)
         }
 
-        fn unpack_adventurer(self: @ContractState, packed_adventurer: felt252) -> Adventurer {
-            ImplAdventurer::unpack(packed_adventurer)
+        fn get_adventurer(self: @ContractState, adventurer_id: u64) -> Adventurer {
+            _load_adventurer(self.world(@DEFAULT_NS()), adventurer_id)
+        }
+
+        fn get_bag(self: @ContractState, adventurer_id: u64) -> Bag {
+            _load_bag(self.world(@DEFAULT_NS()), adventurer_id)
+        }
+        
+        fn get_adventurer_name(self: @ContractState, adventurer_id: u64) -> felt252 {
+            let world: WorldStorage = self.world(@DEFAULT_NS());
+            let token_metadata: TokenMetadata = world.read_model(adventurer_id);
+            token_metadata.player_name
+        }
+
+
+        // ------ Library Functions ------
+        fn pack_adventurer(self: @ContractState, adventurer: Adventurer) -> felt252 {
+            ImplAdventurer::pack(adventurer)
         }
 
         fn get_discovery(self: @ContractState, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType {
@@ -82,12 +124,31 @@ mod adventurer_systems {
             ImplBag::get_jewelry(bag)
         }
 
-        fn get_bag_jewelry_greatness(self: @ContractState, bag: Bag) -> u8 {
-            ImplBag::get_jewelry_greatness(bag)
-        }
-
         fn bag_has_specials(self: @ContractState, bag: Bag) -> bool {
             ImplBag::has_specials(bag)
         }
+    }
+
+    /// @title Load Adventurer
+    /// @notice Loads the adventurer and returns the adventurer.
+    /// @dev This function is called when the adventurer is loaded.
+    /// @param world A reference to the WorldStorage object.
+    /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
+    /// @return The adventurer.
+    fn _load_adventurer(world: WorldStorage, adventurer_id: u64) -> Adventurer {
+        let mut adventurer_packed: AdventurerPacked = world.read_model(adventurer_id);
+        let mut adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
+        adventurer
+    }
+
+    /// @title Load Bag
+    /// @notice Loads the bag and returns the bag.
+    /// @dev This function is called when the bag is loaded.
+    /// @param self A reference to the ContractState object.
+    /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
+    /// @return The bag.
+    fn _load_bag(world: WorldStorage, adventurer_id: u64) -> Bag {
+        let bag_packed: BagPacked = world.read_model(adventurer_id);
+        ImplBag::unpack(bag_packed.packed)
     }
 }

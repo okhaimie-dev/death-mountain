@@ -77,21 +77,33 @@ pub impl ImplGame of IGameLib {
     }
 
     // Renderer Functions
-    fn create_metadata(self: GameLibs, adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag) -> ByteArray {
-        self.renderer.create_metadata(adventurer_id, adventurer, adventurer_name, bag)
+    fn create_metadata(self: GameLibs, adventurer_id: u64) -> ByteArray {
+        self.renderer.create_metadata(adventurer_id)
     }
 
     // Adventurer Functions
-    fn pack_adventurer(self: GameLibs, adventurer: Adventurer) -> felt252 {
-        self.adventurer.pack_adventurer(adventurer)
+    fn load_assets(self: GameLibs, adventurer_id: u64) -> (Adventurer, Bag) {
+        self.adventurer.load_assets(adventurer_id)
     }
 
-    fn unpack_adventurer(self: GameLibs, packed_adventurer: felt252) -> Adventurer {
-        self.adventurer.unpack_adventurer(packed_adventurer)
+    fn get_adventurer(self: GameLibs, adventurer_id: u64) -> Adventurer {
+        self.adventurer.get_adventurer(adventurer_id)
+    }
+
+    fn get_bag(self: GameLibs, adventurer_id: u64) -> Bag {
+        self.adventurer.get_bag(adventurer_id)
+    }
+
+    fn get_adventurer_name(self: GameLibs, adventurer_id: u64) -> felt252 {
+        self.adventurer.get_adventurer_name(adventurer_id)
     }
 
     fn get_discovery(self: GameLibs, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType {
         self.adventurer.get_discovery(adventurer_level, discovery_type_rnd, amount_rnd1, amount_rnd2)
+    }
+
+    fn pack_adventurer(self: GameLibs, adventurer: Adventurer) -> felt252 {
+        self.adventurer.pack_adventurer(adventurer)
     }
 
     // Bag Functions
@@ -129,10 +141,6 @@ pub impl ImplGame of IGameLib {
 
     fn get_bag_jewelry(self: GameLibs, bag: Bag) -> Array<Item> {
         self.adventurer.get_bag_jewelry(bag)
-    }
-
-    fn get_bag_jewelry_greatness(self: GameLibs, bag: Bag) -> u8 {
-        self.adventurer.get_bag_jewelry_greatness(bag)
     }
 
     fn bag_has_specials(self: GameLibs, bag: Bag) -> bool {
