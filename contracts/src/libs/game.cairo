@@ -10,7 +10,7 @@ use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSys
 
 use lootsurvivor::models::combat::{SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
-use lootsurvivor::models::adventurer::adventurer::Adventurer;
+use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
 use lootsurvivor::models::adventurer::stats::Stats;
@@ -38,6 +38,15 @@ pub impl ImplGame of IGameLib {
             adventurer: IAdventurerSystemsDispatcher { contract_address: adventurer_systems_address },
             beast: IBeastSystemsDispatcher { contract_address: beast_systems_address },
         }
+    }
+
+    // Randomness Functions
+    fn get_randomness(self: GameLibs, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8) {
+        self.adventurer.get_randomness(adventurer_xp, seed)
+    }
+
+    fn get_battle_randomness(self: GameLibs, xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8) {
+        self.adventurer.get_battle_randomness(xp, action_count, seed)
     }
 
     // Loot Functions

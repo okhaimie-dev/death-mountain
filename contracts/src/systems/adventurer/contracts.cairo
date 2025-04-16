@@ -24,6 +24,8 @@ pub trait IAdventurerSystems<T> {
     fn bag_contains(self: @T, bag: Bag, item_id: u8) -> (bool, Item);
     fn get_bag_jewelry(self: @T, bag: Bag) -> Array<Item>;
     fn bag_has_specials(self: @T, bag: Bag) -> bool;
+    fn get_randomness(self: @T, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8);
+    fn get_battle_randomness(self: @T, xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8);
 }
 
 #[dojo::contract]
@@ -135,6 +137,18 @@ mod adventurer_systems {
 
         fn bag_has_specials(self: @ContractState, bag: Bag) -> bool {
             ImplBag::has_specials(bag)
+        }
+
+        fn get_randomness(self: @ContractState, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8) {
+            ImplAdventurer::get_randomness(adventurer_xp, seed)
+        }
+
+        fn get_battle_randomness(self: @ContractState, xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8) {
+            ImplAdventurer::get_battle_randomness(xp, action_count, seed)
+        }
+
+                fn ability_based_avoid_threat(self: @ContractState, adventurer_level: u8, relevant_stat: u8, rnd: u8) -> bool {
+            ImplCombat::ability_based_avoid_threat(adventurer_level, relevant_stat, rnd)
         }
     }
 

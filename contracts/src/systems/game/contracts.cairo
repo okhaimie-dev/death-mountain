@@ -274,7 +274,9 @@ mod game_systems {
                 beast_specials2_rnd,
                 _,
                 _,
-            ) = ImplAdventurer::get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+            ) = game_libs.get_randomness(
+                adventurer.xp, adventurer_entropy.beast_seed,
+            );
             
             // get beast based on entropy seeds
             let beast = game_libs.get_beast(
@@ -352,8 +354,7 @@ mod game_systems {
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
             // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                ImplAdventurer::get_randomness(
+            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) = game_libs.get_randomness(
                 adventurer.xp, adventurer_entropy.beast_seed,
             );
 
@@ -418,8 +419,7 @@ mod game_systems {
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
                 // generate xp based randomness seeds
-                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                    ImplAdventurer::get_randomness(
+                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) = game_libs.get_randomness(
                     adventurer.xp, adventurer_entropy.beast_seed,
                 );
 
@@ -438,7 +438,7 @@ mod game_systems {
                 let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
                 // get randomness for combat
-                let (_, _, beast_crit_hit_rnd, attack_location_rnd) = ImplAdventurer::get_battle_randomness(
+                let (_, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
                     adventurer.xp, adventurer.action_count, seed,
                 );
 
@@ -715,7 +715,7 @@ mod game_systems {
         explore_till_beast: bool,
         game_libs: GameLibs,
     ) {
-        let (rnd1_u32, _, rnd3_u16, rnd4_u16, rnd5_u8, rnd6_u8, rnd7_u8, explore_rnd) = ImplAdventurer::get_randomness(
+        let (rnd1_u32, _, rnd3_u16, rnd4_u16, rnd5_u8, rnd6_u8, rnd7_u8, explore_rnd) = game_libs.get_randomness(
             adventurer.xp, explore_seed,
         );
 
@@ -1096,8 +1096,7 @@ mod game_systems {
         game_libs: GameLibs,
     ) {
         // get randomness for combat
-        let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) =
-            ImplAdventurer::get_battle_randomness(
+        let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
             adventurer.xp, adventurer.action_count, level_seed,
         );
 
@@ -1232,7 +1231,7 @@ mod game_systems {
         game_libs: GameLibs,
     ) {
         // get randomness for flee and ambush
-        let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = ImplAdventurer::get_battle_randomness(
+        let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
             adventurer.xp, adventurer.action_count, flee_seed,
         );
 
