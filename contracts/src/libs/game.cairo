@@ -96,6 +96,15 @@ pub impl ImplGame of IGameLib {
         self.renderer.create_metadata(adventurer_id, adventurer, adventurer_name, bag)
     }
 
+    // Adventurer Functions
+    fn pack_adventurer(self: GameLibs, adventurer: Adventurer) -> felt252 {
+        self.adventurer.pack_adventurer(adventurer)
+    }
+
+    fn unpack_adventurer(self: GameLibs, packed_adventurer: felt252) -> Adventurer {
+        self.adventurer.unpack_adventurer(packed_adventurer)
+    }
+
     // Bag Functions
     fn pack_bag(self: GameLibs, bag: Bag) -> felt252 {
         self.adventurer.pack_bag(bag)

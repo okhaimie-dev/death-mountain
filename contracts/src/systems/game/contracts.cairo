@@ -169,7 +169,8 @@ mod game_systems {
         fn score(self: @ContractState, game_id: u64) -> u32 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let mut adventurer_packed: AdventurerPacked = world.read_model(game_id);
-            let adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = game_libs.unpack_adventurer(adventurer_packed.packed);
             adventurer.xp.into()
         }
     }
@@ -200,7 +201,7 @@ mod game_systems {
 
             let _beast_battle_details = _starter_beast_ambush(ref adventurer, adventurer_id, weapon, game_libs);
 
-            _save_adventurer_no_boosts(ref world, adventurer, adventurer_id);
+            _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
         }
 
         /// @title Explore Function
@@ -618,8 +619,10 @@ mod game_systems {
 
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
 
+            let game_libs = ImplGame::get_libs(world);
+
             // asset adventurer is dead
-            let adventurer = _load_adventurer_no_boosts(world, adventurer_id);
+            let adventurer = _load_adventurer_no_boosts(world, adventurer_id, game_libs);
             _assert_is_dead(adventurer);
 
             let mut adventurer_obituary: AdventurerObituary = world.read_model(adventurer_id);
@@ -684,7 +687,8 @@ mod game_systems {
 
         fn get_adventurer_no_boosts(self: @ContractState, adventurer_id: u64) -> Adventurer {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            _load_adventurer_no_boosts(world, adventurer_id)
+            let game_libs = ImplGame::get_libs(world);
+            _load_adventurer_no_boosts(world, adventurer_id, game_libs)
         }
 
         fn get_bag(self: @ContractState, adventurer_id: u64) -> Bag {
@@ -1747,7 +1751,7 @@ mod game_systems {
     /// @return The adventurer.
     fn _load_adventurer(world: WorldStorage, adventurer_id: u64, game_libs: GameLibs) -> Adventurer {
         let mut adventurer_packed: AdventurerPacked = world.read_model(adventurer_id);
-        let mut adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
+        let mut adventurer = game_libs.unpack_adventurer(adventurer_packed.packed);
         _apply_equipment_stat_boosts(ref adventurer, adventurer_id, game_libs);
         _apply_luck(world, ref adventurer, adventurer_id, game_libs);
         adventurer
@@ -1759,9 +1763,9 @@ mod game_systems {
     /// @param world A reference to the WorldStorage object.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
-    fn _load_adventurer_no_boosts(world: WorldStorage, adventurer_id: u64) -> Adventurer {
+    fn _load_adventurer_no_boosts(world: WorldStorage, adventurer_id: u64, game_libs: GameLibs) -> Adventurer {
         let mut adventurer_packed: AdventurerPacked = world.read_model(adventurer_id);
-        let adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
+        let adventurer = game_libs.unpack_adventurer(adventurer_packed.packed);
         adventurer
     }
     
@@ -1791,7 +1795,7 @@ mod game_systems {
     /// @return The adventurer.
     fn _save_adventurer(ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
         _remove_equipment_stat_boosts(ref adventurer, adventurer_id, game_libs);
-        let packed = adventurer.pack();
+        let packed = game_libs.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
 
@@ -1802,8 +1806,8 @@ mod game_systems {
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
-    fn _save_adventurer_no_boosts(ref world: WorldStorage, adventurer: Adventurer, adventurer_id: u64) {
-        let packed = adventurer.pack();
+    fn _save_adventurer_no_boosts(ref world: WorldStorage, adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
+        let packed = game_libs.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
 
@@ -2002,7 +2006,7 @@ mod game_systems {
         let game_libs = ImplGame::get_libs(world);
 
         // get adventurer
-        let adventurer = _load_adventurer_no_boosts(world, adventurer_id);
+        let adventurer = _load_adventurer_no_boosts(world, adventurer_id, game_libs);
 
         // assert adventurer is in battle
         assert(adventurer.beast_health != 0, messages::NOT_IN_BATTLE);
@@ -2089,7 +2093,9 @@ mod game_systems {
 
         
         fn assert_game_not_started(self: @ContractState, adventurer_id: u64) {
-            let adventurer = _load_adventurer_no_boosts(self.world(@DEFAULT_NS()), adventurer_id);
+            let world: WorldStorage = self.world(@DEFAULT_NS());
+            let game_libs = ImplGame::get_libs(world);
+            let adventurer = _load_adventurer_no_boosts(world, adventurer_id, game_libs);
             assert!(adventurer.xp == 0, "Loot Survivor: Adventurer {} has already started", adventurer_id);
         }
     }

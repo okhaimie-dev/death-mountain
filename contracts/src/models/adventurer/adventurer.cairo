@@ -92,22 +92,22 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Packs the Adventurer struct into a felt252.
     /// @param self The Adventurer struct to pack.
     /// @return The packed Adventurer struct.
-    fn pack(self: Adventurer) -> felt252 {
-        assert(self.health <= MAX_ADVENTURER_HEALTH, 'health overflow');
-        assert(self.xp <= MAX_ADVENTURER_XP, 'xp overflow');
-        assert(self.gold <= MAX_GOLD, 'gold overflow');
-        assert(self.beast_health <= MAX_PACKABLE_BEAST_HEALTH, 'beast health overflow');
-        assert(self.stat_upgrades_available <= MAX_STAT_UPGRADES_AVAILABLE, 'stat upgrades avail overflow');
+    fn pack(adventurer: Adventurer) -> felt252 {
+        assert(adventurer.health <= MAX_ADVENTURER_HEALTH, 'health overflow');
+        assert(adventurer.xp <= MAX_ADVENTURER_XP, 'xp overflow');
+        assert(adventurer.gold <= MAX_GOLD, 'gold overflow');
+        assert(adventurer.beast_health <= MAX_PACKABLE_BEAST_HEALTH, 'beast health overflow');
+        assert(adventurer.stat_upgrades_available <= MAX_STAT_UPGRADES_AVAILABLE, 'stats available overflow');
 
-        (self.health.into()
-            + self.xp.into() * TWO_POW_10
-            + self.gold.into() * TWO_POW_25
-            + self.beast_health.into() * TWO_POW_34
-            + self.stat_upgrades_available.into() * TWO_POW_44
-            + self.stats.pack().into() * TWO_POW_48
-            + self.equipment.pack().into() * TWO_POW_78
-            + self.action_count.into() * TWO_POW_206
-            + self.item_specials_seed.into() * TWO_POW_222)
+        (adventurer.health.into()
+            + adventurer.xp.into() * TWO_POW_10
+            + adventurer.gold.into() * TWO_POW_25
+            + adventurer.beast_health.into() * TWO_POW_34
+            + adventurer.stat_upgrades_available.into() * TWO_POW_44
+            + adventurer.stats.pack().into() * TWO_POW_48
+            + adventurer.equipment.pack().into() * TWO_POW_78
+            + adventurer.action_count.into() * TWO_POW_206
+            + adventurer.item_specials_seed.into() * TWO_POW_222)
             .try_into()
             .unwrap()
     }

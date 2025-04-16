@@ -1,8 +1,11 @@
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
+use lootsurvivor::models::adventurer::adventurer::Adventurer;
 
 #[starknet::interface]
 pub trait IAdventurerSystems<T> {
+    fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
+    fn unpack_adventurer(self: @T, packed_adventurer: felt252) -> Adventurer;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
     fn unpack_bag(self: @T, packed_bag: felt252) -> Bag;
     fn get_bag_item(self: @T, bag: Bag, item_id: u8) -> Item;
@@ -20,10 +23,19 @@ pub trait IAdventurerSystems<T> {
 mod adventurer_systems {
     use super::IAdventurerSystems;
     use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::item::Item;
 
     #[abi(embed_v0)]
     impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
+        fn pack_adventurer(self: @ContractState, adventurer: Adventurer) -> felt252 {
+            ImplAdventurer::pack(adventurer)
+        }
+
+        fn unpack_adventurer(self: @ContractState, packed_adventurer: felt252) -> Adventurer {
+            ImplAdventurer::unpack(packed_adventurer)
+        }
+
         fn pack_bag(self: @ContractState, bag: Bag) -> felt252 {
             ImplBag::pack(bag)
         }
