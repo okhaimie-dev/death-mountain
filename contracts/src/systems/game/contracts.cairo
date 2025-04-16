@@ -1453,7 +1453,7 @@ mod game_systems {
         game_libs: GameLibs,
     ) -> (Array<LootWithPrice>, Array<u8>, Array<u8>) {
         // get adventurer entropy
-        let market_inventory = _get_market(market_seed, stat_upgrades_available);
+        let market_inventory = game_libs.get_market(market_seed, stat_upgrades_available);
 
         // mutable array for returning items that need to be equipped as part of this purchase
         let mut unequipped_items = ArrayTrait::<u8>::new();
@@ -1735,11 +1735,6 @@ mod game_systems {
         _assert_upgrades_available(adventurer.stat_upgrades_available);
         _assert_stat_balance(stat_upgrades, adventurer.stat_upgrades_available);
         _assert_zero_luck(stat_upgrades);
-    }
-
-    fn _get_market(seed: u64, stat_upgrades_available: u8) -> Array<u8> {
-        let market_size = ImplMarket::get_market_size(stat_upgrades_available);
-        ImplMarket::get_available_items(seed, market_size)
     }
 
     #[abi(embed_v0)]

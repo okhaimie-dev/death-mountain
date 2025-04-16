@@ -15,17 +15,15 @@ pub trait IAdventurerSystems<T> {
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
     fn get_discovery(self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
-    fn unpack_bag(self: @T, packed_bag: felt252) -> Bag;
     fn get_bag_item(self: @T, bag: Bag, item_id: u8) -> Item;
     fn add_item_to_bag(self: @T, bag: Bag, item: Item) -> Bag;
     fn remove_item_from_bag(self: @T, bag: Bag, item_id: u8) -> (Bag, Item);
     fn add_new_item_to_bag(self: @T, bag: Bag, item_id: u8) -> Bag;
     fn is_bag_full(self: @T, bag: Bag) -> bool;
     fn bag_contains(self: @T, bag: Bag, item_id: u8) -> (bool, Item);
-    fn get_bag_jewelry(self: @T, bag: Bag) -> Array<Item>;
-    fn bag_has_specials(self: @T, bag: Bag) -> bool;
     fn get_randomness(self: @T, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8);
     fn get_battle_randomness(self: @T, xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8);
+    fn get_market(self: @T, seed: u64, stat_upgrades_available: u8) -> Array<u8>;
 }
 
 #[dojo::contract]
@@ -41,6 +39,7 @@ mod adventurer_systems {
     use lootsurvivor::models::adventurer::item::Item;
     use lootsurvivor::models::adventurer::stats::{Stats, ImplStats};
     use lootsurvivor::models::adventurer::equipment::IEquipment;
+    use lootsurvivor::models::market::ImplMarket;
     
     use lootsurvivor::constants::world::{DEFAULT_NS};
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
@@ -100,10 +99,6 @@ mod adventurer_systems {
             ImplBag::pack(bag)
         }
 
-        fn unpack_bag(self: @ContractState, packed_bag: felt252) -> Bag {
-            ImplBag::unpack(packed_bag)
-        }
-
         fn get_bag_item(self: @ContractState, bag: Bag, item_id: u8) -> Item {
             ImplBag::get_item(bag, item_id)
         }
@@ -131,14 +126,6 @@ mod adventurer_systems {
             ImplBag::contains(bag, item_id)
         }
 
-        fn get_bag_jewelry(self: @ContractState, bag: Bag) -> Array<Item> {
-            ImplBag::get_jewelry(bag)
-        }
-
-        fn bag_has_specials(self: @ContractState, bag: Bag) -> bool {
-            ImplBag::has_specials(bag)
-        }
-
         fn get_randomness(self: @ContractState, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8) {
             ImplAdventurer::get_randomness(adventurer_xp, seed)
         }
@@ -147,8 +134,9 @@ mod adventurer_systems {
             ImplAdventurer::get_battle_randomness(xp, action_count, seed)
         }
 
-                fn ability_based_avoid_threat(self: @ContractState, adventurer_level: u8, relevant_stat: u8, rnd: u8) -> bool {
-            ImplCombat::ability_based_avoid_threat(adventurer_level, relevant_stat, rnd)
+        fn get_market(self: @ContractState, seed: u64, stat_upgrades_available: u8) -> Array<u8> {
+            let market_size = ImplMarket::get_market_size(stat_upgrades_available);
+            ImplMarket::get_available_items(seed, market_size)
         }
     }
 

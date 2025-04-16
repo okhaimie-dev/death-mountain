@@ -62,14 +62,6 @@ pub impl ImplGame of IGameLib {
         self.loot.get_suffix(item_id, seed)
     }
 
-    fn get_prefix1(self: GameLibs, item_id: u8, seed: u16) -> u8 {
-        self.loot.get_prefix1(item_id, seed)
-    }
-
-    fn get_prefix2(self: GameLibs, item_id: u8, seed: u16) -> u8 {
-        self.loot.get_prefix2(item_id, seed)
-    }
-
     fn get_tier(self: GameLibs, item_id: u8) -> Tier {
         self.loot.get_tier(item_id)
     }
@@ -100,10 +92,6 @@ pub impl ImplGame of IGameLib {
         self.adventurer.get_adventurer(adventurer_id)
     }
 
-    fn get_bag(self: GameLibs, adventurer_id: u64) -> Bag {
-        self.adventurer.get_bag(adventurer_id)
-    }
-
     fn get_adventurer_name(self: GameLibs, adventurer_id: u64) -> felt252 {
         self.adventurer.get_adventurer_name(adventurer_id)
     }
@@ -127,10 +115,6 @@ pub impl ImplGame of IGameLib {
     // Bag Functions
     fn pack_bag(self: GameLibs, bag: Bag) -> felt252 {
         self.adventurer.pack_bag(bag)
-    }
-
-    fn unpack_bag(self: GameLibs, packed_bag: felt252) -> Bag {
-        self.adventurer.unpack_bag(packed_bag)
     }
 
     fn get_bag_item(self: GameLibs, bag: Bag, item_id: u8) -> Item {
@@ -157,14 +141,6 @@ pub impl ImplGame of IGameLib {
         self.adventurer.bag_contains(bag, item_id)
     }
 
-    fn get_bag_jewelry(self: GameLibs, bag: Bag) -> Array<Item> {
-        self.adventurer.get_bag_jewelry(bag)
-    }
-
-    fn bag_has_specials(self: GameLibs, bag: Bag) -> bool {
-        self.adventurer.bag_has_specials(bag)
-    }
-
     // Beast Functions
     fn get_starter_beast(self: GameLibs, starter_weapon_type: Type, seed: u32) -> Beast {
         self.beast.get_starter_beast(starter_weapon_type, seed)
@@ -180,5 +156,10 @@ pub impl ImplGame of IGameLib {
 
     fn attempt_flee(self: GameLibs, adventurer_level: u8, adventurer_dexterity: u8, rnd: u8) -> bool {
         self.beast.attempt_flee(adventurer_level, adventurer_dexterity, rnd)
+    }
+
+    // Market Functions
+    fn get_market(self: GameLibs, seed: u64, stat_upgrades_available: u8) -> Array<u8> {
+        self.adventurer.get_market(seed, stat_upgrades_available)
     }
 }
