@@ -1,8 +1,7 @@
 use lootsurvivor::constants::discovery::DiscoveryEnums::ExploreResult;
-use lootsurvivor::models::adventurer::adventurer::{Adventurer, ItemSpecial};
+use lootsurvivor::models::adventurer::adventurer::{Adventurer};
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::stats::Stats;
-use lootsurvivor::models::beast::Beast;
 use lootsurvivor::models::market::ItemPurchase;
 
 const VRF_ENABLED: bool = false;
@@ -47,7 +46,7 @@ mod game_systems {
 
     use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked};
     use lootsurvivor::models::adventurer::adventurer::{
-        Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp, ItemSpecial,
+        Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp,
     };
     use lootsurvivor::models::adventurer::bag::{Bag};
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};

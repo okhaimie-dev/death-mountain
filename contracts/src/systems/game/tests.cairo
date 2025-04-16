@@ -25,7 +25,7 @@ mod tests {
     };
     use game::game::constants::messages::STAT_UPGRADES_AVAILABLE;
     use game::game::constants::{
-        COST_TO_PLAY, GAME_EXPIRY_DAYS, OBITUARY_EXPIRY_DAYS, REWARD_DISTRIBUTIONS_BP, Rewards, SECONDS_IN_DAY,
+        GAME_EXPIRY_DAYS, REWARD_DISTRIBUTIONS_BP, Rewards, SECONDS_IN_DAY,
         STARTER_BEAST_ATTACK_DAMAGE,
     };
     use game::game::interfaces::{IGameDispatcher, IGameDispatcherTrait};

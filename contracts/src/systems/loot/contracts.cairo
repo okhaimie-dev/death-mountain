@@ -1,6 +1,6 @@
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
-use lootsurvivor::models::combat::{ImplCombat, SpecialPowers};
-use lootsurvivor::models::loot::{ImplLoot, Loot};
+use lootsurvivor::models::combat::SpecialPowers;
+use lootsurvivor::models::loot::Loot;
 
 #[starknet::interface]
 pub trait ILootSystems<T> {
@@ -19,7 +19,7 @@ pub trait ILootSystems<T> {
 mod loot_systems {
     use super::ILootSystems;
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
-    use lootsurvivor::models::combat::{ImplCombat, SpecialPowers};
+    use lootsurvivor::models::combat::SpecialPowers;
     use lootsurvivor::models::loot::{ImplLoot, Loot};
 
     #[abi(embed_v0)]

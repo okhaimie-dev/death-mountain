@@ -1,4 +1,3 @@
-pub const COST_TO_PLAY: u128 = 50000000000000000000;
 pub const MINIMUM_DAMAGE_FROM_BEASTS: u8 = 2;
 pub const MAINNET_CHAIN_ID: felt252 = 0x534e5f4d41494e;
 pub const SEPOLIA_CHAIN_ID: felt252 = 0x534e5f5345504f4c4941;
@@ -8,18 +7,10 @@ pub const MINIMUM_SCORE_FOR_DEATH_RANK: u16 = 100;
 pub const SECONDS_IN_DAY: u32 = 86400;
 pub const TARGET_PRICE_USD_CENTS: u16 = 300;
 pub const VRF_COST_PER_GAME: u32 = 50000000; // $0.50 with 8 decimals
-pub const VRF_MAX_CALLBACK_MAINNET: u32 = 10000000; // $0.10
-pub const VRF_MAX_CALLBACK_TESTNET: u32 = 300000000; // $3.00
-pub const PRAGMA_LORDS_KEY: felt252 = 'LORDS/USD'; // felt252 conversion of "LORDS/USD"
 pub const PRAGMA_PUBLISH_DELAY: u8 = 0;
 pub const PRAGMA_NUM_WORDS: u8 = 1;
 pub const GAME_EXPIRY_DAYS: u8 = 10;
-pub const OBITUARY_EXPIRY_DAYS: u8 = 1;
-pub const MAX_U64: u64 = 0xffffffffffffffff;
-pub const MAX_U16: u16 = 0xffff;
 pub const STARTER_BEAST_ATTACK_DAMAGE: u16 = 10;
-pub const CONTROLLER_DELEGATE_ACCOUNT_INTERFACE_ID: felt252 =
-    0x406350870d0cf6ca3332d174788fdcfa803e21633b124b746629775b9a294c;
 pub const DAO_CONTRACT_REWARD_ADVENTURER: u8 = 2;
 pub const PG_CONTRACT_REWARD_ADVENTURER: u8 = 3;
 
@@ -27,7 +18,6 @@ pub mod messages {
     pub const NOT_ENOUGH_GOLD: felt252 = 'Not enough gold';
     pub const ITEM_DOES_NOT_EXIST: felt252 = 'Market item does not exist';
     pub const MARKET_CLOSED: felt252 = 'Market is closed';
-    pub const NOT_OWNER: felt252 = 'Not authorized to act';
     pub const ITEM_NOT_IN_BAG: felt252 = 'Item not in bag';
     pub const INVALID_STARTING_WEAPON: felt252 = 'Invalid starting weapon';
     pub const STAT_POINT_NOT_AVAILABLE: felt252 = 'Stat point not available';
@@ -56,7 +46,6 @@ pub mod messages {
     pub const NOT_ON_LEADERBOARD: felt252 = 'Not on leaderboard';
     pub const TIME_NOT_REACHED: felt252 = 'Time not reached';
     pub const CANNOT_PLAY_WITH_TOKEN: felt252 = 'Token already used today';
-    pub const NOT_OWNER_OF_TOKEN: felt252 = 'Not owner of token';
     pub const MA_PERIOD_LESS_THAN_WEEK: felt252 = 'MA period too small';
     pub const TERMINAL_TIME_REACHED: felt252 = 'terminal time reached';
     pub const STARTING_ENTROPY_ALREADY_SET: felt252 = 'starting entropy already set';

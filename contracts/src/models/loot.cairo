@@ -5,7 +5,7 @@ use lootsurvivor::constants::loot::{
     ItemId, ItemIndex, ItemSlotLength, ItemSuffixLength, NUM_ITEMS, NamePrefixLength, NameSuffixLength,
     PREFIXES_UNLOCK_GREATNESS, SUFFIX_UNLOCK_GREATNESS,
 };
-use lootsurvivor::models::combat::{ImplCombat, SpecialPowers};
+use lootsurvivor::models::combat::{SpecialPowers};
 use lootsurvivor::utils::loot::ItemUtils;
 
 #[derive(Copy, Drop, Serde)]
