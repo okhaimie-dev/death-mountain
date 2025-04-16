@@ -19,13 +19,11 @@ trait IGameSystems<T> {
     fn level_up(
         ref self: T, adventurer_id: u64, potions: u8, stat_upgrades: Stats, items: Array<ItemPurchase>,
     );
-    fn set_adventurer_obituary(ref self: T, adventurer_id: u64, obituary: ByteArray);
 
     // ------ View Functions ------
 
     // adventurer details
     fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
-    fn get_adventurer_obituary(self: @T, adventurer_id: u64) -> ByteArray;
     fn get_adventurer_no_boosts(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
 
@@ -60,7 +58,7 @@ mod game_systems {
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
     use lootsurvivor::constants::world::{DEFAULT_NS, SCORE_ATTRIBUTE, SCORE_MODEL, SETTINGS_MODEL};
 
-    use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked, AdventurerObituary};
+    use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked};
     use lootsurvivor::models::adventurer::adventurer::{
         Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp, ItemSpecial,
     };
@@ -610,31 +608,6 @@ mod game_systems {
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
 
-        /// @title Set Adventurer Obituary
-        /// @notice Allows an adventurer to set their obituary.
-        /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-        /// @param obituary A ByteArray representing the obituary of the adventurer.
-        fn set_adventurer_obituary(ref self: ContractState, adventurer_id: u64, obituary: ByteArray) {
-            self.assert_token_ownership(adventurer_id);
-
-            let mut world: WorldStorage = self.world(@DEFAULT_NS());
-
-            let game_libs = ImplGame::get_libs(world);
-
-            // asset adventurer is dead
-            let adventurer = _load_adventurer_no_boosts(world, adventurer_id, game_libs);
-            _assert_is_dead(adventurer);
-
-            let mut adventurer_obituary: AdventurerObituary = world.read_model(adventurer_id);
-
-            // assert obituary has not already been set
-            assert(adventurer_obituary.obituary.len() != 0, messages::OBITUARY_ALREADY_SET);
-
-            // set adventurer obituary
-            adventurer_obituary.obituary = obituary;
-            world.write_model(@adventurer_obituary);
-        }
-
         // ------------------------------------------ //
         // ------------ View Functions -------------- //
         // ------------------------------------------ //
@@ -642,12 +615,6 @@ mod game_systems {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
             _load_adventurer(world, adventurer_id, game_libs)
-        }
-
-        fn get_adventurer_obituary(self: @ContractState, adventurer_id: u64) -> ByteArray {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let adventurer_obituary: AdventurerObituary = world.read_model(adventurer_id);
-            adventurer_obituary.obituary
         }
 
         fn get_adventurer_name(self: @ContractState, adventurer_id: u64) -> felt252 {
