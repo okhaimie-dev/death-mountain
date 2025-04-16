@@ -1608,7 +1608,11 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
     fn _save_adventurer(ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
-        _remove_equipment_stat_boosts(ref adventurer, adventurer_id);
+        if adventurer.equipment.has_specials() && adventurer.item_specials_seed != 0 {
+            let item_stat_boosts = game_libs.get_stat_boosts(adventurer);
+            adventurer.stats.remove_stats(item_stat_boosts);
+        }
+
         let packed = game_libs.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
@@ -1665,20 +1669,6 @@ mod game_systems {
         if adventurer.health > max_health {
             // lower adventurer's health to max health
             adventurer.health = max_health;
-        }
-    }
-
-    /// @title Remove Equipment Stat Boosts
-    /// @notice Removes the equipment stat boosts from the adventurer.
-    /// @dev This function is called when the equipment stat boosts are removed from the adventurer.
-    /// @param self A reference to the ContractState object.
-    /// @param adventurer A reference to the adventurer.
-    /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-    fn _remove_equipment_stat_boosts(ref adventurer: Adventurer, adventurer_id: u64) {
-        let item_specials_seed = adventurer.item_specials_seed;
-        if adventurer.equipment.has_specials() && item_specials_seed != 0 {
-            let item_stat_boosts = adventurer.equipment.get_stat_boosts(item_specials_seed);
-            adventurer.stats.remove_stats(item_stat_boosts);
         }
     }
 

@@ -1,17 +1,17 @@
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
+use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
 
 #[starknet::interface]
 pub trait IAdventurerSystems<T> {
-    // ------ View Functions ------
     fn load_assets(self: @T, adventurer_id: u64) -> (Adventurer, Bag);
     fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_bag(self: @T, adventurer_id: u64) -> Bag;
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
 
-    // ------ Library Functions ------
+    fn get_stat_boosts(self: @T, adventurer: Adventurer) -> Stats;
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
     fn get_discovery(self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
@@ -37,7 +37,7 @@ mod adventurer_systems {
     use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::item::Item;
-    use lootsurvivor::models::adventurer::stats::IStat;
+    use lootsurvivor::models::adventurer::stats::{Stats, ImplStats};
     use lootsurvivor::models::adventurer::equipment::IEquipment;
     
     use lootsurvivor::constants::world::{DEFAULT_NS};
@@ -45,13 +45,12 @@ mod adventurer_systems {
 
     #[abi(embed_v0)]
     impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
-        // ------ View Functions ------
         fn load_assets(self: @ContractState, adventurer_id: u64) -> (Adventurer, Bag) {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let mut adventurer = _load_adventurer(world, adventurer_id);
             
             if adventurer.equipment.has_specials() {
-                let item_stat_boosts = adventurer.equipment.get_stat_boosts(adventurer.item_specials_seed);
+                let item_stat_boosts = _get_stat_boosts(adventurer);
                 adventurer.stats.apply_stats(item_stat_boosts);
             }
 
@@ -75,6 +74,9 @@ mod adventurer_systems {
             token_metadata.player_name
         }
 
+        fn get_stat_boosts(self: @ContractState, adventurer: Adventurer) -> Stats {
+            _get_stat_boosts(adventurer)
+        }
 
         // ------ Library Functions ------
         fn pack_adventurer(self: @ContractState, adventurer: Adventurer) -> felt252 {
@@ -150,5 +152,9 @@ mod adventurer_systems {
     fn _load_bag(world: WorldStorage, adventurer_id: u64) -> Bag {
         let bag_packed: BagPacked = world.read_model(adventurer_id);
         ImplBag::unpack(bag_packed.packed)
+    }
+
+    fn _get_stat_boosts(adventurer: Adventurer) -> Stats {
+        adventurer.equipment.get_stat_boosts(adventurer.item_specials_seed)
     }
 }

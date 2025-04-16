@@ -9,6 +9,7 @@ use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher,
 use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSystemsDispatcherTrait};
 
 use lootsurvivor::models::combat::{SpecialPowers};
+use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::bag::Bag;
@@ -104,6 +105,10 @@ pub impl ImplGame of IGameLib {
 
     fn pack_adventurer(self: GameLibs, adventurer: Adventurer) -> felt252 {
         self.adventurer.pack_adventurer(adventurer)
+    }
+
+    fn get_stat_boosts(self: GameLibs, adventurer: Adventurer) -> Stats {
+        self.adventurer.get_stat_boosts(adventurer)
     }
 
     // Bag Functions
