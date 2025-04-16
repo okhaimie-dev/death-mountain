@@ -1608,11 +1608,7 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
     fn _save_adventurer(ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
-        if adventurer.equipment.has_specials() && adventurer.item_specials_seed != 0 {
-            let item_stat_boosts = game_libs.get_stat_boosts(adventurer);
-            adventurer.stats.remove_stats(item_stat_boosts);
-        }
-
+        adventurer = game_libs.remove_stat_boosts(adventurer);
         let packed = game_libs.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }

@@ -1,7 +1,6 @@
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
-use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
 
 #[starknet::interface]
@@ -10,8 +9,7 @@ pub trait IAdventurerSystems<T> {
     fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_bag(self: @T, adventurer_id: u64) -> Bag;
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
-
-    fn get_stat_boosts(self: @T, adventurer: Adventurer) -> Stats;
+    fn remove_stat_boosts(self: @T, adventurer: Adventurer) -> Adventurer;
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
     fn get_discovery(self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
@@ -74,11 +72,14 @@ mod adventurer_systems {
             token_metadata.player_name
         }
 
-        fn get_stat_boosts(self: @ContractState, adventurer: Adventurer) -> Stats {
-            _get_stat_boosts(adventurer)
+        fn remove_stat_boosts(self: @ContractState, mut adventurer: Adventurer) -> Adventurer {
+            if adventurer.equipment.has_specials() && adventurer.item_specials_seed != 0 {
+                let item_stat_boosts = _get_stat_boosts(adventurer);
+                adventurer.stats.remove_stats(item_stat_boosts);
+            }
+            adventurer
         }
 
-        // ------ Library Functions ------
         fn pack_adventurer(self: @ContractState, adventurer: Adventurer) -> felt252 {
             ImplAdventurer::pack(adventurer)
         }
