@@ -26,20 +26,7 @@ trait IGameSystems<T> {
     fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_adventurer_no_boosts(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
-
-    // bag and specials
     fn get_bag(self: @T, adventurer_id: u64) -> Bag;
-
-    // market details
-    fn get_market(self: @T, adventurer_id: u64) -> Array<u8>;
-    fn get_potion_price(self: @T, adventurer_id: u64) -> u16;
-    fn get_item_price(self: @T, adventurer_id: u64, item_id: u8) -> u16;
-
-    // beast details
-    fn get_attacking_beast(self: @T, adventurer_id: u64) -> Beast;
-    fn get_item_specials(self: @T, adventurer_id: u64) -> Array<ItemSpecial>;
-    fn obstacle_critical_hit_chance(self: @T, adventurer_id: u64) -> u8;
-    fn beast_critical_hit_chance(self: @T, adventurer_id: u64, is_ambush: bool) -> u8;
 }
 
 
@@ -623,35 +610,6 @@ mod game_systems {
             token_metadata.player_name
         }
 
-        fn get_item_specials(self: @ContractState, adventurer_id: u64) -> Array<ItemSpecial> {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer: Adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let specials_seed = adventurer.item_specials_seed;
-
-            // assert specials seed is not 0
-            assert(specials_seed != 0, messages::ITEM_SPECIALS_UNAVAILABLE);
-
-            let mut item_specials: Array<ItemSpecial> = ArrayTrait::<ItemSpecial>::new();
-            let mut item_id = 1;
-            loop {
-                if item_id > 101 {
-                    break;
-                }
-
-                let special_power = SpecialPowers {
-                    special1: game_libs.get_suffix(item_id, specials_seed),
-                    special2: game_libs.get_prefix1(item_id, specials_seed),
-                    special3: game_libs.get_prefix2(item_id, specials_seed),
-                };
-                item_specials.append(ItemSpecial { item_id, special_power });
-
-                item_id += 1;
-            };
-
-            item_specials
-        }
-
         fn get_adventurer_no_boosts(self: @ContractState, adventurer_id: u64) -> Adventurer {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
@@ -662,48 +620,6 @@ mod game_systems {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
             _load_bag(world, adventurer_id, game_libs)
-        }
-
-        fn get_market(self: @ContractState, adventurer_id: u64) -> Array<u8> {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
-            _get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available)
-        }
-
-        fn get_potion_price(self: @ContractState, adventurer_id: u64) -> u16 {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            adventurer.charisma_adjusted_potion_price()
-        }
-
-        fn get_item_price(self: @ContractState, adventurer_id: u64, item_id: u8) -> u16 {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let base_item_price = ImplMarket::get_price(game_libs.get_tier(item_id));
-            adventurer.stats.charisma_adjusted_item_price(base_item_price)
-        }
-
-        fn get_attacking_beast(self: @ContractState, adventurer_id: u64) -> Beast {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            _get_attacking_beast(world, adventurer_id)
-        }
-
-        fn obstacle_critical_hit_chance(self: @ContractState, adventurer_id: u64) -> u8 {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            ImplAdventurer::get_dynamic_critical_hit_chance(adventurer.get_level())
-        }
-
-        fn beast_critical_hit_chance(self: @ContractState, adventurer_id: u64, is_ambush: bool) -> u8 {
-            let world: WorldStorage = self.world(@DEFAULT_NS());
-            let game_libs = ImplGame::get_libs(world);
-            let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            game_libs.get_critical_hit_chance(adventurer.get_level(), is_ambush)
         }
     }
 
@@ -1970,45 +1886,6 @@ mod game_systems {
     fn _get_market(seed: u64, stat_upgrades_available: u8) -> Array<u8> {
         let market_size = ImplMarket::get_market_size(stat_upgrades_available);
         ImplMarket::get_available_items(seed, market_size)
-    }
-    fn _get_attacking_beast(world: WorldStorage, adventurer_id: u64) -> Beast {
-        // get game libaries
-        let game_libs = ImplGame::get_libs(world);
-
-        // get adventurer
-        let adventurer = _load_adventurer_no_boosts(world, adventurer_id, game_libs);
-
-        // assert adventurer is in battle
-        assert(adventurer.beast_health != 0, messages::NOT_IN_BATTLE);
-
-        let adventurer_weapon_type = game_libs.get_type(adventurer.equipment.weapon.id);
-        if adventurer.get_level() > 1 {
-            // get adventurer entropy
-            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
-
-            // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                ImplAdventurer::get_randomness(
-                adventurer.xp, adventurer_entropy.beast_seed,
-            );
-
-            // get beast based on entropy seeds
-            game_libs.get_beast(
-                adventurer.get_level(),
-                adventurer_weapon_type,
-                beast_seed,
-                beast_health_rnd,
-                beast_level_rnd,
-                beast_specials1_rnd,
-                beast_specials2_rnd,
-            )
-        } else {
-            let level_seed_u256: u256 = adventurer_id.try_into().unwrap();
-            let beast_seed = (level_seed_u256 % TWO_POW_32.into()).try_into().unwrap();
-            // generate starter beast which will have weak armor against the adventurers starter
-            // weapon
-            game_libs.get_starter_beast(adventurer_weapon_type, beast_seed)
-        }
     }
 
     #[abi(embed_v0)]
