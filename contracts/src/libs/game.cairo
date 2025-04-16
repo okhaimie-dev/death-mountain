@@ -5,18 +5,21 @@ use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
 use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
 use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
 use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait};
+use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSystemsDispatcherTrait};
 
 use lootsurvivor::models::combat::{SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
+use lootsurvivor::models::beast::Beast;
 
 #[derive(Copy, Drop)]
 pub struct GameLibs {
     loot: ILootSystemsDispatcher,
     renderer: IRendererSystemsDispatcher,
     adventurer: IAdventurerSystemsDispatcher,
+    beast: IBeastSystemsDispatcher,
 }
 
 #[generate_trait]
@@ -25,11 +28,13 @@ pub impl ImplGame of IGameLib {
         let (loot_systems_address, _) = world.dns(@"loot_systems").unwrap();
         let (renderer_systems_address, _) = world.dns(@"renderer_systems").unwrap();
         let (adventurer_systems_address, _) = world.dns(@"adventurer_systems").unwrap();
+        let (beast_systems_address, _) = world.dns(@"beast_systems").unwrap();
 
         GameLibs {
             loot: ILootSystemsDispatcher { contract_address: loot_systems_address },
             renderer: IRendererSystemsDispatcher { contract_address: renderer_systems_address },
             adventurer: IAdventurerSystemsDispatcher { contract_address: adventurer_systems_address },
+            beast: IBeastSystemsDispatcher { contract_address: beast_systems_address },
         }
     }
 
@@ -127,5 +132,22 @@ pub impl ImplGame of IGameLib {
 
     fn bag_has_specials(self: GameLibs, bag: Bag) -> bool {
         self.adventurer.bag_has_specials(bag)
+    }
+
+    // Beast Functions
+    fn get_starter_beast(self: GameLibs, starter_weapon_type: Type, seed: u32) -> Beast {
+        self.beast.get_starter_beast(starter_weapon_type, seed)
+    }
+
+    fn get_beast(self: GameLibs, adventurer_level: u8, weapon_type: Type, seed: u32, health_rnd: u16, level_rnd: u16, special2_rnd: u8, special3_rnd: u8) -> Beast {
+        self.beast.get_beast(adventurer_level, weapon_type, seed, health_rnd, level_rnd, special2_rnd, special3_rnd)
+    }
+
+    fn get_critical_hit_chance(self: GameLibs, adventurer_level: u8, is_ambush: bool) -> u8 {
+        self.beast.get_critical_hit_chance(adventurer_level, is_ambush)
+    }
+
+    fn attempt_flee(self: GameLibs, adventurer_level: u8, adventurer_dexterity: u8, rnd: u8) -> bool {
+        self.beast.attempt_flee(adventurer_level, adventurer_dexterity, rnd)
     }
 }

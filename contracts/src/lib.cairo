@@ -11,6 +11,9 @@ pub mod systems {
     pub mod adventurer {
         pub mod contracts;
     }
+    pub mod beast {
+        pub mod contracts;
+    }
 }
 
 pub mod models {

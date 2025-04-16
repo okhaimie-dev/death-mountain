@@ -68,7 +68,7 @@ mod game_systems {
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};
     use lootsurvivor::models::adventurer::item::{ImplItem, Item};
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
-    use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
+    use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
     use lootsurvivor::models::market::{ItemPurchase, LootWithPrice, ImplMarket};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
@@ -308,7 +308,7 @@ mod game_systems {
             ) = ImplAdventurer::get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
             
             // get beast based on entropy seeds
-            let beast = ImplBeast::get_beast(
+            let beast = game_libs.get_beast(
                 adventurer.get_level(),
                 game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
@@ -389,7 +389,7 @@ mod game_systems {
             );
 
             // get beast based on entropy seeds
-            let beast = ImplBeast::get_beast(
+            let beast = game_libs.get_beast(
                 adventurer.get_level(),
                 game_libs.get_type(adventurer.equipment.weapon.id),
                 beast_seed,
@@ -456,7 +456,7 @@ mod game_systems {
                 );
 
                 // get beast based on entropy seeds
-                let beast = ImplBeast::get_beast(
+                let beast = game_libs.get_beast(
                     adventurer.get_level(),
                     game_libs.get_type(adventurer.equipment.weapon.id),
                     beast_seed,
@@ -736,7 +736,7 @@ mod game_systems {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let game_libs = ImplGame::get_libs(world);
             let adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            ImplBeast::get_critical_hit_chance(adventurer.get_level(), is_ambush)
+            game_libs.get_critical_hit_chance(adventurer.get_level(), is_ambush)
         }
     }
 
@@ -842,7 +842,7 @@ mod game_systems {
         let beast_seed = (adventurer_id % TWO_POW_32.into()).try_into().unwrap();
 
         // generate starter beast which will have weak armor against the adventurers starter weapon
-        let starter_beast = ImplBeast::get_starter_beast(game_libs.get_type(starting_weapon), beast_seed);
+        let starter_beast = game_libs.get_starter_beast(game_libs.get_type(starting_weapon), beast_seed);
 
         // spoof a beast ambush by deducting health from the adventurer
         adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
@@ -1018,7 +1018,7 @@ mod game_systems {
     ) {
         let adventurer_level = adventurer.get_level();
 
-        let beast = ImplBeast::get_beast(
+        let beast = game_libs.get_beast(
             adventurer.get_level(),
             game_libs.get_type(adventurer.equipment.weapon.id),
             seed,
@@ -1355,7 +1355,7 @@ mod game_systems {
         let armor_details = game_libs.get_item(armor.id);
 
         // get critical hit chance
-        let critical_hit_chance = ImplBeast::get_critical_hit_chance(adventurer.get_level(), is_ambush);
+        let critical_hit_chance = game_libs.get_critical_hit_chance(adventurer.get_level(), is_ambush);
 
         // process beast attack
         let (combat_result, _jewlery_armor_bonus) = adventurer
@@ -1403,7 +1403,7 @@ mod game_systems {
         adventurer.increment_action_count();
 
         // attempt to flee
-        let fled = ImplBeast::attempt_flee(adventurer.get_level(), adventurer.stats.dexterity, flee_rnd);
+        let fled = game_libs.attempt_flee(adventurer.get_level(), adventurer.stats.dexterity, flee_rnd);
 
         // if adventurer fled
         if (fled) {
@@ -2026,7 +2026,7 @@ mod game_systems {
             );
 
             // get beast based on entropy seeds
-            ImplBeast::get_beast(
+            game_libs.get_beast(
                 adventurer.get_level(),
                 adventurer_weapon_type,
                 beast_seed,
@@ -2040,7 +2040,7 @@ mod game_systems {
             let beast_seed = (level_seed_u256 % TWO_POW_32.into()).try_into().unwrap();
             // generate starter beast which will have weak armor against the adventurers starter
             // weapon
-            ImplBeast::get_starter_beast(adventurer_weapon_type, beast_seed)
+            game_libs.get_starter_beast(adventurer_weapon_type, beast_seed)
         }
     }
 
