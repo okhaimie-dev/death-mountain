@@ -64,7 +64,7 @@ mod game_systems {
     use lootsurvivor::models::adventurer::adventurer::{
         Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp, ItemSpecial,
     };
-    use lootsurvivor::models::adventurer::bag::{Bag, IBag, ImplBag};
+    use lootsurvivor::models::adventurer::bag::{Bag};
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};
     use lootsurvivor::models::adventurer::item::{ImplItem, Item};
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
@@ -223,7 +223,7 @@ mod game_systems {
 
             // load player assets
             let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let mut bag = _load_bag(world, adventurer_id);
+            let mut bag = _load_bag(world, adventurer_id, game_libs);
 
 
             // use an immutable adventurer for assertions
@@ -250,7 +250,7 @@ mod game_systems {
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag);
+                _save_bag(ref world, adventurer_id, bag, game_libs);
             }
 
             explore_results
@@ -433,7 +433,7 @@ mod game_systems {
 
             // load player assets
             let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let mut bag = _load_bag(world, adventurer_id);
+            let mut bag = _load_bag(world, adventurer_id, game_libs);
 
             // assert action is valid
             _assert_not_dead(adventurer);
@@ -491,7 +491,7 @@ mod game_systems {
 
             // if the bag was mutated, pack and save it
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag);
+                _save_bag(ref world, adventurer_id, bag, game_libs);
             }
         }
 
@@ -514,7 +514,7 @@ mod game_systems {
 
             // load player assets
             let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let mut bag = _load_bag(world, adventurer_id);
+            let mut bag = _load_bag(world, adventurer_id, game_libs);
 
             // assert action is valid (ownership of item is handled in internal function when we
             // iterate over items)
@@ -530,7 +530,7 @@ mod game_systems {
 
             // if the bag was mutated, save it
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag);
+                _save_bag(ref world, adventurer_id, bag, game_libs);
             }
         }
 
@@ -560,7 +560,7 @@ mod game_systems {
 
             // load player assets
             let mut adventurer = _load_adventurer(world, adventurer_id, game_libs);
-            let mut bag = _load_bag(world, adventurer_id);
+            let mut bag = _load_bag(world, adventurer_id, game_libs);
 
             let immutable_adventurer = adventurer.clone();
 
@@ -602,7 +602,7 @@ mod game_systems {
 
             // if the upgrade mutated the adventurer's bag
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag);
+                _save_bag(ref world, adventurer_id, bag, game_libs);
             }
 
             adventurer.increment_action_count();
@@ -689,7 +689,8 @@ mod game_systems {
 
         fn get_bag(self: @ContractState, adventurer_id: u64) -> Bag {
             let world: WorldStorage = self.world(@DEFAULT_NS());
-            _load_bag(world, adventurer_id)
+            let game_libs = ImplGame::get_libs(world);
+            _load_bag(world, adventurer_id, game_libs)
         }
 
         fn get_market(self: @ContractState, adventurer_id: u64) -> Array<u8> {
@@ -945,13 +946,13 @@ mod game_systems {
             DiscoveryType::Gold(amount) => { adventurer.increase_gold(amount); },
             DiscoveryType::Health(amount) => { adventurer.increase_health(amount); },
             DiscoveryType::Loot(item_id) => {
-                let (item_in_bag, _) = bag.contains(item_id);
+                let (item_in_bag, _) = game_libs.bag_contains(bag, item_id);
 
                 let slot = game_libs.get_slot(item_id);
                 let slot_free = adventurer.equipment.is_slot_free_item_id(item_id, slot);
 
                 // if the bag is full and the slot is not free
-                let inventory_full = bag.is_full() && slot_free == false;
+                let inventory_full = game_libs.is_bag_full(bag) && slot_free == false;
 
                 // if item is in adventurers bag, is equipped or inventory is full
                 if item_in_bag || adventurer.equipment.is_equipped(item_id) || inventory_full {
@@ -981,7 +982,7 @@ mod game_systems {
                         equipped_items.append(item.id);
                     } else {
                         // otherwise toss it in bag
-                        bag.add_item(item);
+                        bag = game_libs.add_item_to_bag(bag, item);
                         bagged_items.append(item.id);
                     }
                 }
@@ -1443,7 +1444,7 @@ mod game_systems {
         // if the item exists
         if unequipping_item.id != 0 {
             // put it into the adventurer's bag
-            bag.add_item(unequipping_item);
+            bag = game_libs.add_item_to_bag(bag, unequipping_item);
 
             // if the item was providing a stat boosts, remove it
             if unequipping_item.get_greatness() >= SUFFIX_UNLOCK_GREATNESS {
@@ -1506,7 +1507,7 @@ mod game_systems {
             // if item is newly purchased
             if is_newly_purchased {
                 // assert adventurer does not already own the item
-                _assert_item_not_owned(adventurer, bag, item_id.clone());
+                _assert_item_not_owned(adventurer, bag, item_id.clone(), game_libs);
 
                 // create new item, equip it, and record if we need unequipped an item
                 let mut new_item = ImplItem::new(item_id);
@@ -1514,7 +1515,9 @@ mod game_systems {
             } else {
                 // otherwise item is being equipped from bag
                 // so remove it from bag, equip it, and record if we need to unequip an item
-                unequipped_item_id = _equip_item(ref adventurer, ref bag, bag.remove_item(item_id), game_libs);
+                let (new_bag, item) = game_libs.remove_item_from_bag(bag, item_id);
+                bag = new_bag;
+                unequipped_item_id = _equip_item(ref adventurer, ref bag, item, game_libs);
             }
 
             // if an item was unequipped
@@ -1568,13 +1571,14 @@ mod game_systems {
             } else {
                 // if item is not equipped, it must be in the bag
                 // but we double check and panic just in case
-                let (item_in_bag, _) = bag.contains(item_id);
+                let (item_in_bag, _) = game_libs.bag_contains(bag, item_id);
                 if item_in_bag {
                     // get item from the bag
-                    item = bag.get_item(item_id);
+                    item = game_libs.get_bag_item(bag, item_id);
 
                     // remove item from the bag (sets mutated to true)
-                    bag.remove_item(item_id);
+                    let (new_bag, _) = game_libs.remove_item_from_bag(bag, item_id);
+                    bag = new_bag;
                 } else {
                     panic_with_felt252('Item not owned by adventurer');
                 }
@@ -1638,7 +1642,7 @@ mod game_systems {
                 items_to_equip.append(item.item_id);
             } else {
                 // if it's not being equipped, just add it to bag
-                bag.add_new_item(adventurer, item.item_id)
+                bag = game_libs.add_new_item_to_bag(bag, item.item_id);
             }
 
             // increment counter
@@ -1688,7 +1692,7 @@ mod game_systems {
         let immutable_adventurer = adventurer;
 
         // assert adventurer does not already own the item
-        _assert_item_not_owned(immutable_adventurer, bag, item_id);
+        _assert_item_not_owned(immutable_adventurer, bag, item_id, game_libs);
 
         // assert item is valid
         _assert_valid_item_id(item_id);
@@ -1745,7 +1749,7 @@ mod game_systems {
         let mut adventurer_packed: AdventurerPacked = world.read_model(adventurer_id);
         let mut adventurer = ImplAdventurer::unpack(adventurer_packed.packed);
         _apply_equipment_stat_boosts(ref adventurer, adventurer_id, game_libs);
-        _apply_luck(world, ref adventurer, adventurer_id);
+        _apply_luck(world, ref adventurer, adventurer_id, game_libs);
         adventurer
     }
 
@@ -1809,9 +1813,9 @@ mod game_systems {
     /// @param world A reference to the WorldStorage object.
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-    fn _apply_luck(world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64) {
-        let bag = _load_bag(world, adventurer_id);
-        adventurer.set_luck(bag);
+    fn _apply_luck(world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
+        let bag = _load_bag(world, adventurer_id, game_libs);
+        adventurer.set_luck(bag, game_libs.get_bag_jewelry_greatness(bag));
     }
 
     /// @title Load Bag
@@ -1820,9 +1824,9 @@ mod game_systems {
     /// @param self A reference to the ContractState object.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The bag.
-    fn _load_bag(world: WorldStorage, adventurer_id: u64) -> Bag {
+    fn _load_bag(world: WorldStorage, adventurer_id: u64, game_libs: GameLibs) -> Bag {
         let bag_packed: BagPacked = world.read_model(adventurer_id);
-        ImplBag::unpack(bag_packed.packed)
+        game_libs.unpack_bag(bag_packed.packed)
     }
 
     /// @title Save Bag
@@ -1831,8 +1835,9 @@ mod game_systems {
     /// @param self A reference to the ContractState object.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param bag A reference to the bag.
-    fn _save_bag(ref world: WorldStorage, adventurer_id: u64, bag: Bag) {
-        let packed = bag.pack();
+    /// @param game_libs A reference to the game libraries.
+    fn _save_bag(ref world: WorldStorage, adventurer_id: u64, bag: Bag, game_libs: GameLibs) {
+        let packed = game_libs.pack_bag(bag);
         world.write_model(@BagPacked { adventurer_id, packed });
     }
 
@@ -1930,8 +1935,8 @@ mod game_systems {
     fn _assert_upgrades_available(stat_upgrades_available: u8) {
         assert(stat_upgrades_available != 0, messages::MARKET_CLOSED);
     }
-    fn _assert_item_not_owned(adventurer: Adventurer, bag: Bag, item_id: u8) {
-        let (item_in_bag, _) = bag.contains(item_id);
+    fn _assert_item_not_owned(adventurer: Adventurer, bag: Bag, item_id: u8, game_libs: GameLibs) {
+        let (item_in_bag, _) = game_libs.bag_contains(bag, item_id);
         assert(
             adventurer.equipment.is_equipped(item_id) == false && item_in_bag == false, messages::ITEM_ALREADY_OWNED,
         );

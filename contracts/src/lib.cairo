@@ -11,6 +11,9 @@ pub mod systems {
     pub mod renderer {
         pub mod contracts;
     }
+    pub mod adventurer {
+        pub mod contracts;
+    }
 }
 
 pub mod models {

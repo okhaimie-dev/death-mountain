@@ -1,19 +1,24 @@
 use dojo::world::{WorldStorage, WorldStorageTrait};
 
+use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
+
 use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
 use lootsurvivor::systems::market::contracts::{IMarketSystemsDispatcher, IMarketSystemsDispatcherTrait};
 use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
-use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
+use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait};
+
 use lootsurvivor::models::combat::{SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::bag::Bag;
+use lootsurvivor::models::adventurer::item::Item;
 
 #[derive(Copy, Drop)]
 pub struct GameLibs {
     loot: ILootSystemsDispatcher,
     market: IMarketSystemsDispatcher,
     renderer: IRendererSystemsDispatcher,
+    adventurer: IAdventurerSystemsDispatcher,
 }
 
 #[generate_trait]
@@ -22,11 +27,13 @@ pub impl ImplGame of IGameLib {
         let (loot_systems_address, _) = world.dns(@"loot_systems").unwrap();
         let (market_systems_address, _) = world.dns(@"market_systems").unwrap();
         let (renderer_systems_address, _) = world.dns(@"renderer_systems").unwrap();
+        let (adventurer_systems_address, _) = world.dns(@"adventurer_systems").unwrap();
 
         GameLibs {
             loot: ILootSystemsDispatcher { contract_address: loot_systems_address },
             market: IMarketSystemsDispatcher { contract_address: market_systems_address },
             renderer: IRendererSystemsDispatcher { contract_address: renderer_systems_address },
+            adventurer: IAdventurerSystemsDispatcher { contract_address: adventurer_systems_address },
         }
     }
 
@@ -87,5 +94,50 @@ pub impl ImplGame of IGameLib {
     // Renderer Functions
     fn create_metadata(self: GameLibs, adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag) -> ByteArray {
         self.renderer.create_metadata(adventurer_id, adventurer, adventurer_name, bag)
+    }
+
+    // Bag Functions
+    fn pack_bag(self: GameLibs, bag: Bag) -> felt252 {
+        self.adventurer.pack_bag(bag)
+    }
+
+    fn unpack_bag(self: GameLibs, packed_bag: felt252) -> Bag {
+        self.adventurer.unpack_bag(packed_bag)
+    }
+
+    fn get_bag_item(self: GameLibs, bag: Bag, item_id: u8) -> Item {
+        self.adventurer.get_bag_item(bag, item_id)
+    }
+
+    fn add_new_item_to_bag(self: GameLibs, bag: Bag, item_id: u8) -> Bag {
+        self.adventurer.add_new_item_to_bag(bag, item_id)
+    }
+
+    fn add_item_to_bag(self: GameLibs, bag: Bag, item: Item) -> Bag {
+        self.adventurer.add_item_to_bag(bag, item)
+    }
+
+    fn remove_item_from_bag(self: GameLibs, bag: Bag, item_id: u8) -> (Bag, Item) {
+        self.adventurer.remove_item_from_bag(bag, item_id)
+    }
+
+    fn is_bag_full(self: GameLibs, bag: Bag) -> bool {
+        self.adventurer.is_bag_full(bag)
+    }
+
+    fn bag_contains(self: GameLibs, bag: Bag, item_id: u8) -> (bool, Item) {
+        self.adventurer.bag_contains(bag, item_id)
+    }
+
+    fn get_bag_jewelry(self: GameLibs, bag: Bag) -> Array<Item> {
+        self.adventurer.get_bag_jewelry(bag)
+    }
+
+    fn get_bag_jewelry_greatness(self: GameLibs, bag: Bag) -> u8 {
+        self.adventurer.get_bag_jewelry_greatness(bag)
+    }
+
+    fn bag_has_specials(self: GameLibs, bag: Bag) -> bool {
+        self.adventurer.bag_has_specials(bag)
     }
 }
