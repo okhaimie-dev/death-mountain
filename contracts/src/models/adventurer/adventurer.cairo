@@ -44,16 +44,6 @@ pub struct Adventurer {
 }
 
 #[derive(Drop, Serde)]
-pub struct ItemLeveledUp {
-    pub item_id: u8,
-    pub previous_level: u8,
-    pub new_level: u8,
-    pub suffix_unlocked: bool,
-    pub prefixes_unlocked: bool,
-    pub specials: SpecialPowers,
-}
-
-#[derive(Drop, Serde)]
 pub struct ItemSpecial {
     pub item_id: u8,
     pub special_power: SpecialPowers,

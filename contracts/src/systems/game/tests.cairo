@@ -39,7 +39,7 @@ mod tests {
     use game::{Game, LaunchTournamentCollections};
     use loot::constants::ItemId;
     use loot::loot::{ILoot, ImplLoot, Loot};
-    use market::market::{ImplMarket, ItemPurchase, LootWithPrice};
+    use market::market::{ImplMarket, ItemPurchase};
     use openzeppelin::token::erc20::ERC20Component;
     use openzeppelin::token::erc20::ERC20Component::{
         Approval, ERC20CamelOnlyImpl, ERC20Impl, ERC20MetadataImpl, InternalImpl, Transfer,

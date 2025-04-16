@@ -1,4 +1,3 @@
-use lootsurvivor::constants::discovery::DiscoveryEnums::ExploreResult;
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
@@ -8,7 +7,7 @@ const VRF_ENABLED: bool = false;
 trait IGameSystems<T> {
     // ------ Game Actions ------
     fn start_game(ref self: T, adventurer_id: u64, weapon: u8);
-    fn explore(ref self: T, adventurer_id: u64, till_beast: bool) -> Array<ExploreResult>;
+    fn explore(ref self: T, adventurer_id: u64, till_beast: bool);
     fn attack(ref self: T, adventurer_id: u64, to_the_death: bool);
     fn flee(ref self: T, adventurer_id: u64, to_the_death: bool);
     fn equip(ref self: T, adventurer_id: u64, items: Array<u8>);
@@ -24,7 +23,7 @@ mod game_systems {
     use starknet::{ContractAddress, get_tx_info};
     use lootsurvivor::constants::adventurer::{
         ITEM_MAX_GREATNESS, ITEM_XP_MULTIPLIER_BEASTS, ITEM_XP_MULTIPLIER_OBSTACLES, MAX_GREATNESS_STAT_BONUS,
-        POTION_HEALTH_AMOUNT, STARTING_HEALTH, TWO_POW_32, XP_FOR_DISCOVERIES,
+        POTION_HEALTH_AMOUNT, STARTING_HEALTH, XP_FOR_DISCOVERIES,
     };
     use lootsurvivor::constants::combat::CombatEnums::{Tier};
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
@@ -34,7 +33,7 @@ mod game_systems {
 
     use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked};
     use lootsurvivor::models::adventurer::adventurer::{
-        Adventurer, IAdventurer, ImplAdventurer, ItemLeveledUp,
+        Adventurer, IAdventurer, ImplAdventurer,
     };
     use lootsurvivor::models::adventurer::bag::{Bag};
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};
@@ -42,9 +41,8 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::market::{ItemPurchase, LootWithPrice, ImplMarket};
+    use lootsurvivor::models::market::{ItemPurchase, ImplMarket};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
-    use lootsurvivor::models::event::{BattleDetails, ObstacleDetails};
 
     use lootsurvivor::utils::cartridge::VRFImpl;
 
@@ -169,8 +167,10 @@ mod game_systems {
             // generate a new adventurer using the provided started weapon
             let mut adventurer = ImplAdventurer::new(weapon);
 
-            let _beast_battle_details = _starter_beast_ambush(ref adventurer, adventurer_id, weapon, game_libs);
-
+            // spoof a beast ambush by deducting health from the adventurer
+            adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
+            
+            _save_beast_seed(ref world, adventurer_id, adventurer_id);
             _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
         }
 
@@ -181,7 +181,7 @@ mod game_systems {
         /// @param adventurer_id A u256 representing the ID of the adventurer.
         /// @param till_beast A boolean flag indicating if the exploration continues until
         /// encountering a beast.
-        fn explore(ref self: ContractState, adventurer_id: u64, till_beast: bool) -> Array<ExploreResult> {
+        fn explore(ref self: ContractState, adventurer_id: u64, till_beast: bool) {
             self.assert_token_ownership(adventurer_id);
 
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
@@ -208,8 +208,7 @@ mod game_systems {
             let (explore_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             // go explore
-            let mut explore_results = ArrayTrait::<ExploreResult>::new();
-            _explore(ref world, ref adventurer, ref bag, ref explore_results, adventurer_id, explore_seed, till_beast, game_libs);
+            _explore(ref world, ref adventurer, ref bag, adventurer_id, explore_seed, till_beast, game_libs);
 
             // save state
             if (adventurer.stat_upgrades_available != 0) {
@@ -222,8 +221,6 @@ mod game_systems {
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
-
-            explore_results
         }
 
         /// @title Attack Function
@@ -411,7 +408,7 @@ mod game_systems {
             assert(items.len() <= 8, messages::TOO_MANY_ITEMS);
 
             // equip items and record the unequipped items for event
-            let _unequipped_items = _equip_items(ref adventurer, ref bag, items.clone(), false, game_libs);
+            _equip_items(ref adventurer, ref bag, items.clone(), false, game_libs);
 
             // if the adventurer is equipping an item during battle, the beast will counter attack
             if (adventurer.in_battle()) {
@@ -555,7 +552,7 @@ mod game_systems {
             if (items.len() != 0) {
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-                let (_purchases, _equipped_items, _unequipped_items) = _buy_items(
+                _buy_items(
                     adventurer_entropy.market_seed, ref adventurer, ref bag, pre_upgrade_stat_points, items.clone(), game_libs,
                 );
             }
@@ -622,7 +619,7 @@ mod game_systems {
         // items use adventurer xp with an item multplier so they level faster than Adventurer
         let xp_earned_items = xp_earned_adventurer * ITEM_XP_MULTIPLIER_BEASTS.into();
         // assigning xp to items is more complex so we delegate to an internal function
-        let _items_leveled_up = _grant_xp_to_equipped_items(ref adventurer, xp_earned_items, item_specials_rnd, game_libs);
+        _grant_xp_to_equipped_items(ref adventurer, xp_earned_items, item_specials_rnd, game_libs);
 
         // Reveal starting stats if adventurer is on level 1
         if (adventurer.get_level() == 1) {
@@ -664,37 +661,6 @@ mod game_systems {
     // }
 
 
-    /// @title Starter Beast Ambush
-    /// @notice Simulates a beast ambush for the adventurer and returns the battle details.
-    /// @dev This function simulates a beast ambush for the adventurer and returns the battle
-    /// details.
-    /// @param adventurer A reference to the adventurer.
-    /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
-    /// @param starting_weapon A u8 representing the starting weapon for the adventurer.
-    /// @return BattleDetails The battle details for the ambush.
-    fn _starter_beast_ambush(ref adventurer: Adventurer, adventurer_id: u64, starting_weapon: u8, game_libs: GameLibs) -> BattleDetails {
-        // starter beast will always be weak against starter weapon so we don't need to
-        // expend a lot of resources to generate strong entropy. Instead just downres
-        // the adventurer id to u32 and use that for beast seed
-        let beast_seed = (adventurer_id % TWO_POW_32.into()).try_into().unwrap();
-
-        // generate starter beast which will have weak armor against the adventurers starter weapon
-        let starter_beast = game_libs.get_starter_beast(game_libs.get_type(starting_weapon), beast_seed);
-
-        // spoof a beast ambush by deducting health from the adventurer
-        adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
-
-        // return battle details
-        BattleDetails {
-            seed: beast_seed,
-            id: starter_beast.id,
-            beast_specs: starter_beast.combat_spec,
-            damage: STARTER_BEAST_ATTACK_DAMAGE,
-            critical_hit: false,
-            location: 2,
-        }
-    }
-
     /// @title Explore
     /// @notice Allows the adventurer to explore the world and encounter beasts, obstacles, or
     /// discoveries.
@@ -709,7 +675,6 @@ mod game_systems {
         ref world: WorldStorage,
         ref adventurer: Adventurer,
         ref bag: Bag,
-        ref explore_results: Array<ExploreResult>,
         adventurer_id: u64,
         explore_seed: u64,
         explore_till_beast: bool,
@@ -721,7 +686,6 @@ mod game_systems {
 
         // go exploring
         let explore_result = ImplAdventurer::get_random_explore(explore_rnd);
-        explore_results.append(explore_result);
         match explore_result {
             ExploreResult::Beast(()) => {
                 _beast_encounter(
@@ -761,7 +725,7 @@ mod game_systems {
         // if explore_till_beast is true and adventurer can still explore
         if explore_till_beast && adventurer.can_explore() {
             // Keep exploring
-            _explore(ref world, ref adventurer, ref bag, ref explore_results, adventurer_id, explore_seed, explore_till_beast, game_libs);
+            _explore(ref world, ref adventurer, ref bag, adventurer_id, explore_seed, explore_till_beast, game_libs);
         }
     }
 
@@ -780,7 +744,7 @@ mod game_systems {
         );
 
         // Grant adventurer XP to progress entropy
-        let (_previous_level, _new_level) = adventurer.increase_adventurer_xp(XP_FOR_DISCOVERIES.into());
+        adventurer.increase_adventurer_xp(XP_FOR_DISCOVERIES.into());
 
         // handle discovery type
         match discovery_type {
@@ -810,21 +774,14 @@ mod game_systems {
                     adventurer.increase_gold(amount);
                     // if the item is not already owned or equipped and the adventurer has space for it
                 } else {
-                    // no items will be dropped as part of discovery
-                    let _dropped_items = ArrayTrait::<u8>::new();
-                    let mut equipped_items = ArrayTrait::<u8>::new();
-                    let mut bagged_items = ArrayTrait::<u8>::new();
-
                     let item = ImplItem::new(item_id);
                     if slot_free {
                         // equip the item
                         let slot = game_libs.get_slot(item.id);
                         adventurer.equipment.equip(item, slot);
-                        equipped_items.append(item.id);
                     } else {
                         // otherwise toss it in bag
                         bag = game_libs.add_item_to_bag(bag, item);
-                        bagged_items.append(item.id);
                     }
                 }
             },
@@ -875,12 +832,9 @@ mod game_systems {
         // if adventurer was ambushed
         if (is_ambush) {
             // process beast attack
-            let _beast_battle_details = _beast_attack(
+            _beast_attack(
                 ref adventurer, beast, seed, crit_hit_rnd, dmg_location_rnd, is_ambush, game_libs,
             );
-            if (adventurer.health == 0) {
-                return;
-            }
         }
     }
 
@@ -924,17 +878,6 @@ mod game_systems {
         // get item xp reward for obstacle
         let item_xp_reward = base_reward * ITEM_XP_MULTIPLIER_OBSTACLES.into();
 
-        // create obstacle details for event
-        let _obstacle_details = ObstacleDetails {
-            id: obstacle.id,
-            level: obstacle.combat_spec.level,
-            damage_taken,
-            damage_location: ImplCombat::slot_to_u8(damage_slot),
-            critical_hit: combat_result.critical_hit_bonus > 0,
-            adventurer_xp_reward: base_reward,
-            item_xp_reward,
-        };
-
         // attempt to dodge obstacle
         let dodged = ImplCombat::ability_based_avoid_threat(adventurer_level, adventurer.stats.intelligence, dodge_rnd);
 
@@ -950,10 +893,10 @@ mod game_systems {
         }
 
         // grant adventurer xp and get previous and new level
-        let (_previous_level, _new_level) = adventurer.increase_adventurer_xp(base_reward);
+        adventurer.increase_adventurer_xp(base_reward);
 
         // grant items xp and get array of items that leveled up
-        let _items_leveled_up = _grant_xp_to_equipped_items(ref adventurer, item_xp_reward, item_specials_rnd, game_libs);
+        _grant_xp_to_equipped_items(ref adventurer, item_xp_reward, item_specials_rnd, game_libs);
     }
 
     // @notice Grants XP to items currently equipped by an adventurer, and processes any level
@@ -971,8 +914,7 @@ mod game_systems {
         xp_amount: u16,
         item_specials_rnd: u16,
         game_libs: GameLibs,
-    ) -> Array<ItemLeveledUp> {
-        let mut items_leveled_up = ArrayTrait::<ItemLeveledUp>::new();
+    ) {
         let equipped_items = adventurer.get_equipped_items();
         let mut item_index: u32 = 0;
         loop {
@@ -991,7 +933,7 @@ mod game_systems {
             // if item leveled up
             if new_level > previous_level {
                 // process level up
-                let updated_item = _process_item_level_up(
+                _process_item_level_up(
                     ref adventurer,
                     adventurer.equipment.get_item_at_slot(item_slot),
                     previous_level,
@@ -999,15 +941,10 @@ mod game_systems {
                     item_specials_rnd,
                     game_libs,
                 );
-
-                // add item to list of items that leveled up to be emitted in event
-                items_leveled_up.append(updated_item);
             }
 
             item_index += 1;
         };
-
-        items_leveled_up
     }
 
     /// @title Process Item Level Up
@@ -1017,10 +954,9 @@ mod game_systems {
     /// @param item A reference to the item.
     /// @param previous_level A u8 representing the previous level of the item.
     /// @param new_level A u8 representing the new level of the item.
-    /// @return ItemLeveledUp The updated item.
     fn _process_item_level_up(
         ref adventurer: Adventurer, item: Item, previous_level: u8, new_level: u8, item_specials_rnd: u16, game_libs: GameLibs,
-    ) -> ItemLeveledUp {
+    ) {
         // if item reached max greatness level
         if (new_level == ITEM_MAX_GREATNESS) {
             // adventurer receives a bonus stat upgrade point
@@ -1065,8 +1001,6 @@ mod game_systems {
                 }
             }
         }
-
-        ItemLeveledUp { item_id: item.id, previous_level, new_level, suffix_unlocked, prefixes_unlocked, specials }
     }
 
     fn _network_supports_vrf() -> bool {
@@ -1168,7 +1102,6 @@ mod game_systems {
     /// @param beast The beast that is attacking
     /// @param beast_seed The seed associated with the beast
     /// @param critical_hit_rnd A random value used to determine whether a critical hit was made
-    /// @return Returns a BattleDetails object containing details of the beast's attack, including
     /// the seed, beast ID, combat specifications of the beast, total damage dealt, whether a
     /// critical hit was made, and the location of the attack on the adventurer.
     fn _beast_attack(
@@ -1179,7 +1112,7 @@ mod game_systems {
         attack_location_rnd: u8,
         is_ambush: bool,
         game_libs: GameLibs,
-    ) -> BattleDetails {
+    ) {
         // beasts attack random location on adventurer
         let attack_location = ImplAdventurer::get_attack_location(attack_location_rnd);
 
@@ -1199,16 +1132,6 @@ mod game_systems {
 
         // deduct damage taken from adventurer's health
         adventurer.decrease_health(combat_result.total_damage);
-
-        // return beast battle details
-        BattleDetails {
-            seed: beast_seed,
-            id: beast.id,
-            beast_specs: beast.combat_spec,
-            damage: combat_result.total_damage,
-            critical_hit: combat_result.critical_hit_bonus > 0,
-            location: ImplCombat::slot_to_u8(attack_location),
-        }
     }
 
     /// @title Flee
@@ -1326,11 +1249,7 @@ mod game_systems {
         items_to_equip: Array<u8>,
         is_newly_purchased: bool,
         game_libs: GameLibs,
-    ) -> Array<u8> {
-        // mutable array from returning items that were unequipped as a result of equipping the
-        // items
-        let mut unequipped_items = ArrayTrait::<u8>::new();
-
+    ) {
         // get a clone of our items to equip to keep ownership for event
         let _equipped_items = items_to_equip.clone();
 
@@ -1363,16 +1282,8 @@ mod game_systems {
                 unequipped_item_id = _equip_item(ref adventurer, ref bag, item, game_libs);
             }
 
-            // if an item was unequipped
-            if unequipped_item_id != 0 {
-                // add it to our return array so we can emit these in events
-                unequipped_items.append(unequipped_item_id);
-            }
-
             i += 1;
         };
-
-        unequipped_items
     }
 
     /// @title Drop Items
@@ -1451,16 +1362,13 @@ mod game_systems {
         stat_upgrades_available: u8,
         items_to_purchase: Array<ItemPurchase>,
         game_libs: GameLibs,
-    ) -> (Array<LootWithPrice>, Array<u8>, Array<u8>) {
+    ) {
         // get adventurer entropy
         let market_inventory = game_libs.get_market(market_seed, stat_upgrades_available);
 
         // mutable array for returning items that need to be equipped as part of this purchase
-        let mut unequipped_items = ArrayTrait::<u8>::new();
         let mut items_to_equip = ArrayTrait::<u8>::new();
 
-        // iterate over item ids to purchase and store results in purchases array
-        let mut purchases = ArrayTrait::<LootWithPrice>::new();
         let mut item_number: u32 = 0;
         loop {
             if item_number == items_to_purchase.len() {
@@ -1477,7 +1385,7 @@ mod game_systems {
             assert(ImplMarket::is_item_available(ref inventory, item.item_id), messages::ITEM_DOES_NOT_EXIST);
 
             // buy it and store result in our purchases array for event
-            purchases.append(_buy_item(ref adventurer, ref bag, item.item_id, game_libs));
+            _buy_item(ref adventurer, ref bag, item.item_id, game_libs);
 
             // if item is being equipped as part of the purchase
             if item.equip {
@@ -1495,10 +1403,8 @@ mod game_systems {
         // if we have items to equip as part of the purchase
         if (items_to_equip.len() != 0) {
             // equip them and record the items that were unequipped
-            unequipped_items = _equip_items(ref adventurer, ref bag, items_to_equip.clone(), true, game_libs);
+            _equip_items(ref adventurer, ref bag, items_to_equip.clone(), true, game_libs);
         }
-
-        (purchases, items_to_equip, unequipped_items)
     }
 
     /// @title Buy Potions
@@ -1529,8 +1435,7 @@ mod game_systems {
     /// @param adventurer A reference to the adventurer.
     /// @param bag A reference to the bag.
     /// @param item_id A u8 representing the ID of the item to be purchased.
-    /// @return The item that was purchased and its price.
-    fn _buy_item(ref adventurer: Adventurer, ref bag: Bag, item_id: u8, game_libs: GameLibs) -> LootWithPrice {
+    fn _buy_item(ref adventurer: Adventurer, ref bag: Bag, item_id: u8, game_libs: GameLibs) {
         // create an immutable copy of our adventurer to use for validation
         let immutable_adventurer = adventurer;
 
@@ -1554,9 +1459,6 @@ mod game_systems {
 
         // deduct charisma adjusted cost of item from adventurer's gold balance
         adventurer.deduct_gold(charisma_adjusted_price);
-
-        // return item with price
-        LootWithPrice { item: item, price: charisma_adjusted_price }
     }
 
     // ------------------------------------------ //
@@ -1786,7 +1688,7 @@ mod game_systems {
         fn assert_game_not_started(self: @ContractState, adventurer_id: u64) {
             let game_libs = ImplGame::get_libs(self.world(@DEFAULT_NS()));
             let adventurer = game_libs.get_adventurer(adventurer_id);
-            assert!(adventurer.xp == 0, "Loot Survivor: Adventurer {} has already started", adventurer_id);
+            assert!(adventurer.xp == 0 && adventurer.health == 0, "Loot Survivor: Adventurer {} has already started", adventurer_id);
         }
     }
 }
