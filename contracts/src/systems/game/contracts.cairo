@@ -581,9 +581,9 @@ mod game_systems {
     /// @notice Reveals and applies starting stats to the adventurer.
     /// @param adventurer A reference to the Adventurer object.
     /// @param seed A u64 representing the seed for the adventurer.
-    fn reveal_starting_stats(ref adventurer: Adventurer, seed: u64) {
+    fn reveal_starting_stats(ref adventurer: Adventurer, seed: u64, game_libs: GameLibs) {
         // reveal and apply starting stats
-        adventurer.stats = ImplStats::generate_starting_stats(seed);
+        adventurer.stats = game_libs.generate_starting_stats(seed);
 
         // increase adventurer's health for any vitality they received
         adventurer.health += adventurer.stats.get_max_health() - STARTING_HEALTH.into();
@@ -626,7 +626,7 @@ mod game_systems {
 
         // Reveal starting stats if adventurer is on level 1
         if (adventurer.get_level() == 1) {
-            reveal_starting_stats(ref adventurer, level_seed);
+            reveal_starting_stats(ref adventurer, level_seed, game_libs);
         }
 
         // // if beast beast level is above collectible threshold

@@ -13,6 +13,7 @@ use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
+use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::beast::Beast;
 
 #[derive(Copy, Drop)]
@@ -104,6 +105,10 @@ pub impl ImplGame of IGameLib {
 
     fn pack_adventurer(self: GameLibs, adventurer: Adventurer) -> felt252 {
         self.adventurer.pack_adventurer(adventurer)
+    }
+
+    fn generate_starting_stats(self: GameLibs, seed: u64) -> Stats {
+        self.adventurer.generate_starting_stats(seed)
     }
 
     fn remove_stat_boosts(self: GameLibs, adventurer: Adventurer) -> Adventurer {
