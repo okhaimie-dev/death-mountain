@@ -19,7 +19,7 @@ pub trait IBeastSystems<T> {
 }
 
 #[dojo::contract]
-mod Beast_systems {
+mod beast_systems {
     use lootsurvivor::constants::combat::CombatEnums::Type;
     use lootsurvivor::models::beast::{Beast, ImplBeast};
     use super::IBeastSystems;

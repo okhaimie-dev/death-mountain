@@ -1312,429 +1312,6 @@
   },
   "contracts": [
     {
-      "address": "0x2dcffa1d07f283a4917b14d68f9d6f4796117b7bf57d6eba89e6491692d2e04",
-      "class_hash": "0x1f5f8652d1be0bf53921e35e06fd84f955218e13b9344443b276cf59fa1324c",
-      "abi": [
-        {
-          "type": "impl",
-          "name": "Beast_systems__ContractImpl",
-          "interface_name": "dojo::contract::interface::IContract"
-        },
-        {
-          "type": "interface",
-          "name": "dojo::contract::interface::IContract",
-          "items": []
-        },
-        {
-          "type": "impl",
-          "name": "Beast_systems__DeployedContractImpl",
-          "interface_name": "dojo::meta::interface::IDeployedResource"
-        },
-        {
-          "type": "struct",
-          "name": "core::byte_array::ByteArray",
-          "members": [
-            {
-              "name": "data",
-              "type": "core::array::Array::<core::bytes_31::bytes31>"
-            },
-            {
-              "name": "pending_word",
-              "type": "core::felt252"
-            },
-            {
-              "name": "pending_word_len",
-              "type": "core::integer::u32"
-            }
-          ]
-        },
-        {
-          "type": "interface",
-          "name": "dojo::meta::interface::IDeployedResource",
-          "items": [
-            {
-              "type": "function",
-              "name": "dojo_name",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "core::byte_array::ByteArray"
-                }
-              ],
-              "state_mutability": "view"
-            }
-          ]
-        },
-        {
-          "type": "impl",
-          "name": "BeastSystemsImpl",
-          "interface_name": "lootsurvivor::systems::beast::contracts::IBeastSystems"
-        },
-        {
-          "type": "enum",
-          "name": "lootsurvivor::constants::combat::CombatEnums::Type",
-          "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
-            {
-              "name": "Magic_or_Cloth",
-              "type": "()"
-            },
-            {
-              "name": "Blade_or_Hide",
-              "type": "()"
-            },
-            {
-              "name": "Bludgeon_or_Metal",
-              "type": "()"
-            },
-            {
-              "name": "Necklace",
-              "type": "()"
-            },
-            {
-              "name": "Ring",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "lootsurvivor::constants::combat::CombatEnums::Tier",
-          "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
-            {
-              "name": "T1",
-              "type": "()"
-            },
-            {
-              "name": "T2",
-              "type": "()"
-            },
-            {
-              "name": "T3",
-              "type": "()"
-            },
-            {
-              "name": "T4",
-              "type": "()"
-            },
-            {
-              "name": "T5",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::combat::SpecialPowers",
-          "members": [
-            {
-              "name": "special1",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "special2",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "special3",
-              "type": "core::integer::u8"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::combat::CombatSpec",
-          "members": [
-            {
-              "name": "tier",
-              "type": "lootsurvivor::constants::combat::CombatEnums::Tier"
-            },
-            {
-              "name": "item_type",
-              "type": "lootsurvivor::constants::combat::CombatEnums::Type"
-            },
-            {
-              "name": "level",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "specials",
-              "type": "lootsurvivor::models::combat::SpecialPowers"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::beast::Beast",
-          "members": [
-            {
-              "name": "id",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "starting_health",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "combat_spec",
-              "type": "lootsurvivor::models::combat::CombatSpec"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
-            {
-              "name": "False",
-              "type": "()"
-            },
-            {
-              "name": "True",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "interface",
-          "name": "lootsurvivor::systems::beast::contracts::IBeastSystems",
-          "items": [
-            {
-              "type": "function",
-              "name": "get_starter_beast",
-              "inputs": [
-                {
-                  "name": "starter_weapon_type",
-                  "type": "lootsurvivor::constants::combat::CombatEnums::Type"
-                },
-                {
-                  "name": "seed",
-                  "type": "core::integer::u32"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "lootsurvivor::models::beast::Beast"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_beast",
-              "inputs": [
-                {
-                  "name": "adventurer_level",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "weapon_type",
-                  "type": "lootsurvivor::constants::combat::CombatEnums::Type"
-                },
-                {
-                  "name": "seed",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "health_rnd",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "level_rnd",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "special2_rnd",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "special3_rnd",
-                  "type": "core::integer::u8"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "lootsurvivor::models::beast::Beast"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_critical_hit_chance",
-              "inputs": [
-                {
-                  "name": "adventurer_level",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "is_ambush",
-                  "type": "core::bool"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::integer::u8"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "attempt_flee",
-              "inputs": [
-                {
-                  "name": "adventurer_level",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "adventurer_dexterity",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "rnd",
-                  "type": "core::integer::u8"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::bool"
-                }
-              ],
-              "state_mutability": "view"
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "dojo_init",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "view"
-        },
-        {
-          "type": "impl",
-          "name": "WorldProviderImpl",
-          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
-        },
-        {
-          "type": "struct",
-          "name": "dojo::world::iworld::IWorldDispatcher",
-          "members": [
-            {
-              "name": "contract_address",
-              "type": "core::starknet::contract_address::ContractAddress"
-            }
-          ]
-        },
-        {
-          "type": "interface",
-          "name": "dojo::contract::components::world_provider::IWorldProvider",
-          "items": [
-            {
-              "type": "function",
-              "name": "world_dispatcher",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "dojo::world::iworld::IWorldDispatcher"
-                }
-              ],
-              "state_mutability": "view"
-            }
-          ]
-        },
-        {
-          "type": "impl",
-          "name": "UpgradeableImpl",
-          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
-        },
-        {
-          "type": "interface",
-          "name": "dojo::contract::components::upgradeable::IUpgradeable",
-          "items": [
-            {
-              "type": "function",
-              "name": "upgrade",
-              "inputs": [
-                {
-                  "name": "new_class_hash",
-                  "type": "core::starknet::class_hash::ClassHash"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            }
-          ]
-        },
-        {
-          "type": "constructor",
-          "name": "constructor",
-          "inputs": []
-        },
-        {
-          "type": "event",
-          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "class_hash",
-              "type": "core::starknet::class_hash::ClassHash",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
-          "kind": "enum",
-          "variants": [
-            {
-              "name": "Upgraded",
-              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
-              "kind": "nested"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
-          "kind": "enum",
-          "variants": []
-        },
-        {
-          "type": "event",
-          "name": "lootsurvivor::systems::beast::contracts::Beast_systems::Event",
-          "kind": "enum",
-          "variants": [
-            {
-              "name": "UpgradeableEvent",
-              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
-              "kind": "nested"
-            },
-            {
-              "name": "WorldProviderEvent",
-              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
-              "kind": "nested"
-            }
-          ]
-        }
-      ],
-      "init_calldata": [],
-      "tag": "ls_0_0_1-Beast_systems",
-      "selector": "0x6475b4d91376d510b64a968ceeb10bce4f0a8925867c9e40af3dcdeb5e3fd22",
-      "systems": [
-        "upgrade"
-      ]
-    },
-    {
       "address": "0x2e490b7dc4e6c1813f70e4c316f3c04cc45450ae5a95a313b22c66bd748d15f",
       "class_hash": "0x6e4bf5045c45d8d1bf309b6bfb0754708d2d5a4c429d16b81242445909ec3ca",
       "abi": [
@@ -2483,6 +2060,429 @@
       "init_calldata": [],
       "tag": "ls_0_0_1-adventurer_systems",
       "selector": "0x32e206b848fbf2b2f37f0e6722d601a13e51ffc7df5a0aceb677507f8bd43c5",
+      "systems": [
+        "upgrade"
+      ]
+    },
+    {
+      "address": "0x1b0b028d182ecff04b688f8943ba9a0844e06058e1bef0a9a2eb9510fb379e6",
+      "class_hash": "0x8a23853c2381eee79e7a1e9ed08f2616239756ecfde3eeb5d01c2db7fe6aa9",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "beast_systems__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "beast_systems__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "BeastSystemsImpl",
+          "interface_name": "lootsurvivor::systems::beast::contracts::IBeastSystems"
+        },
+        {
+          "type": "enum",
+          "name": "lootsurvivor::constants::combat::CombatEnums::Type",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Magic_or_Cloth",
+              "type": "()"
+            },
+            {
+              "name": "Blade_or_Hide",
+              "type": "()"
+            },
+            {
+              "name": "Bludgeon_or_Metal",
+              "type": "()"
+            },
+            {
+              "name": "Necklace",
+              "type": "()"
+            },
+            {
+              "name": "Ring",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "lootsurvivor::constants::combat::CombatEnums::Tier",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "T1",
+              "type": "()"
+            },
+            {
+              "name": "T2",
+              "type": "()"
+            },
+            {
+              "name": "T3",
+              "type": "()"
+            },
+            {
+              "name": "T4",
+              "type": "()"
+            },
+            {
+              "name": "T5",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::combat::SpecialPowers",
+          "members": [
+            {
+              "name": "special1",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "special2",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "special3",
+              "type": "core::integer::u8"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::combat::CombatSpec",
+          "members": [
+            {
+              "name": "tier",
+              "type": "lootsurvivor::constants::combat::CombatEnums::Tier"
+            },
+            {
+              "name": "item_type",
+              "type": "lootsurvivor::constants::combat::CombatEnums::Type"
+            },
+            {
+              "name": "level",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "specials",
+              "type": "lootsurvivor::models::combat::SpecialPowers"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::beast::Beast",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "starting_health",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "combat_spec",
+              "type": "lootsurvivor::models::combat::CombatSpec"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "lootsurvivor::systems::beast::contracts::IBeastSystems",
+          "items": [
+            {
+              "type": "function",
+              "name": "get_starter_beast",
+              "inputs": [
+                {
+                  "name": "starter_weapon_type",
+                  "type": "lootsurvivor::constants::combat::CombatEnums::Type"
+                },
+                {
+                  "name": "seed",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "lootsurvivor::models::beast::Beast"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_beast",
+              "inputs": [
+                {
+                  "name": "adventurer_level",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "weapon_type",
+                  "type": "lootsurvivor::constants::combat::CombatEnums::Type"
+                },
+                {
+                  "name": "seed",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "health_rnd",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "level_rnd",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "special2_rnd",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "special3_rnd",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "lootsurvivor::models::beast::Beast"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_critical_hit_chance",
+              "inputs": [
+                {
+                  "name": "adventurer_level",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "is_ambush",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "attempt_flee",
+              "inputs": [
+                {
+                  "name": "adventurer_level",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "adventurer_dexterity",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "rnd",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "view"
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "lootsurvivor::systems::beast::contracts::beast_systems::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "ls_0_0_1-beast_systems",
+      "selector": "0x2684bca83d12f5bedb29b975f6e2dbca1350a43a0f98c2bcf272283d28ffefa",
       "systems": [
         "upgrade"
       ]

@@ -1,6 +1,7 @@
 pub mod systems {
     pub mod game {
         pub mod contracts;
+        pub mod tests;
     }
     pub mod loot {
         pub mod contracts;

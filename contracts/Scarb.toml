@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.9.4"
+cairo-version = "2.9.4"
 name = "lootsurvivor"
 version = "1.2.2"
 edition = "2024_07"
@@ -8,7 +8,7 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
-starknet = "=2.9.4"
+starknet = "2.9.4"
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v1.0.0" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
@@ -17,9 +17,8 @@ alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandr
 graffiti = { git = "https://github.com/ponderingdemocritus/graffiti", rev = "bc569531791dbc71c6cd8d9bc154c34eedad31fe" }
 
 [dev-dependencies]
+cairo_test = "2.9.4"
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.4.0" }
-starknet = "=2.9.4"
-cairo_test = "=2.9.4"
 
 [[target.starknet-contract]]
 sierra = true

@@ -4,7 +4,7 @@ use lootsurvivor::models::market::ItemPurchase;
 const VRF_ENABLED: bool = false;
 
 #[starknet::interface]
-trait IGameSystems<T> {
+pub trait IGameSystems<T> {
     // ------ Game Actions ------
     fn start_game(ref self: T, adventurer_id: u64, weapon: u8);
     fn explore(ref self: T, adventurer_id: u64, till_beast: bool);
