@@ -1,8 +1,8 @@
+use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
+use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
-use lootsurvivor::models::adventurer::adventurer::Adventurer;
 use lootsurvivor::models::adventurer::stats::Stats;
-use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
 
 #[starknet::interface]
 pub trait IAdventurerSystems<T> {
@@ -13,7 +13,9 @@ pub trait IAdventurerSystems<T> {
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
     fn remove_stat_boosts(self: @T, adventurer: Adventurer) -> Adventurer;
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
-    fn get_discovery(self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType;
+    fn get_discovery(
+        self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8,
+    ) -> DiscoveryType;
     fn pack_bag(self: @T, bag: Bag) -> felt252;
     fn get_bag_item(self: @T, bag: Bag, item_id: u8) -> Item;
     fn add_item_to_bag(self: @T, bag: Bag, item: Item) -> Bag;
@@ -28,21 +30,21 @@ pub trait IAdventurerSystems<T> {
 
 #[dojo::contract]
 mod adventurer_systems {
-    use super::IAdventurerSystems;
     use dojo::model::ModelStorage;
     use dojo::world::WorldStorage;
+    use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
+
+    use lootsurvivor::constants::world::{DEFAULT_NS};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
+    use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
+    use lootsurvivor::models::adventurer::equipment::IEquipment;
+    use lootsurvivor::models::adventurer::item::Item;
+    use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
+    use lootsurvivor::models::game::{AdventurerPacked, BagPacked};
+    use lootsurvivor::models::market::ImplMarket;
+    use super::IAdventurerSystems;
 
     use tournaments::components::models::game::TokenMetadata;
-    use lootsurvivor::models::game::{AdventurerPacked, BagPacked};
-    use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::item::Item;
-    use lootsurvivor::models::adventurer::stats::{Stats, ImplStats};
-    use lootsurvivor::models::adventurer::equipment::IEquipment;
-    use lootsurvivor::models::market::ImplMarket;
-    
-    use lootsurvivor::constants::world::{DEFAULT_NS};
-    use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
 
     #[abi(embed_v0)]
     impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
@@ -53,7 +55,7 @@ mod adventurer_systems {
         fn load_assets(self: @ContractState, adventurer_id: u64) -> (Adventurer, Bag) {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let mut adventurer = _load_adventurer(world, adventurer_id);
-            
+
             if adventurer.equipment.has_specials() {
                 let item_stat_boosts = _get_stat_boosts(adventurer);
                 adventurer.stats.apply_stats(item_stat_boosts);
@@ -72,7 +74,7 @@ mod adventurer_systems {
         fn get_bag(self: @ContractState, adventurer_id: u64) -> Bag {
             _load_bag(self.world(@DEFAULT_NS()), adventurer_id)
         }
-        
+
         fn get_adventurer_name(self: @ContractState, adventurer_id: u64) -> felt252 {
             let world: WorldStorage = self.world(@DEFAULT_NS());
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
@@ -91,7 +93,9 @@ mod adventurer_systems {
             ImplAdventurer::pack(adventurer)
         }
 
-        fn get_discovery(self: @ContractState, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType {
+        fn get_discovery(
+            self: @ContractState, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8,
+        ) -> DiscoveryType {
             ImplAdventurer::get_discovery(adventurer_level, discovery_type_rnd, amount_rnd1, amount_rnd2)
         }
 

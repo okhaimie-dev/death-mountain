@@ -25,8 +25,7 @@ mod tests {
     };
     use game::game::constants::messages::STAT_UPGRADES_AVAILABLE;
     use game::game::constants::{
-        GAME_EXPIRY_DAYS, REWARD_DISTRIBUTIONS_BP, Rewards, SECONDS_IN_DAY,
-        STARTER_BEAST_ATTACK_DAMAGE,
+        GAME_EXPIRY_DAYS, REWARD_DISTRIBUTIONS_BP, Rewards, SECONDS_IN_DAY, STARTER_BEAST_ATTACK_DAMAGE,
     };
     use game::game::interfaces::{IGameDispatcher, IGameDispatcherTrait};
     use game::tests::mock_randomness::{IMockRandomnessDispatcher, IMockRandomnessDispatcherTrait, MockRandomness};

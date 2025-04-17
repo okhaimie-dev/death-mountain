@@ -1,6 +1,6 @@
 use core::integer::u64_safe_divmod;
-use core::traits::DivRem;
 use core::panic_with_felt252;
+use core::traits::DivRem;
 use lootsurvivor::constants::loot::ItemSuffix;
 
 pub const MAX_STAT_VALUE: u8 = 31;
@@ -385,7 +385,7 @@ const TWO_POW_25: u256 = 0x2000000;
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use lootsurvivor::models::adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats, IStat};
+    use lootsurvivor::models::adventurer::stats::{IStat, ImplStats, MAX_STAT_VALUE, Stats};
 
     #[test]
     #[available_gas(1039260)]
@@ -424,13 +424,7 @@ mod tests {
     #[available_gas(142010)]
     fn test_pack_protection_overflow_strength() {
         let stats = Stats {
-            strength: MAX_STAT_VALUE + 1,
-            dexterity: 0,
-            vitality: 0,
-            intelligence: 0,
-            wisdom: 0,
-            charisma: 0,
-            luck: 0,
+            strength: MAX_STAT_VALUE + 1, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
 
         stats.pack();
@@ -441,13 +435,7 @@ mod tests {
     #[available_gas(142010)]
     fn test_pack_protection_overflow_dexterity() {
         let stats = Stats {
-            strength: 0,
-            dexterity: MAX_STAT_VALUE + 1,
-            vitality: 0,
-            intelligence: 0,
-            wisdom: 0,
-            charisma: 0,
-            luck: 0,
+            strength: 0, dexterity: MAX_STAT_VALUE + 1, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
 
         stats.pack();
@@ -458,13 +446,7 @@ mod tests {
     #[available_gas(142010)]
     fn test_pack_protection_overflow_vitality() {
         let stats = Stats {
-            strength: 0,
-            dexterity: 0,
-            vitality: MAX_STAT_VALUE + 1,
-            intelligence: 0,
-            wisdom: 0,
-            charisma: 0,
-            luck: 0,
+            strength: 0, dexterity: 0, vitality: MAX_STAT_VALUE + 1, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
 
         stats.pack();
@@ -475,13 +457,7 @@ mod tests {
     #[available_gas(142010)]
     fn test_pack_protection_overflow_intelligence() {
         let stats = Stats {
-            strength: 0,
-            dexterity: 0,
-            vitality: 0,
-            intelligence: MAX_STAT_VALUE + 1,
-            wisdom: 0,
-            charisma: 0,
-            luck: 0,
+            strength: 0, dexterity: 0, vitality: 0, intelligence: MAX_STAT_VALUE + 1, wisdom: 0, charisma: 0, luck: 0,
         };
 
         stats.pack();
@@ -492,13 +468,7 @@ mod tests {
     #[available_gas(142010)]
     fn test_pack_protection_overflow_wisdom() {
         let stats = Stats {
-            strength: 0,
-            dexterity: 0,
-            vitality: 0,
-            intelligence: 0,
-            wisdom: MAX_STAT_VALUE + 1,
-            charisma: 0,
-            luck: 0,
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: MAX_STAT_VALUE + 1, charisma: 0, luck: 0,
         };
 
         stats.pack();

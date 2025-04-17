@@ -18,9 +18,10 @@ trait IGameSystems<T> {
 
 #[dojo::contract]
 mod game_systems {
-    use super::VRF_ENABLED;
     use core::panic_with_felt252;
-    use starknet::{ContractAddress, get_tx_info};
+
+    use dojo::model::ModelStorage;
+    use dojo::world::WorldStorage;
     use lootsurvivor::constants::adventurer::{
         ITEM_MAX_GREATNESS, ITEM_XP_MULTIPLIER_BEASTS, ITEM_XP_MULTIPLIER_OBSTACLES, MAX_GREATNESS_STAT_BONUS,
         POTION_HEALTH_AMOUNT, STARTING_HEALTH, XP_FOR_DISCOVERIES,
@@ -31,29 +32,26 @@ mod game_systems {
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
     use lootsurvivor::constants::world::{DEFAULT_NS, SCORE_ATTRIBUTE, SCORE_MODEL, SETTINGS_MODEL};
 
-    use lootsurvivor::models::game::{AdventurerPacked, AdventurerEntropy, BagPacked};
-    use lootsurvivor::models::adventurer::adventurer::{
-        Adventurer, IAdventurer, ImplAdventurer,
-    };
+    use lootsurvivor::libs::game::{GameLibs, IGameLib, ImplGame};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::bag::{Bag};
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};
     use lootsurvivor::models::adventurer::item::{ImplItem, Item};
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::market::{ItemPurchase, ImplMarket};
+
+    use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked};
+    use lootsurvivor::models::market::{ImplMarket, ItemPurchase};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
 
     use lootsurvivor::utils::cartridge::VRFImpl;
 
-    use lootsurvivor::libs::game::{IGameLib, ImplGame, GameLibs};
-
-    use dojo::model::ModelStorage;
-    use dojo::world::WorldStorage;
-    
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::interface::{IERC721Metadata};
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
+    use starknet::{ContractAddress, get_tx_info};
+    use super::VRF_ENABLED;
 
     use tournaments::components::game::game_component;
     use tournaments::components::interfaces::{IGameDetails, ISettings};
@@ -169,7 +167,7 @@ mod game_systems {
 
             // spoof a beast ambush by deducting health from the adventurer
             adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
-            
+
             _save_beast_seed(ref world, adventurer_id, adventurer_id);
             _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
         }
@@ -185,16 +183,15 @@ mod game_systems {
             self.assert_token_ownership(adventurer_id);
 
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
-            
+
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
-            
+
             // get game libaries
             let game_libs = ImplGame::get_libs(world);
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.load_assets(adventurer_id);
-
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -252,40 +249,33 @@ mod game_systems {
             _assert_in_battle(immutable_adventurer);
 
             // get weapon specials
-            let weapon_specials = game_libs.get_specials(
-                adventurer.equipment.weapon.id,
-                adventurer.equipment.weapon.get_greatness(),
-                adventurer.item_specials_seed,
-            );
+            let weapon_specials = game_libs
+                .get_specials(
+                    adventurer.equipment.weapon.id,
+                    adventurer.equipment.weapon.get_greatness(),
+                    adventurer.item_specials_seed,
+                );
 
             // get previous entropy to fetch correct beast
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
-            
+
             // generate xp based randomness seeds
-            let (
-                beast_seed,
-                _,
-                beast_health_rnd,
-                beast_level_rnd,
-                beast_specials1_rnd,
-                beast_specials2_rnd,
-                _,
-                _,
-            ) = game_libs.get_randomness(
-                adventurer.xp, adventurer_entropy.beast_seed,
-            );
-            
+            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+                game_libs
+                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+
             // get beast based on entropy seeds
-            let beast = game_libs.get_beast(
-                adventurer.get_level(),
-                game_libs.get_type(adventurer.equipment.weapon.id),
-                beast_seed,
-                beast_health_rnd,
-                beast_level_rnd,
-                beast_specials1_rnd,
-                beast_specials2_rnd,
-            );
-            
+            let beast = game_libs
+                .get_beast(
+                    adventurer.get_level(),
+                    game_libs.get_type(adventurer.equipment.weapon.id),
+                    beast_seed,
+                    beast_health_rnd,
+                    beast_level_rnd,
+                    beast_specials1_rnd,
+                    beast_specials2_rnd,
+                );
+
             // get weapon details
             let weapon = game_libs.get_item(adventurer.equipment.weapon.id);
             let weapon_combat_spec = CombatSpec {
@@ -294,7 +284,7 @@ mod game_systems {
                 level: adventurer.equipment.weapon.get_greatness().into(),
                 specials: weapon_specials,
             };
-            
+
             let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             _attack(
@@ -312,7 +302,7 @@ mod game_systems {
             if (adventurer.stat_upgrades_available != 0) {
                 _save_market_seed(ref world, adventurer_id, market_seed);
             }
-            
+
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
@@ -351,20 +341,21 @@ mod game_systems {
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
             // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) = game_libs.get_randomness(
-                adventurer.xp, adventurer_entropy.beast_seed,
-            );
+            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+                game_libs
+                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
 
             // get beast based on entropy seeds
-            let beast = game_libs.get_beast(
-                adventurer.get_level(),
-                game_libs.get_type(adventurer.equipment.weapon.id),
-                beast_seed,
-                beast_health_rnd,
-                beast_level_rnd,
-                beast_specials1_rnd,
-                beast_specials2_rnd,
-            );
+            let beast = game_libs
+                .get_beast(
+                    adventurer.get_level(),
+                    game_libs.get_type(adventurer.equipment.weapon.id),
+                    beast_seed,
+                    beast_health_rnd,
+                    beast_level_rnd,
+                    beast_specials1_rnd,
+                    beast_specials2_rnd,
+                );
 
             // get random seed
             let (flee_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
@@ -376,7 +367,7 @@ mod game_systems {
             if (adventurer.stat_upgrades_available != 0) {
                 _save_market_seed(ref world, adventurer_id, market_seed);
             }
-            
+
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
         }
@@ -416,41 +407,35 @@ mod game_systems {
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
                 // generate xp based randomness seeds
-                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) = game_libs.get_randomness(
-                    adventurer.xp, adventurer_entropy.beast_seed,
-                );
+                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+                    game_libs
+                    .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
 
                 // get beast based on entropy seeds
-                let beast = game_libs.get_beast(
-                    adventurer.get_level(),
-                    game_libs.get_type(adventurer.equipment.weapon.id),
-                    beast_seed,
-                    beast_health_rnd,
-                    beast_level_rnd,
-                    beast_specials1_rnd,
-                    beast_specials2_rnd,
-                );
+                let beast = game_libs
+                    .get_beast(
+                        adventurer.get_level(),
+                        game_libs.get_type(adventurer.equipment.weapon.id),
+                        beast_seed,
+                        beast_health_rnd,
+                        beast_level_rnd,
+                        beast_specials1_rnd,
+                        beast_specials2_rnd,
+                    );
 
                 // get random seed
                 let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
                 // get randomness for combat
-                let (_, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
-                    adventurer.xp, adventurer.action_count, seed,
-                );
+                let (_, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs
+                    .get_battle_randomness(adventurer.xp, adventurer.action_count, seed);
 
                 // process beast attack
                 let _beast_battle_details = _beast_attack(
-                    ref adventurer,
-                    beast,
-                    beast_seed,
-                    beast_crit_hit_rnd,
-                    attack_location_rnd,
-                    false,
-                    game_libs,
+                    ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
                 );
             }
-            
+
             // save state
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
@@ -553,7 +538,12 @@ mod game_systems {
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
                 _buy_items(
-                    adventurer_entropy.market_seed, ref adventurer, ref bag, pre_upgrade_stat_points, items.clone(), game_libs,
+                    adventurer_entropy.market_seed,
+                    ref adventurer,
+                    ref bag,
+                    pre_upgrade_stat_points,
+                    items.clone(),
+                    game_libs,
                 );
             }
 
@@ -625,12 +615,11 @@ mod game_systems {
         if (adventurer.get_level() == 1) {
             reveal_starting_stats(ref adventurer, level_seed, game_libs);
         }
-
         // // if beast beast level is above collectible threshold
-        // if beast.combat_spec.level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK.into() && _network_supports_vrf() {
-        //     // mint beast to owner of the adventurer or controller delegate if set
-        //     _mint_beast(@self, beast, get_caller_address());
-        // }
+    // if beast.combat_spec.level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK.into() && _network_supports_vrf() {
+    //     // mint beast to owner of the adventurer or controller delegate if set
+    //     _mint_beast(@self, beast, get_caller_address());
+    // }
     }
 
     /// @title Mint Beast
@@ -660,7 +649,6 @@ mod game_systems {
     //     }
     // }
 
-
     /// @title Explore
     /// @notice Allows the adventurer to explore the world and encounter beasts, obstacles, or
     /// discoveries.
@@ -680,9 +668,8 @@ mod game_systems {
         explore_till_beast: bool,
         game_libs: GameLibs,
     ) {
-        let (rnd1_u32, _, rnd3_u16, rnd4_u16, rnd5_u8, rnd6_u8, rnd7_u8, explore_rnd) = game_libs.get_randomness(
-            adventurer.xp, explore_seed,
-        );
+        let (rnd1_u32, _, rnd3_u16, rnd4_u16, rnd5_u8, rnd6_u8, rnd7_u8, explore_rnd) = game_libs
+            .get_randomness(adventurer.xp, explore_seed);
 
         // go exploring
         let explore_result = ImplAdventurer::get_random_explore(explore_rnd);
@@ -717,7 +704,12 @@ mod game_systems {
             },
             ExploreResult::Discovery(()) => {
                 _process_discovery(
-                    ref adventurer, ref bag, discovery_type_rnd: rnd5_u8, amount_rnd1: rnd6_u8, amount_rnd2: rnd7_u8, game_libs: game_libs,
+                    ref adventurer,
+                    ref bag,
+                    discovery_type_rnd: rnd5_u8,
+                    amount_rnd1: rnd6_u8,
+                    amount_rnd2: rnd7_u8,
+                    game_libs: game_libs,
                 );
             },
         }
@@ -736,12 +728,16 @@ mod game_systems {
     /// @param bag A reference to the bag.
     /// @param entropy A u128 representing the entropy for the adventurer.
     fn _process_discovery(
-        ref adventurer: Adventurer, ref bag: Bag, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8, game_libs: GameLibs,
+        ref adventurer: Adventurer,
+        ref bag: Bag,
+        discovery_type_rnd: u8,
+        amount_rnd1: u8,
+        amount_rnd2: u8,
+        game_libs: GameLibs,
     ) {
         // get discovery type
-        let discovery_type = game_libs.get_discovery(
-            adventurer.get_level(), discovery_type_rnd, amount_rnd1, amount_rnd2,
-        );
+        let discovery_type = game_libs
+            .get_discovery(adventurer.get_level(), discovery_type_rnd, amount_rnd1, amount_rnd2);
 
         // Grant adventurer XP to progress entropy
         adventurer.increase_adventurer_xp(XP_FOR_DISCOVERIES.into());
@@ -812,15 +808,16 @@ mod game_systems {
     ) {
         let adventurer_level = adventurer.get_level();
 
-        let beast = game_libs.get_beast(
-            adventurer.get_level(),
-            game_libs.get_type(adventurer.equipment.weapon.id),
-            seed,
-            health_rnd,
-            level_rnd,
-            specials1_rnd,
-            specials2_rnd,
-        );
+        let beast = game_libs
+            .get_beast(
+                adventurer.get_level(),
+                game_libs.get_type(adventurer.equipment.weapon.id),
+                seed,
+                health_rnd,
+                level_rnd,
+                specials1_rnd,
+                specials2_rnd,
+            );
 
         // init beast health on adventurer
         // @dev: this is only info about beast that we store onchain
@@ -832,9 +829,7 @@ mod game_systems {
         // if adventurer was ambushed
         if (is_ambush) {
             // process beast attack
-            _beast_attack(
-                ref adventurer, beast, seed, crit_hit_rnd, dmg_location_rnd, is_ambush, game_libs,
-            );
+            _beast_attack(ref adventurer, beast, seed, crit_hit_rnd, dmg_location_rnd, is_ambush, game_libs);
         }
     }
 
@@ -910,10 +905,7 @@ mod game_systems {
     // @param xp_amount Amount of XP to grant to each equipped item.
     // @return Array of items that leveled up.
     fn _grant_xp_to_equipped_items(
-        ref adventurer: Adventurer,
-        xp_amount: u16,
-        item_specials_rnd: u16,
-        game_libs: GameLibs,
+        ref adventurer: Adventurer, xp_amount: u16, item_specials_rnd: u16, game_libs: GameLibs,
     ) {
         let equipped_items = adventurer.get_equipped_items();
         let mut item_index: u32 = 0;
@@ -955,7 +947,12 @@ mod game_systems {
     /// @param previous_level A u8 representing the previous level of the item.
     /// @param new_level A u8 representing the new level of the item.
     fn _process_item_level_up(
-        ref adventurer: Adventurer, item: Item, previous_level: u8, new_level: u8, item_specials_rnd: u16, game_libs: GameLibs,
+        ref adventurer: Adventurer,
+        item: Item,
+        previous_level: u8,
+        new_level: u8,
+        item_specials_rnd: u16,
+        game_libs: GameLibs,
     ) {
         // if item reached max greatness level
         if (new_level == ITEM_MAX_GREATNESS) {
@@ -1030,9 +1027,8 @@ mod game_systems {
         game_libs: GameLibs,
     ) {
         // get randomness for combat
-        let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
-        );
+        let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) = game_libs
+            .get_battle_randomness(adventurer.xp, adventurer.action_count, level_seed);
 
         // increment battle action count (ensures each battle action has unique randomness)
         adventurer.increment_action_count();
@@ -1062,13 +1058,7 @@ mod game_systems {
 
             // process beast counter attack
             let _attacked_by_beast_details = _beast_attack(
-                ref adventurer,
-                beast,
-                beast_seed,
-                beast_crit_hit_rnd,
-                attack_location_rnd,
-                false,
-                game_libs,
+                ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
             );
 
             // if adventurer is dead
@@ -1154,9 +1144,8 @@ mod game_systems {
         game_libs: GameLibs,
     ) {
         // get randomness for flee and ambush
-        let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs.get_battle_randomness(
-            adventurer.xp, adventurer.action_count, flee_seed,
-        );
+        let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs
+            .get_battle_randomness(adventurer.xp, adventurer.action_count, flee_seed);
 
         // increment action count (ensures each battle action has unique randomness)
         adventurer.increment_action_count();
@@ -1174,13 +1163,7 @@ mod game_systems {
         } else {
             // if the flee attempt failed, beast counter attacks
             let _beast_battle_details = _beast_attack(
-                ref adventurer,
-                beast,
-                beast_seed,
-                beast_crit_hit_rnd,
-                attack_location_rnd,
-                false,
-                game_libs,
+                ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
             );
 
             // if player is still alive and elected to flee till death
@@ -1201,9 +1184,7 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param item The primitive item to be equipped.
     /// @return The ID of the item that has been unequipped.
-    fn _equip_item(
-        ref adventurer: Adventurer, ref bag: Bag, item: Item, game_libs: GameLibs,
-    ) -> u8 {
+    fn _equip_item(ref adventurer: Adventurer, ref bag: Bag, item: Item, game_libs: GameLibs) -> u8 {
         // get the item currently equipped to the slot the item is being equipped to
         let unequipping_item = adventurer.equipment.get_item_at_slot(game_libs.get_slot(item.id));
 
@@ -1483,7 +1464,7 @@ mod game_systems {
 
         ImplAdventurer::felt_to_two_u64(seed)
     }
-    
+
     fn _load_adventurer_entropy(world: WorldStorage, adventurer_id: u64) -> AdventurerEntropy {
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
         adventurer_entropy
@@ -1521,7 +1502,9 @@ mod game_systems {
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
-    fn _save_adventurer_no_boosts(ref world: WorldStorage, adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs) {
+    fn _save_adventurer_no_boosts(
+        ref world: WorldStorage, adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs,
+    ) {
         let packed = game_libs.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
@@ -1667,14 +1650,13 @@ mod game_systems {
 
     #[generate_trait]
     impl InternalImpl of InternalTrait {
-        
         fn validate_start_conditions(self: @ContractState, token_id: u64, token_metadata: @TokenMetadata) {
             self.assert_token_ownership(token_id);
             self.assert_game_not_started(token_id);
             token_metadata.lifecycle.assert_is_playable(token_id, starknet::get_block_timestamp());
         }
 
-        
+
         fn assert_token_ownership(self: @ContractState, token_id: u64) {
             let token_owner = ERC721Impl::owner_of(self, token_id.into());
             assert!(
@@ -1684,11 +1666,15 @@ mod game_systems {
             );
         }
 
-        
+
         fn assert_game_not_started(self: @ContractState, adventurer_id: u64) {
             let game_libs = ImplGame::get_libs(self.world(@DEFAULT_NS()));
             let adventurer = game_libs.get_adventurer(adventurer_id);
-            assert!(adventurer.xp == 0 && adventurer.health == 0, "Loot Survivor: Adventurer {} has already started", adventurer_id);
+            assert!(
+                adventurer.xp == 0 && adventurer.health == 0,
+                "Loot Survivor: Adventurer {} has already started",
+                adventurer_id,
+            );
         }
     }
 }

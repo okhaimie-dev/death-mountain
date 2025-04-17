@@ -1,5 +1,5 @@
-use lootsurvivor::models::beast::Beast;
 use lootsurvivor::constants::combat::CombatEnums::Type;
+use lootsurvivor::models::beast::Beast;
 
 #[starknet::interface]
 pub trait IBeastSystems<T> {
@@ -20,9 +20,9 @@ pub trait IBeastSystems<T> {
 
 #[dojo::contract]
 mod Beast_systems {
-    use super::IBeastSystems;
-    use lootsurvivor::models::beast::{Beast, ImplBeast};
     use lootsurvivor::constants::combat::CombatEnums::Type;
+    use lootsurvivor::models::beast::{Beast, ImplBeast};
+    use super::IBeastSystems;
 
     #[abi(embed_v0)]
     impl BeastSystemsImpl of IBeastSystems<ContractState> {

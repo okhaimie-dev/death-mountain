@@ -213,9 +213,7 @@ fn generate_logo() -> ByteArray {
 // @param adventurer_name The adventurer's name
 // @param bag The adventurer's bag
 // @return The generated adventurer metadata
-pub fn create_metadata(
-    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
-) -> ByteArray {
+pub fn create_metadata(adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag) -> ByteArray {
     let rect = create_rect();
 
     let logo_element = generate_logo();
@@ -411,12 +409,12 @@ pub fn create_metadata(
 
 #[cfg(test)]
 mod tests {
+    use lootsurvivor::constants::beast::BeastSettings;
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
     use lootsurvivor::models::adventurer::equipment::{Equipment};
     use lootsurvivor::models::adventurer::item::{ImplItem, Item};
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
-    use lootsurvivor::constants::beast::BeastSettings;
     use lootsurvivor::utils::renderer::renderer_utils::create_metadata;
 
 

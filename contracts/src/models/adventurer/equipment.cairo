@@ -1,8 +1,8 @@
-use core::traits::DivRem;
 use core::panic_with_felt252;
+use core::traits::DivRem;
 use lootsurvivor::constants::combat::CombatEnums::Slot;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
-use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
+use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item};
 use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
 use lootsurvivor::models::loot::ImplLoot;
 
@@ -38,7 +38,7 @@ pub impl ImplEquipment of IEquipment {
         }
     }
 
-        /// @notice Packs an Equipment into a felt252
+    /// @notice Packs an Equipment into a felt252
     /// @param self: The Equipment to pack
     /// @return felt252: The packed Equipment
     fn pack(self: Equipment) -> felt252 {
@@ -255,7 +255,7 @@ pub impl ImplEquipment of IEquipment {
     /// @return Stats: The stat boosts for the equipment
     fn get_stat_boosts(self: Equipment, specials_seed: u16) -> Stats {
         let mut stats = Stats {
-            strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0
+            strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0,
         };
 
         if (self.weapon.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
@@ -300,11 +300,11 @@ const TWO_POW_112: u256 = 0x10000000000000000000000000000;
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use lootsurvivor::constants::loot::ItemId;
     use lootsurvivor::constants::combat::CombatEnums::Slot;
-    use lootsurvivor::models::adventurer::item::{MAX_ITEM_XP, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
+    use lootsurvivor::constants::loot::ItemId;
     use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
     use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, Item};
+    use lootsurvivor::models::adventurer::item::{MAX_ITEM_XP, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
     use lootsurvivor::models::loot::ImplLoot;
 
     #[test]

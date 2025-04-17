@@ -1,7 +1,7 @@
 use core::panic_with_felt252;
 use core::traits::DivRem;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
-use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
+use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item};
 
 // Bag is used for storing gear not equipped to the adventurer
 // Bag is a fixed at 15 items to fit in a felt252
@@ -485,9 +485,9 @@ const TWO_POW_240: u256 = 0x1000000000000000000000000000000000000000000000000000
 // ---------------------------
 #[cfg(test)]
 mod tests {
+    use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
     use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
     use lootsurvivor::models::adventurer::item::{Item};
-    use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
 
     #[test]
     #[available_gas(97530)]

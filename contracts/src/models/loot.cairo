@@ -991,11 +991,10 @@ pub impl ImplLoot of ILoot {
 mod tests {
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
     use lootsurvivor::constants::loot::{
-        ItemId, ItemNameSuffix, ItemSlotLength, ItemSuffixLength,
-        NamePrefixLength, NameSuffixLength,
+        ItemId, ItemNameSuffix, ItemSlotLength, ItemSuffixLength, NamePrefixLength, NameSuffixLength,
     };
-    use lootsurvivor::models::loot::{ImplLoot};
     use lootsurvivor::models::adventurer::item::{ImplItem};
+    use lootsurvivor::models::loot::{ImplLoot};
     use lootsurvivor::utils::loot::ItemUtils;
     use lootsurvivor::utils::loot::NameUtils::{
         is_special1_set1, is_special1_set2, is_special2_set1, is_special2_set2, is_special2_set3, is_special3_set1,

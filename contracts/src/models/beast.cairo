@@ -1,8 +1,8 @@
 use core::panic_with_felt252;
 use lootsurvivor::constants::beast::BeastId::{Bear, Fairy, Gnome, MAX_ID, Troll};
 use lootsurvivor::constants::beast::BeastSettings::{
-    CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, GOLD_MULTIPLIER, GOLD_REWARD_DIVISOR, MAXIMUM_HEALTH,
-    MAX_SPECIAL2, MAX_SPECIAL3, MINIMUM_XP_REWARD, STARTER_BEAST_HEALTH, BEAST_SPECIAL_NAME_LEVEL_UNLOCK,
+    BEAST_SPECIAL_NAME_LEVEL_UNLOCK, CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, GOLD_MULTIPLIER,
+    GOLD_REWARD_DIVISOR, MAXIMUM_HEALTH, MAX_SPECIAL2, MAX_SPECIAL3, MINIMUM_XP_REWARD, STARTER_BEAST_HEALTH,
 };
 use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
 use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
@@ -250,13 +250,13 @@ pub impl ImplBeast of IBeast {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
-    use lootsurvivor::constants::beast::BeastId::{Warlock, Juggernaut, Pegasus, Goblin, Bear, MAX_ID};
+    use lootsurvivor::constants::beast::BeastId::{Bear, Goblin, Juggernaut, MAX_ID, Pegasus, Warlock};
     use lootsurvivor::constants::beast::BeastSettings::{
         CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH,
     };
-    use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
+    use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
+    use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
 
     #[test]
     #[available_gas(70000)]

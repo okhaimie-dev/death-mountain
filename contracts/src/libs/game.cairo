@@ -2,19 +2,19 @@ use dojo::world::{WorldStorage, WorldStorageTrait};
 
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
 use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType};
-
-use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
-use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
-use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait};
-use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSystemsDispatcherTrait};
-
-use lootsurvivor::models::combat::{SpecialPowers};
-use lootsurvivor::models::loot::{Loot};
 use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
 use lootsurvivor::models::adventurer::bag::Bag;
 use lootsurvivor::models::adventurer::item::Item;
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::beast::Beast;
+
+use lootsurvivor::models::combat::{SpecialPowers};
+use lootsurvivor::models::loot::{Loot};
+use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait};
+use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSystemsDispatcherTrait};
+
+use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait};
+use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait};
 
 #[derive(Copy, Drop)]
 pub struct GameLibs {
@@ -96,7 +96,9 @@ pub impl ImplGame of IGameLib {
         self.adventurer.get_adventurer_name(adventurer_id)
     }
 
-    fn get_discovery(self: GameLibs, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8) -> DiscoveryType {
+    fn get_discovery(
+        self: GameLibs, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8,
+    ) -> DiscoveryType {
         self.adventurer.get_discovery(adventurer_level, discovery_type_rnd, amount_rnd1, amount_rnd2)
     }
 
@@ -146,7 +148,16 @@ pub impl ImplGame of IGameLib {
         self.beast.get_starter_beast(starter_weapon_type, seed)
     }
 
-    fn get_beast(self: GameLibs, adventurer_level: u8, weapon_type: Type, seed: u32, health_rnd: u16, level_rnd: u16, special2_rnd: u8, special3_rnd: u8) -> Beast {
+    fn get_beast(
+        self: GameLibs,
+        adventurer_level: u8,
+        weapon_type: Type,
+        seed: u32,
+        health_rnd: u16,
+        level_rnd: u16,
+        special2_rnd: u8,
+        special3_rnd: u8,
+    ) -> Beast {
         self.beast.get_beast(adventurer_level, weapon_type, seed, health_rnd, level_rnd, special2_rnd, special3_rnd)
     }
 

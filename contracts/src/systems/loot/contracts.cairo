@@ -17,10 +17,10 @@ pub trait ILootSystems<T> {
 
 #[dojo::contract]
 mod loot_systems {
-    use super::ILootSystems;
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
     use lootsurvivor::models::combat::SpecialPowers;
     use lootsurvivor::models::loot::{ImplLoot, Loot};
+    use super::ILootSystems;
 
     #[abi(embed_v0)]
     impl LootSystemsImpl of ILootSystems<ContractState> {

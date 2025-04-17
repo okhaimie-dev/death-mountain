@@ -1,4 +1,3 @@
-
 use lootsurvivor::models::combat::CombatSpec;
 
 #[derive(Drop, Serde, Copy)]

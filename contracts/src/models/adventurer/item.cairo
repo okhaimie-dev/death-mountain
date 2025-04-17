@@ -3,9 +3,12 @@ use core::traits::DivRem;
 use lootsurvivor::constants::loot::ItemId;
 
 #[derive(Introspect, Drop, Copy, PartialEq, Serde)]
-pub struct Item { // 21 storage bits
-    pub id: u8, // 7 bits
-    pub xp: u16, // 9 bits
+// 21 bits in storage
+pub struct Item {
+    // 7 bits
+    pub id: u8,
+    // 9 bits
+    pub xp: u16,
 }
 
 
@@ -113,9 +116,7 @@ pub const MAX_ITEM_XP: u16 = 400;
 #[cfg(test)]
 mod tests {
     use lootsurvivor::constants::loot::ItemId;
-    use lootsurvivor::models::adventurer::item::{
-        IItemPrimitive, ImplItem, Item, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP,
-    };
+    use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
 
     #[test]
     fn test_item_packing() {

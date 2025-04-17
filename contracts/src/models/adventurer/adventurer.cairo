@@ -3,13 +3,13 @@ use core::panic_with_felt252;
 use core::poseidon::poseidon_hash_span;
 use core::traits::DivRem;
 use lootsurvivor::constants::adventurer::{
-    BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, CHARISMA_POTION_DISCOUNT,
-    CRITICAL_HIT_LEVEL_MULTIPLIER, HEALTH_INCREASE_PER_VITALITY, JEWELRY_BONUS_BEAST_GOLD_PERCENT,
-    JEWELRY_BONUS_CRITICAL_HIT_PERCENT_PER_GREATNESS, JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS,
-    MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD, MAX_PACKABLE_BEAST_HEALTH, MAX_STAT_UPGRADES_AVAILABLE,
-    MINIMUM_DAMAGE_FROM_BEASTS, MINIMUM_DAMAGE_FROM_OBSTACLES, MINIMUM_DAMAGE_TO_BEASTS, MINIMUM_ITEM_PRICE,
-    MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
-    TWO_POW_16_NZ, TWO_POW_32, TWO_POW_32_NZ, TWO_POW_64_NZ, TWO_POW_8_NZ_U16, VITALITY_INSTANT_HEALTH_BONUS,
+    BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, CHARISMA_POTION_DISCOUNT, CRITICAL_HIT_LEVEL_MULTIPLIER,
+    HEALTH_INCREASE_PER_VITALITY, JEWELRY_BONUS_BEAST_GOLD_PERCENT, JEWELRY_BONUS_CRITICAL_HIT_PERCENT_PER_GREATNESS,
+    JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD,
+    MAX_PACKABLE_BEAST_HEALTH, MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_DAMAGE_FROM_BEASTS, MINIMUM_DAMAGE_FROM_OBSTACLES,
+    MINIMUM_DAMAGE_TO_BEASTS, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
+    SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH, TWO_POW_16_NZ, TWO_POW_32, TWO_POW_32_NZ,
+    TWO_POW_64_NZ, TWO_POW_8_NZ_U16, VITALITY_INSTANT_HEALTH_BONUS,
 };
 use lootsurvivor::constants::beast::BeastSettings;
 use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
@@ -20,9 +20,9 @@ use lootsurvivor::constants::loot::ItemSuffix::{
 };
 use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
 use lootsurvivor::models::adventurer::bag::{Bag, IBag};
-use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment, IEquipment};
-use lootsurvivor::models::adventurer::item::{ImplItem, Item, IItemPrimitive};
-use lootsurvivor::models::adventurer::stats::{ImplStats, Stats, IStat};
+use lootsurvivor::models::adventurer::equipment::{Equipment, IEquipment, ImplEquipment};
+use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item};
+use lootsurvivor::models::adventurer::stats::{IStat, ImplStats, Stats};
 use lootsurvivor::models::beast::{Beast};
 use lootsurvivor::models::combat::{CombatResult, CombatSpec, ImplCombat, SpecialPowers};
 use lootsurvivor::models::loot::{Loot};
@@ -666,7 +666,13 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param is_ambush: Whether the attack is an ambush
     /// @return A tuple containing the combat result and jewelry armor bonus
     fn defend(
-        self: Adventurer, beast: Beast, armor: Item, armor_specials: SpecialPowers, armor_details: Loot, crit_hit_rnd: u8, critical_hit_chance: u8,
+        self: Adventurer,
+        beast: Beast,
+        armor: Item,
+        armor_specials: SpecialPowers,
+        armor_details: Loot,
+        crit_hit_rnd: u8,
+        critical_hit_chance: u8,
     ) -> (CombatResult, u16) {
         // adventurer strength isn't used for defense
         let attacker_strength = 0;
@@ -1080,26 +1086,26 @@ const TWO_POW_128_NZ: NonZero<u256> = 0x100000000000000000000000000000000;
 #[cfg(test)]
 mod tests {
     use core::panic_with_felt252;
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::bag::{ImplBag};
     use lootsurvivor::constants::adventurer::{
         BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS,
-        JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP,
-        MAX_GOLD, MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
+        JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD,
+        MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
         MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
         SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
     };
+    use lootsurvivor::constants::beast::{BeastId, BeastSettings};
+    use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
+    use lootsurvivor::constants::loot::ItemSuffix::{of_Giant, of_Perfection, of_Power, of_Protection};
+    use lootsurvivor::constants::loot::{ItemId, ItemSuffix};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
+    use lootsurvivor::models::adventurer::bag::{ImplBag};
     use lootsurvivor::models::adventurer::equipment::{Equipment, ImplEquipment};
     use lootsurvivor::models::adventurer::item::{Item, MAX_PACKABLE_XP};
     use lootsurvivor::models::adventurer::stats::{ImplStats, MAX_STAT_VALUE, Stats};
     use lootsurvivor::models::beast::{ImplBeast};
-    use lootsurvivor::constants::beast::{BeastId, BeastSettings};
     use lootsurvivor::models::combat::SpecialPowers;
     use lootsurvivor::models::loot::{ImplLoot};
-    use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
-    use lootsurvivor::constants::loot::ItemSuffix::{of_Giant, of_Perfection, of_Power,of_Protection};
-    use lootsurvivor::constants::loot::{ItemId, ItemSuffix};
     use lootsurvivor::utils::loot::ItemUtils;
 
     #[test]

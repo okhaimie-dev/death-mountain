@@ -484,9 +484,9 @@ pub impl ImplCombat of ICombat {
 // ---------------------------
 #[cfg(test)]
 mod tests {
-    use lootsurvivor::models::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type, WeaponEffectiveness};
     use lootsurvivor::constants::combat::CombatSettings::STRENGTH_DAMAGE_BONUS;
+    use lootsurvivor::models::combat::{CombatSpec, ICombat, ImplCombat, SpecialPowers};
 
     const U16_MAX: u16 = 65535;
 
