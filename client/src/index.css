@@ -1,0 +1,94 @@
+@import '@fontsource/roboto/300.css';
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
+
+body {
+  overflow: hidden;
+  margin: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+a {
+  text-decoration: none !important;
+  color: #FFE97F;
+}
+
+a.underline {
+  text-decoration: underline !important;
+}
+
+img {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+strong,
+b {
+  font-weight: 400;
+  font-size: 15px;
+}
+
+.background {
+  height: 100%;
+  background: #000000af;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  animation: fadeInAnimation ease 2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.main {
+  height: 100vh;
+  width: 100vw;
+}
+
+input:autofill {
+  background-color: inherit;
+}
+
+input:-webkit-autofill {
+  background-color: inherit;
+}
+
+.loadingDots {
+  clip-path: inset(0 1ch 0 0);
+  animation: l 1s steps(4) infinite;
+}
+
+@keyframes l {
+  to {
+    clip-path: inset(0 -1ch 0 0)
+  }
+}
+
+#notistack-snackbar {
+  font-family: oldenburg;
+  font-size: 16px;
+  color: rgb(40, 39, 41);
+}
+
+.notistack-MuiContent-warning {
+  background-color: #FFE97F;
+}
+
+.notistack-MuiContent-info {
+  border: 1px solid #FFE97F;
+  background-color: rgba(0, 0, 0, 0.95) !important;
+}
+
+.notistack-MuiContent-info #notistack-snackbar {
+  color: #FFE97F;
+}
+
+.notistack-MuiContent-error #notistack-snackbar {
+  color: white;
+}
