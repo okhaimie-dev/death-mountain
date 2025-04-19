@@ -1,172 +1,300 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import {
-  CairoCustomEnum,
-  CairoOption,
-  CairoOptionVariant,
-  BigNumberish,
-} from "starknet";
+import { CairoOption, CairoOptionVariant, BigNumberish } from 'starknet';
 
-type WithFieldOrder<T> = T & { fieldOrder: string[] };
-
-// Type definition for `dojo_starter::models::DirectionsAvailable` struct
-export interface DirectionsAvailable {
-  player: string;
-  directions: Array<DirectionEnum>;
+// Type definition for `lootsurvivor::models::game::AdventurerEntropy` struct
+export interface AdventurerEntropy {
+	adventurer_id: BigNumberish;
+	market_seed: BigNumberish;
+	beast_seed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::DirectionsAvailableValue` struct
-export interface DirectionsAvailableValue {
-  directions: Array<DirectionEnum>;
+// Type definition for `lootsurvivor::models::game::AdventurerEntropyValue` struct
+export interface AdventurerEntropyValue {
+	market_seed: BigNumberish;
+	beast_seed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::Moves` struct
-export interface Moves {
-  player: string;
-  remaining: BigNumberish;
-  last_direction: CairoOption<DirectionEnum>;
-  can_move: boolean;
+// Type definition for `lootsurvivor::models::game::AdventurerPacked` struct
+export interface AdventurerPacked {
+	adventurer_id: BigNumberish;
+	packed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::MovesValue` struct
-export interface MovesValue {
-  remaining: BigNumberish;
-  last_direction: CairoOption<DirectionEnum>;
-  can_move: boolean;
+// Type definition for `lootsurvivor::models::game::AdventurerPackedValue` struct
+export interface AdventurerPackedValue {
+	packed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::Position` struct
-export interface Position {
-  player: string;
-  vec: Vec2;
+// Type definition for `lootsurvivor::models::game::BagPacked` struct
+export interface BagPacked {
+	adventurer_id: BigNumberish;
+	packed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::PositionValue` struct
-export interface PositionValue {
-  vec: Vec2;
+// Type definition for `lootsurvivor::models::game::BagPackedValue` struct
+export interface BagPackedValue {
+	packed: BigNumberish;
 }
 
-// Type definition for `dojo_starter::models::Vec2` struct
-export interface Vec2 {
-  x: BigNumberish;
-  y: BigNumberish;
+// Type definition for `tournaments::components::models::game::GameCounter` struct
+export interface GameCounter {
+	key: BigNumberish;
+	count: BigNumberish;
 }
 
-// Type definition for `dojo_starter::systems::actions::actions::Moved` struct
-export interface Moved {
-  player: string;
-  direction: DirectionEnum;
+// Type definition for `tournaments::components::models::game::GameCounterValue` struct
+export interface GameCounterValue {
+	count: BigNumberish;
 }
 
-// Type definition for `dojo_starter::systems::actions::actions::MovedValue` struct
-export interface MovedValue {
-  direction: DirectionEnum;
+// Type definition for `tournaments::components::models::game::GameMetadata` struct
+export interface GameMetadata {
+	contract_address: string;
+	creator_address: string;
+	name: BigNumberish;
+	description: string;
+	developer: BigNumberish;
+	publisher: BigNumberish;
+	genre: BigNumberish;
+	image: string;
 }
 
-// Type definition for `dojo_starter::models::Direction` enum
-export type Direction = {
-  Left: string;
-  Right: string;
-  Up: string;
-  Down: string;
-};
-export type DirectionEnum = CairoCustomEnum;
+// Type definition for `tournaments::components::models::game::GameMetadataValue` struct
+export interface GameMetadataValue {
+	creator_address: string;
+	name: BigNumberish;
+	description: string;
+	developer: BigNumberish;
+	publisher: BigNumberish;
+	genre: BigNumberish;
+	image: string;
+}
+
+// Type definition for `tournaments::components::models::game::Score` struct
+export interface Score {
+	game_id: BigNumberish;
+	score: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::ScoreValue` struct
+export interface ScoreValue {
+	score: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::Settings` struct
+export interface Settings {
+	id: BigNumberish;
+	name: BigNumberish;
+	value: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::SettingsCounter` struct
+export interface SettingsCounter {
+	key: BigNumberish;
+	count: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::SettingsCounterValue` struct
+export interface SettingsCounterValue {
+	count: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::SettingsDetails` struct
+export interface SettingsDetails {
+	id: BigNumberish;
+	name: BigNumberish;
+	description: string;
+	exists: boolean;
+}
+
+// Type definition for `tournaments::components::models::game::SettingsDetailsValue` struct
+export interface SettingsDetailsValue {
+	name: BigNumberish;
+	description: string;
+	exists: boolean;
+}
+
+// Type definition for `tournaments::components::models::game::SettingsValue` struct
+export interface SettingsValue {
+	value: BigNumberish;
+}
+
+// Type definition for `tournaments::components::models::game::TokenMetadata` struct
+export interface TokenMetadata {
+	token_id: BigNumberish;
+	minted_by: string;
+	player_name: BigNumberish;
+	settings_id: BigNumberish;
+	lifecycle: Lifecycle;
+}
+
+// Type definition for `tournaments::components::models::game::TokenMetadataValue` struct
+export interface TokenMetadataValue {
+	minted_by: string;
+	player_name: BigNumberish;
+	settings_id: BigNumberish;
+	lifecycle: Lifecycle;
+}
+
+// Type definition for `tournaments::components::models::lifecycle::Lifecycle` struct
+export interface Lifecycle {
+	mint: BigNumberish;
+	start: CairoOption<BigNumberish>;
+	end: CairoOption<BigNumberish>;
+}
 
 export interface SchemaType extends ISchemaType {
-  dojo_starter: {
-    DirectionsAvailable: WithFieldOrder<DirectionsAvailable>;
-    DirectionsAvailableValue: WithFieldOrder<DirectionsAvailableValue>;
-    Moves: WithFieldOrder<Moves>;
-    MovesValue: WithFieldOrder<MovesValue>;
-    Position: WithFieldOrder<Position>;
-    PositionValue: WithFieldOrder<PositionValue>;
-    Vec2: WithFieldOrder<Vec2>;
-    Moved: WithFieldOrder<Moved>;
-    MovedValue: WithFieldOrder<MovedValue>;
-  };
+	lootsurvivor: {
+		AdventurerEntropy: AdventurerEntropy,
+		AdventurerEntropyValue: AdventurerEntropyValue,
+		AdventurerPacked: AdventurerPacked,
+		AdventurerPackedValue: AdventurerPackedValue,
+		BagPacked: BagPacked,
+		BagPackedValue: BagPackedValue,
+	},
+	tournaments: {
+		GameCounter: GameCounter,
+		GameCounterValue: GameCounterValue,
+		GameMetadata: GameMetadata,
+		GameMetadataValue: GameMetadataValue,
+		Score: Score,
+		ScoreValue: ScoreValue,
+		Settings: Settings,
+		SettingsCounter: SettingsCounter,
+		SettingsCounterValue: SettingsCounterValue,
+		SettingsDetails: SettingsDetails,
+		SettingsDetailsValue: SettingsDetailsValue,
+		SettingsValue: SettingsValue,
+		TokenMetadata: TokenMetadata,
+		TokenMetadataValue: TokenMetadataValue,
+		Lifecycle: Lifecycle,
+	},
 }
 export const schema: SchemaType = {
-  dojo_starter: {
-    DirectionsAvailable: {
-      fieldOrder: ["player", "directions"],
-      player: "",
-      directions: [
-        new CairoCustomEnum({
-          Left: "",
-          Right: undefined,
-          Up: undefined,
-          Down: undefined,
-        }),
-      ],
-    },
-    DirectionsAvailableValue: {
-      fieldOrder: ["directions"],
-      directions: [
-        new CairoCustomEnum({
-          Left: "",
-          Right: undefined,
-          Up: undefined,
-          Down: undefined,
-        }),
-      ],
-    },
-    Moves: {
-      fieldOrder: ["player", "remaining", "last_direction", "can_move"],
-      player: "",
-      remaining: 0,
-      last_direction: new CairoOption(CairoOptionVariant.None),
-      can_move: false,
-    },
-    MovesValue: {
-      fieldOrder: ["remaining", "last_direction", "can_move"],
-      remaining: 0,
-      last_direction: new CairoOption(CairoOptionVariant.None),
-      can_move: false,
-    },
-    Position: {
-      fieldOrder: ["player", "vec"],
-      player: "",
-      vec: { x: 0, y: 0 },
-    },
-    PositionValue: {
-      fieldOrder: ["vec"],
-      vec: { x: 0, y: 0 },
-    },
-    Vec2: {
-      fieldOrder: ["x", "y"],
-      x: 0,
-      y: 0,
-    },
-    Moved: {
-      fieldOrder: ["player", "direction"],
-      player: "",
-      direction: new CairoCustomEnum({
-        Left: "",
-        Right: undefined,
-        Up: undefined,
-        Down: undefined,
-      }),
-    },
-    MovedValue: {
-      fieldOrder: ["direction"],
-      direction: new CairoCustomEnum({
-        Left: "",
-        Right: undefined,
-        Up: undefined,
-        Down: undefined,
-      }),
-    },
-  },
+	lootsurvivor: {
+		AdventurerEntropy: {
+			adventurer_id: 0,
+			market_seed: 0,
+			beast_seed: 0,
+		},
+		AdventurerEntropyValue: {
+			market_seed: 0,
+			beast_seed: 0,
+		},
+		AdventurerPacked: {
+			adventurer_id: 0,
+			packed: 0,
+		},
+		AdventurerPackedValue: {
+			packed: 0,
+		},
+		BagPacked: {
+			adventurer_id: 0,
+			packed: 0,
+		},
+		BagPackedValue: {
+			packed: 0,
+		},
+		GameCounter: {
+			key: 0,
+			count: 0,
+		},
+		GameCounterValue: {
+			count: 0,
+		},
+		GameMetadata: {
+			contract_address: "",
+			creator_address: "",
+			name: 0,
+		description: "",
+			developer: 0,
+			publisher: 0,
+			genre: 0,
+		image: "",
+		},
+		GameMetadataValue: {
+			creator_address: "",
+			name: 0,
+		description: "",
+			developer: 0,
+			publisher: 0,
+			genre: 0,
+		image: "",
+		},
+		Score: {
+			game_id: 0,
+			score: 0,
+		},
+		ScoreValue: {
+			score: 0,
+		},
+		Settings: {
+			id: 0,
+			name: 0,
+			value: 0,
+		},
+		SettingsCounter: {
+			key: 0,
+			count: 0,
+		},
+		SettingsCounterValue: {
+			count: 0,
+		},
+		SettingsDetails: {
+			id: 0,
+			name: 0,
+		description: "",
+			exists: false,
+		},
+		SettingsDetailsValue: {
+			name: 0,
+		description: "",
+			exists: false,
+		},
+		SettingsValue: {
+			value: 0,
+		},
+		TokenMetadata: {
+			token_id: 0,
+			minted_by: "",
+			player_name: 0,
+			settings_id: 0,
+		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+		},
+		TokenMetadataValue: {
+			minted_by: "",
+			player_name: 0,
+			settings_id: 0,
+		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+		},
+		Lifecycle: {
+			mint: 0,
+		start: new CairoOption(CairoOptionVariant.None),
+		end: new CairoOption(CairoOptionVariant.None),
+		},
+	},
 };
 export enum ModelsMapping {
-  Direction = "dojo_starter-Direction",
-  DirectionsAvailable = "dojo_starter-DirectionsAvailable",
-  DirectionsAvailableValue = "dojo_starter-DirectionsAvailableValue",
-  Moves = "dojo_starter-Moves",
-  MovesValue = "dojo_starter-MovesValue",
-  Position = "dojo_starter-Position",
-  PositionValue = "dojo_starter-PositionValue",
-  Vec2 = "dojo_starter-Vec2",
-  Moved = "dojo_starter-Moved",
-  MovedValue = "dojo_starter-MovedValue",
+	AdventurerEntropy = 'lootsurvivor-AdventurerEntropy',
+	AdventurerEntropyValue = 'lootsurvivor-AdventurerEntropyValue',
+	AdventurerPacked = 'lootsurvivor-AdventurerPacked',
+	AdventurerPackedValue = 'lootsurvivor-AdventurerPackedValue',
+	BagPacked = 'lootsurvivor-BagPacked',
+	BagPackedValue = 'lootsurvivor-BagPackedValue',
+	GameCounter = 'tournaments-GameCounter',
+	GameCounterValue = 'tournaments-GameCounterValue',
+	GameMetadata = 'tournaments-GameMetadata',
+	GameMetadataValue = 'tournaments-GameMetadataValue',
+	Score = 'tournaments-Score',
+	ScoreValue = 'tournaments-ScoreValue',
+	Settings = 'tournaments-Settings',
+	SettingsCounter = 'tournaments-SettingsCounter',
+	SettingsCounterValue = 'tournaments-SettingsCounterValue',
+	SettingsDetails = 'tournaments-SettingsDetails',
+	SettingsDetailsValue = 'tournaments-SettingsDetailsValue',
+	SettingsValue = 'tournaments-SettingsValue',
+	TokenMetadata = 'tournaments-TokenMetadata',
+	TokenMetadataValue = 'tournaments-TokenMetadataValue',
+	Lifecycle = 'tournaments-Lifecycle',
 }

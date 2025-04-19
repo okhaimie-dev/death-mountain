@@ -5,11 +5,11 @@ import App from "./App.tsx";
 // Dojo related imports
 import { init } from "@dojoengine/sdk";
 import { DojoSdkProvider } from "@dojoengine/sdk/react";
-import type { SchemaType } from "./generated/models.gen.ts";
 import { setupWorld } from "./generated/contracts.gen.ts";
+import type { SchemaType } from "./generated/models.gen.ts";
 
-import "./index.css";
 import { dojoConfig } from "../dojoConfig.ts";
+import "./index.css";
 import StarknetProvider from "./providers/starknet.tsx";
 
 
