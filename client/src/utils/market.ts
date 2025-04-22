@@ -38,7 +38,7 @@ function createMarketItem(id: number): MarketItem {
   };
 }
 
-export function generateMarketItems(seed: bigint, statUpgradesAvailable: number | undefined): MarketItem[] {
+export function generateMarketItems(seed: bigint, statUpgradesAvailable: number): MarketItem[] {
   if (!statUpgradesAvailable || seed === BigInt(0)) {
     return [];
   }

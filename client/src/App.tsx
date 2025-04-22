@@ -7,6 +7,8 @@ import { SnackbarProvider } from 'notistack';
 
 import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
+import { ControllerProvider } from './providers/controller';
+import WalletConnect from './components/WalletConnect';
 
 function App() {
 
@@ -17,19 +19,22 @@ function App() {
           <StyledEngineProvider injectFirst>
             <ThemeProvider theme={mainTheme}>
               <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
+                <ControllerProvider>
 
-                <Box className='main'>
-                  <AnimatePresence mode="wait">
+                  <Box className='main'>
+                    <AnimatePresence mode="wait">
+                      <WalletConnect />
 
-                    <Routes>
-                      {routes.map((route, index) => {
-                        return <Route key={index} path={route.path} element={route.content} />
-                      })}
-                    </Routes>
+                      <Routes>
+                        {routes.map((route, index) => {
+                          return <Route key={index} path={route.path} element={route.content} />
+                        })}
+                      </Routes>
 
-                  </AnimatePresence>
-                </Box>
+                    </AnimatePresence>
+                  </Box>
 
+                </ControllerProvider>
               </SnackbarProvider>
             </ThemeProvider>
           </StyledEngineProvider>

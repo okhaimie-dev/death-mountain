@@ -16,9 +16,15 @@ import StarknetProvider from "./providers/starknet.tsx";
 async function main() {
   const sdk = await init<SchemaType>({
     client: {
+      toriiUrl: dojoConfig.toriiUrl,
       worldAddress: dojoConfig.manifest.world.address,
     },
-    domain: {}
+    domain: {
+      name: "Loot Survivor",
+      version: "1.0",
+      chainId: "sepolia",
+      revision: "1",
+    }
   });
 
   createRoot(document.getElementById("root")!).render(

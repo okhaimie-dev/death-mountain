@@ -2,24 +2,24 @@ import { ClauseBuilder, ParsedEntity, ToriiQueryBuilder, UnionOfModelData } from
 import { SchemaType } from '../generated/models.gen.ts';
 
 export interface Item {
-  id: number;  // 7 bits (u8)
-  xp: number;  // 9 bits (u16)
+  id: number;
+  xp: number;
 }
 
 export interface Adventurer {
-  health: number;        // 10 bits
-  xp: number;           // 15 bits
-  gold: number;         // 9 bits
-  beast_health: number;  // 10 bits
-  stat_upgrades_available: number; // 4 bits
+  health: number;
+  xp: number;
+  gold: number;
+  beast_health: number;
+  stat_upgrades_available: number;
   stats: {
-    strength: number;     // 5 bits
-    dexterity: number;    // 5 bits
-    vitality: number;     // 5 bits
-    intelligence: number; // 5 bits
-    wisdom: number;      // 5 bits
-    charisma: number;    // 5 bits
-    luck: number;        // not stored
+    strength: number;
+    dexterity: number;
+    vitality: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    luck: number;
   };
   equipment: {
     weapon: Item;
@@ -31,29 +31,24 @@ export interface Adventurer {
     neck: Item;
     ring: Item;
   };
-  action_count: number;    // 16 bits
-  item_specials_seed: number; // 16 bits
-}
-
-export interface Bag {
-  items: Item[];  // 15 items, 16 bits each
-  mutated: boolean;
+  action_count: number;
+  item_specials_seed: number;
 }
 
 export interface AdventurerPacked {
-  health: number;        // 10 bits
-  xp: number;           // 15 bits
-  gold: number;         // 9 bits
-  beast_health: number;  // 10 bits
-  stat_upgrades_available: number; // 4 bits
+  health: number;
+  xp: number;
+  gold: number;
+  beast_health: number;
+  stat_upgrades_available: number;
   stats: {
-    strength: number;     // 5 bits
-    dexterity: number;    // 5 bits
-    vitality: number;     // 5 bits
-    intelligence: number; // 5 bits
-    wisdom: number;      // 5 bits
-    charisma: number;    // 5 bits
-    luck: number;        // not stored
+    strength: number;
+    dexterity: number;
+    vitality: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    luck: number;
   };
   equipment: {
     weapon: Item;
@@ -65,13 +60,21 @@ export interface AdventurerPacked {
     neck: Item;
     ring: Item;
   };
-  action_count: number;    // 16 bits
-  item_specials_seed: number; // 16 bits
+  action_count: number;
+  item_specials_seed: number;
 }
 
-export interface BagPacked {
-  items: Item[];  // 15 items, 16 bits each
-  mutated: boolean;
+export interface Beast {
+  id: number;
+  name: string;
+  health: number;
+  level: number;
+  type: string;
+  tier: string;
+  specialPrefix?: string;
+  specialSuffix?: string;
+  goldReward: number;
+  xpReward: number;
 }
 
 export interface AdventurerEntropy {
@@ -80,10 +83,12 @@ export interface AdventurerEntropy {
   beast_seed: bigint;
 }
 
-export interface GameData {
-  adventurer: AdventurerPacked | null;
-  bag: BagPacked | null;
-  entropy: AdventurerEntropy | null;
+export interface Metadata {
+  player_name: string;
+  settings_id: number;
+  minted_by: string;
+  expires_at: number;
+  available_at: number;
 }
 
 export type GameSchemaType = SchemaType;
@@ -94,3 +99,7 @@ export type GameEntity = ParsedEntity<GameSchemaType>;
 
 export class GameQueryBuilder extends ToriiQueryBuilder<GameSchemaType> { }
 export class GameClauseBuilder extends ClauseBuilder<GameSchemaType> { }
+
+export const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames): M => (
+  entity?.models[`${import.meta.env.VITE_PUBLIC_NAMESPACE}`]?.[modelName] as M
+)

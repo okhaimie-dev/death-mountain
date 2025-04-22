@@ -46,7 +46,7 @@ export const mainTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#FFE97F',
+      main: 'rgba(160, 187, 201, 0.9)',
       contrastText: '#000'
     },
     secondary: {

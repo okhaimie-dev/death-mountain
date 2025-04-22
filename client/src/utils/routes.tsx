@@ -7,7 +7,7 @@ export const routes = [
     content: <LandingPage />
   },
   {
-    path: '/play/:gameId',
+    path: '/play',
     content: <GamePage />
   },
 ]

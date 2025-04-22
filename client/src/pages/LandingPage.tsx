@@ -1,67 +1,39 @@
-import { useGameStore } from '@/stores/gameStore';
+import { useController } from '@/providers/controller';
 import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
-  const { adventurer, bag, entropy, beast, gameId, setGameId, exitGame } = useGameStore();
-
+  const { address } = useController();
   const navigate = useNavigate();
 
   const handleStartGame = () => {
-    setGameId('123');
+    navigate('/play');
   };
 
   return (
-    <Box sx={styles.container}>
-      <Box sx={styles.content}>
-        <Typography variant="h1" sx={styles.title}>
-          Loot Survivor
-        </Typography>
-        <Typography variant="h4" sx={styles.subtitle}>
-          Start your adventure
-        </Typography>
-        {adventurer ? (
-          <Box sx={styles.stats}>
-            <Typography variant="h6">
-              Health: {adventurer.health}
-            </Typography>
-            <Typography variant="h6">
-              XP: {adventurer.xp}
-            </Typography>
-            <Typography variant="h6">
-              Gold: {adventurer.gold}
-            </Typography>
-            <Typography variant="h6">
-              Level: {adventurer.stats.strength + adventurer.stats.dexterity +
-                adventurer.stats.vitality + adventurer.stats.intelligence +
-                adventurer.stats.wisdom + adventurer.stats.charisma}
-            </Typography>
-            {bag && (
-              <Typography variant="h6">
-                Items in Bag: {bag.items.filter((item: { id: number }) => item.id !== 0).length}
-              </Typography>
-            )}
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/game')}
-              sx={styles.button}
-            >
-              Continue Game
-            </Button>
-          </Box>
-        ) : (
+    <>
+      <Box sx={styles.container}>
+        <Box sx={styles.content}>
+          <Typography variant="h1" sx={styles.title}>
+            Loot Survivor
+          </Typography>
+          <Typography variant="h4" sx={styles.subtitle}>
+            Start your adventure
+          </Typography>
+
           <Button
             variant="contained"
             size="large"
             onClick={handleStartGame}
             sx={styles.button}
+            disabled={!address}
           >
             Start New Game
           </Button>
-        )}
+
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }
 
@@ -69,7 +41,7 @@ const styles = {
   container: {
     width: '100%',
     height: '100vh',
-    backgroundColor: 'primary.main',
+    backgroundColor: '#413f38',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

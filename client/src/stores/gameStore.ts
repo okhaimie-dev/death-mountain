@@ -1,36 +1,37 @@
 import { create } from 'zustand';
-import { setupGameSubscription } from '../dojo/useGameSub';
-import { Adventurer, AdventurerEntropy, Bag } from '../types/game';
-import { Beast, generateBeast } from '../utils/beast';
+import { Adventurer, AdventurerEntropy, Item, Beast, Metadata } from '../types/game';
+import { getBeast } from '../utils/beast';
 import { MarketItem, generateMarketItems } from '../utils/market';
 
 interface GameState {
-  gameId: string | null;
+  gameId: number | null;
   adventurer: Adventurer | null;
-  bag: Bag | null;
+  bag: Item[] | null;
   entropy: AdventurerEntropy | null;
   beast: Beast | null;
   market: MarketItem[] | null;
+  metadata: Metadata | null;
 
-  setGameId: (gameId: string) => void;
+  setGameId: (gameId: number) => void;
   exitGame: () => void;
 
   setAdventurer: (data: Adventurer | null) => void;
-  setBag: (data: Bag | null) => void;
+  setBag: (data: Item[] | null) => void;
   setEntropy: (data: any) => void;
+  setMetadata: (data: Metadata | null) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
   gameId: null,
+  metadata: null,
   adventurer: null,
   bag: null,
   entropy: null,
   beast: null,
   market: null,
 
-  setGameId: (gameId: string) => {
+  setGameId: (gameId: number) => {
     set({ gameId });
-    setupGameSubscription(gameId)
   },
   exitGame: () => {
     set({
@@ -40,16 +41,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       beast: null,
       market: null,
       entropy: null,
+      metadata: null,
     });
   },
 
   setAdventurer: (data: Adventurer | null) => set({ adventurer: data }),
-  setBag: (data: Bag | null) => set({ bag: data }),
+  setBag: (data: Item[] | null) => set({ bag: data }),
   setEntropy: (data: any) => {
-    set({
-      beast: generateBeast(data.beast_seed),
-      market: generateMarketItems(BigInt(data.market_seed), get().adventurer?.stat_upgrades_available),
-      entropy: data,
-    });
+    let adventurer = get().adventurer;
+    if (adventurer) {
+      set({
+        beast: getBeast(BigInt(data.beast_seed), adventurer.xp),
+        market: generateMarketItems(BigInt(data.market_seed), adventurer.stat_upgrades_available),
+        entropy: data,
+      });
+    }
   },
+  setMetadata: (data: Metadata | null) => set({ metadata: data }),
 }));
