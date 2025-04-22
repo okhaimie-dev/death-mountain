@@ -682,7 +682,6 @@ mod tests {
     }
 
     #[test]
-    #[available_gas(2383150)]
     fn test_save_bag() {
         let mut bag = Bag {
             item_1: Item { id: 127, xp: 511 },
@@ -702,7 +701,6 @@ mod tests {
             item_15: Item { id: 127, xp: 511 },
             mutated: false,
         };
-
         let packed_bag: Bag = ImplBag::unpack(ImplBag::pack(bag));
 
         assert(packed_bag.item_1.id == 127, 'Loot 1 ID is not 127');

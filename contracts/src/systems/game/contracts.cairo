@@ -19,9 +19,11 @@ pub trait IGameSystems<T> {
 #[dojo::contract]
 mod game_systems {
     use core::panic_with_felt252;
+    use starknet::{get_tx_info};
+    use super::VRF_ENABLED;
 
     use dojo::model::ModelStorage;
-    use dojo::world::WorldStorage;
+    use dojo::world::{WorldStorage, WorldStorageTrait};
     use lootsurvivor::constants::adventurer::{
         ITEM_MAX_GREATNESS, ITEM_XP_MULTIPLIER_BEASTS, ITEM_XP_MULTIPLIER_OBSTACLES, MAX_GREATNESS_STAT_BONUS,
         POTION_HEALTH_AMOUNT, STARTING_HEALTH, XP_FOR_DISCOVERIES,
@@ -30,9 +32,10 @@ mod game_systems {
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
     use lootsurvivor::constants::game::{MAINNET_CHAIN_ID, SEPOLIA_CHAIN_ID, STARTER_BEAST_ATTACK_DAMAGE, messages};
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
-    use lootsurvivor::constants::world::{DEFAULT_NS, SCORE_ATTRIBUTE, SCORE_MODEL, SETTINGS_MODEL};
+    use lootsurvivor::constants::world::{DEFAULT_NS};
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
+    use lootsurvivor::utils::cartridge::VRFImpl;
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::bag::{Bag};
     use lootsurvivor::models::adventurer::equipment::{ImplEquipment};
@@ -40,7 +43,6 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-
     use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked};
     use lootsurvivor::models::market::{ImplMarket, ItemPurchase};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
@@ -48,103 +50,9 @@ mod game_systems {
     use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcherTrait};
     use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcherTrait};
 
-    use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcherTrait};
-
-    use lootsurvivor::utils::cartridge::VRFImpl;
-
-    use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::interface::{IERC721Metadata};
-    use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
-    use starknet::{ContractAddress, get_tx_info};
-    use super::VRF_ENABLED;
-
-    use tournaments::components::game::game_component;
-    use tournaments::components::interfaces::{IGameDetails, ISettings};
-    use tournaments::components::libs::lifecycle::{LifecycleAssertionsImpl, LifecycleAssertionsTrait};
+    use openzeppelin_token::erc721::interface::{IERC721Dispatcher, IERC721DispatcherTrait};
     use tournaments::components::models::game::TokenMetadata;
-
-    // Components
-    component!(path: game_component, storage: game, event: GameEvent);
-    component!(path: SRC5Component, storage: src5, event: SRC5Event);
-    component!(path: ERC721Component, storage: erc721, event: ERC721Event);
-
-    #[abi(embed_v0)]
-    impl GameImpl = game_component::GameImpl<ContractState>;
-    impl GameInternalImpl = game_component::InternalImpl<ContractState>;
-
-    #[abi(embed_v0)]
-    impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
-    impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
-
-    #[abi(embed_v0)]
-    impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
-
-    #[storage]
-    struct Storage {
-        #[substorage(v0)]
-        game: game_component::Storage,
-        #[substorage(v0)]
-        erc721: ERC721Component::Storage,
-        #[substorage(v0)]
-        src5: SRC5Component::Storage,
-    }
-
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        #[flat]
-        GameEvent: game_component::Event,
-        #[flat]
-        ERC721Event: ERC721Component::Event,
-        #[flat]
-        SRC5Event: SRC5Component::Event,
-    }
-
-    /// @title Dojo Init
-    /// @notice Initializes the contract
-    /// @dev This is the constructor for the contract. It is called once when the contract is
-    /// deployed.
-    ///
-    /// @param creator_address: the address of the creator of the game
-    fn dojo_init(ref self: ContractState, creator_address: ContractAddress) {
-        self.erc721.initializer("Loot Survivor", "LSVR", "https://lootsurvivor.io/");
-        self
-            .game
-            .initializer(
-                creator_address,
-                'Loot Survivor',
-                "Loot Survivor is a fully on-chain arcade dungeon crawler game on Starknet",
-                'Provable Games',
-                'Provable Games',
-                'Arcade / Dungeon Crawler',
-                "https://lootsurvivor.io/favicon-32x32.png",
-                DEFAULT_NS(),
-                SCORE_MODEL(),
-                SCORE_ATTRIBUTE(),
-                SETTINGS_MODEL(),
-            );
-    }
-
-    // ------------------------------------------ //
-    // ------------ Game Component ------------------------ //
-    // ------------------------------------------ //
-    #[abi(embed_v0)]
-    impl SettingsImpl of ISettings<ContractState> {
-        fn setting_exists(self: @ContractState, settings_id: u32) -> bool {
-            return settings_id == 0;
-        }
-    }
-
-    #[abi(embed_v0)]
-    impl GameDetailsImpl of IGameDetails<ContractState> {
-        fn score(self: @ContractState, game_id: u64) -> u32 {
-            let game_libs = ImplGameLibs::new(self.world(@DEFAULT_NS()));
-            let adventurer = game_libs.adventurer.get_adventurer(game_id);
-            adventurer.xp.into()
-        }
-    }
+    use tournaments::components::libs::lifecycle::{LifecycleAssertionsImpl, LifecycleAssertionsTrait};
 
     // ------------------------------------------ //
     // ------------ Impl ------------------------ //
@@ -159,7 +67,7 @@ mod game_systems {
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
-            self.validate_start_conditions(adventurer_id, @token_metadata);
+            _validate_start_conditions(world, adventurer_id, @token_metadata);
 
             // get game libaries
             let game_libs = ImplGameLibs::new(world);
@@ -185,9 +93,8 @@ mod game_systems {
         /// @param till_beast A boolean flag indicating if the exploration continues until
         /// encountering a beast.
         fn explore(ref self: ContractState, adventurer_id: u64, till_beast: bool) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -233,9 +140,8 @@ mod game_systems {
         /// @param to_the_death A boolean flag indicating if the attack should continue until either
         /// the adventurer or the beast is defeated.
         fn attack(ref self: ContractState, adventurer_id: u64, to_the_death: bool) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -323,9 +229,8 @@ mod game_systems {
         /// @param to_the_death A boolean flag indicating if the flee attempt should continue until
         /// either the adventurer escapes or is defeated.
         fn flee(ref self: ContractState, adventurer_id: u64, to_the_death: bool) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -390,9 +295,8 @@ mod game_systems {
         /// @param adventurer_id A u256 representing the unique ID of the adventurer.
         /// @param items A u8 array representing the item IDs to equip.
         fn equip(ref self: ContractState, adventurer_id: u64, items: Array<u8>) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -466,9 +370,8 @@ mod game_systems {
         /// @param adventurer_id A u256 representing the unique ID of the adventurer.
         /// @param items A u8 Array representing the IDs of the items to drop.
         fn drop(ref self: ContractState, adventurer_id: u64, items: Array<u8>) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -511,9 +414,8 @@ mod game_systems {
         fn level_up(
             ref self: ContractState, adventurer_id: u64, potions: u8, stat_upgrades: Stats, items: Array<ItemPurchase>,
         ) {
-            self.assert_token_ownership(adventurer_id);
-
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
 
             let token_metadata: TokenMetadata = world.read_model(adventurer_id);
             token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
@@ -1644,59 +1546,25 @@ mod game_systems {
         _assert_zero_luck(stat_upgrades);
     }
 
-    #[abi(embed_v0)]
-    impl ERC721Metadata of IERC721Metadata<ContractState> {
-        /// Returns the NFT name.
-        fn name(self: @ContractState) -> ByteArray {
-            "Loot Survivor"
-        }
-
-        /// Returns the NFT symbol.
-        fn symbol(self: @ContractState) -> ByteArray {
-            "LSVR"
-        }
-
-        /// Returns the Uniform Resource Identifier (URI) for the `token_id` token.
-        /// If the URI is not set, the return value will be an empty ByteArray.
-        ///
-        /// Requirements:
-        ///
-        /// - `token_id` exists.
-        fn token_uri(self: @ContractState, token_id: u256) -> ByteArray {
-            self.erc721._require_owned(token_id);
-
-            let game_libs = ImplGameLibs::new(self.world(@DEFAULT_NS()));
-            game_libs.renderer.create_metadata(token_id.try_into().unwrap())
-        }
+    fn _validate_start_conditions(world: WorldStorage, token_id: u64, token_metadata: @TokenMetadata) {
+        _assert_token_ownership(world, token_id);
+        _assert_game_not_started(world, token_id);
+        token_metadata.lifecycle.assert_is_playable(token_id, starknet::get_block_timestamp());
     }
 
-    #[generate_trait]
-    impl InternalImpl of InternalTrait {
-        fn validate_start_conditions(self: @ContractState, token_id: u64, token_metadata: @TokenMetadata) {
-            self.assert_token_ownership(token_id);
-            self.assert_game_not_started(token_id);
-            token_metadata.lifecycle.assert_is_playable(token_id, starknet::get_block_timestamp());
-        }
+    fn _assert_token_ownership(world: WorldStorage, token_id: u64) {
+        let (contract_address, _) = world.dns(@"game_token_systems").unwrap();
+        let game_token = IERC721Dispatcher { contract_address };
+        assert(game_token.owner_of(token_id.into()) == starknet::get_caller_address(), 'Not Owner');
+    }
 
-
-        fn assert_token_ownership(self: @ContractState, token_id: u64) {
-            let token_owner = ERC721Impl::owner_of(self, token_id.into());
-            assert!(
-                token_owner == starknet::get_caller_address(),
-                "Loot Survivor: Caller is not owner of token {}",
-                token_id,
-            );
-        }
-
-
-        fn assert_game_not_started(self: @ContractState, adventurer_id: u64) {
-            let game_libs = ImplGameLibs::new(self.world(@DEFAULT_NS()));
-            let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-            assert!(
-                adventurer.xp == 0 && adventurer.health == 0,
-                "Loot Survivor: Adventurer {} has already started",
-                adventurer_id,
-            );
-        }
+    fn _assert_game_not_started(world: WorldStorage, adventurer_id: u64) {
+        let game_libs = ImplGameLibs::new(world);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        assert!(
+            adventurer.xp == 0 && adventurer.health == 0,
+            "Loot Survivor: Adventurer {} has already started",
+            adventurer_id,
+        );
     }
 }
