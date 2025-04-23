@@ -5,7 +5,7 @@ use lootsurvivor::constants::loot::ItemSuffix;
 
 pub const MAX_STAT_VALUE: u8 = 31;
 
-#[derive(Drop, Copy, Serde, PartialEq)]
+#[derive(Introspect, Drop, Copy, Serde, PartialEq)]
 pub struct Stats { // 30 bits total
     pub strength: u8,
     pub dexterity: u8,
@@ -13,7 +13,7 @@ pub struct Stats { // 30 bits total
     pub intelligence: u8,
     pub wisdom: u8,
     pub charisma: u8,
-    pub luck: u8 // dynamically generated, not stored.
+    pub luck: u8,
 }
 
 #[generate_trait]

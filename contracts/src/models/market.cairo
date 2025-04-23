@@ -4,7 +4,7 @@ use lootsurvivor::constants::combat::CombatEnums::Tier;
 use lootsurvivor::constants::loot::{NUM_ITEMS, NUM_ITEMS_NZ_MINUS_ONE};
 use lootsurvivor::constants::market::{NUMBER_OF_ITEMS_PER_LEVEL, TIER_PRICE};
 
-#[derive(Copy, Drop, Serde)]
+#[derive(Introspect, Copy, Drop, Serde)]
 pub struct ItemPurchase {
     pub item_id: u8,
     pub equip: bool,

@@ -26,7 +26,7 @@ pub mod CombatEnums {
         T5,
     }
 
-    #[derive(Copy, Drop, PartialEq, Serde)]
+    #[derive(Introspect, Copy, Drop, PartialEq, Serde)]
     pub enum Slot {
         None,
         Weapon,

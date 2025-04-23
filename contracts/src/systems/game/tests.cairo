@@ -1,42 +1,31 @@
 #[cfg(test)]
 mod tests {
-    use dojo::model::{ModelStorage, ModelStorageTest, ModelValueStorage};
-    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+    use dojo::model::{ModelStorage, ModelStorageTest};
+    use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
     use dojo_cairo_test::{
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait, spawn_test_world,
     };
-    use lootsurvivor::constants::adventurer::{
-        BASE_POTION_PRICE, ITEM_MAX_GREATNESS, ITEM_XP_MULTIPLIER_BEASTS, ITEM_XP_MULTIPLIER_OBSTACLES,
-        MAX_GREATNESS_STAT_BONUS, POTION_HEALTH_AMOUNT, STARTING_HEALTH, XP_FOR_DISCOVERIES,
-    };
+    use lootsurvivor::constants::adventurer::{BASE_POTION_PRICE, POTION_HEALTH_AMOUNT};
     use lootsurvivor::constants::beast::BeastSettings;
-    use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier, Type};
-    use lootsurvivor::constants::discovery::DiscoveryEnums::ExploreResult;
-    use lootsurvivor::constants::loot::{ItemId, SUFFIX_UNLOCK_GREATNESS};
+    use lootsurvivor::constants::combat::CombatEnums::{Slot, Tier};
+    use lootsurvivor::constants::loot::{ItemId};
 
     use lootsurvivor::constants::world::DEFAULT_NS;
 
-    use lootsurvivor::libs::game::{GameLibs, IGameLib, ImplGame};
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
+    use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
+    use lootsurvivor::models::adventurer::adventurer::{IAdventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::stats::{Stats};
     use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked};
     use lootsurvivor::models::game::{m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
     use lootsurvivor::models::market::{ItemPurchase};
-    use lootsurvivor::systems::adventurer::contracts::{
-        IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait, adventurer_systems,
-    };
-    use lootsurvivor::systems::beast::contracts::{IBeastSystemsDispatcher, IBeastSystemsDispatcherTrait, beast_systems};
-
+    use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
+    use lootsurvivor::systems::beast::contracts::{beast_systems};
     use lootsurvivor::systems::game::contracts::{IGameSystemsDispatcher, IGameSystemsDispatcherTrait, game_systems};
-    use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcher, ILootSystemsDispatcherTrait, loot_systems};
-    use lootsurvivor::systems::renderer::contracts::{
-        IRendererSystemsDispatcher, IRendererSystemsDispatcherTrait, renderer_systems,
-    };
-    use starknet::{ContractAddress, contract_address_const};
-    use tournaments::components::game::game_component;
-    use tournaments::components::interfaces::{
-        IGameDetails, IGameToken, IGameTokenDispatcher, IGameTokenDispatcherTrait, ISettings,
-    };
+    use lootsurvivor::systems::game_token::contracts::{game_token_systems};
+    use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcherTrait, loot_systems};
+    use lootsurvivor::systems::renderer::contracts::{renderer_systems};
+    use starknet::{contract_address_const};
+    use tournaments::components::interfaces::{IGameTokenDispatcher, IGameTokenDispatcherTrait};
 
     use tournaments::components::models::game::{
         m_GameCounter, m_GameMetadata, m_Score, m_Settings, m_SettingsCounter, m_SettingsDetails, m_TokenMetadata,
@@ -61,6 +50,7 @@ mod tests {
                 TestResource::Contract(renderer_systems::TEST_CLASS_HASH),
                 TestResource::Contract(adventurer_systems::TEST_CLASS_HASH),
                 TestResource::Contract(beast_systems::TEST_CLASS_HASH),
+                TestResource::Contract(game_token_systems::TEST_CLASS_HASH),
             ]
                 .span(),
         };
@@ -70,8 +60,7 @@ mod tests {
     fn contract_defs() -> Span<ContractDef> {
         [
             ContractDefTrait::new(@DEFAULT_NS(), @"game_systems")
-                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span())
-                .with_init_calldata(array![contract_address_const::<'player1'>().into()].span()),
+                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
             ContractDefTrait::new(@DEFAULT_NS(), @"loot_systems")
                 .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
             ContractDefTrait::new(@DEFAULT_NS(), @"renderer_systems")
@@ -80,6 +69,9 @@ mod tests {
                 .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
             ContractDefTrait::new(@DEFAULT_NS(), @"beast_systems")
                 .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
+            ContractDefTrait::new(@DEFAULT_NS(), @"game_token_systems")
+                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span())
+                .with_init_calldata(array![contract_address_const::<'player1'>().into()].span()),
         ]
             .span()
     }
@@ -98,12 +90,13 @@ mod tests {
         let (contract_address, _) = world.dns(@"game_systems").unwrap();
         let game_systems_dispatcher = IGameSystemsDispatcher { contract_address: contract_address };
 
-        let game_libs = ImplGame::get_libs(world);
+        let game_libs = ImplGameLibs::new(world);
         (world, game_systems_dispatcher, game_libs)
     }
 
-    fn new_game(game: IGameSystemsDispatcher) -> u64 {
-        let game_token_dispatcher = IGameTokenDispatcher { contract_address: game.contract_address };
+    fn new_game(world: WorldStorage, game: IGameSystemsDispatcher) -> u64 {
+        let (contract_address, _) = world.dns(@"game_token_systems").unwrap();
+        let game_token_dispatcher = IGameTokenDispatcher { contract_address };
 
         let adventurer_id = game_token_dispatcher
             .mint('player1', 0, Option::None, Option::None, contract_address_const::<'player1'>());
@@ -115,10 +108,10 @@ mod tests {
     #[test]
     fn test_new_game() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // load player assets
-        let (mut adventurer, mut bag) = game_libs.load_assets(adventurer_id);
+        let (mut adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
 
         assert(adventurer.xp == 0, 'should start with 0 xp');
         assert(adventurer.equipment.weapon.id == ItemId::Wand, 'wrong starting weapon');
@@ -128,8 +121,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Action not allowed in battle', 'ENTRYPOINT_FAILED'))]
     fn test_no_explore_during_battle() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // try to explore before defeating start beast
         game.explore(adventurer_id, true);
@@ -138,12 +131,12 @@ mod tests {
     #[test]
     fn test_defeat_starter_beast() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // attack beast
         game.attack(adventurer_id, false);
 
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         assert(adventurer.beast_health == 0, 'beast should be dead');
         assert(adventurer.get_level() == 2, 'should be level 2');
@@ -153,8 +146,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Cant flee starter beast', 'ENTRYPOINT_FAILED'))]
     fn test_cant_flee_starter_beast() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // immediately attempt to flee starter beast
         // which is not allowed and should result in a panic 'Cant flee starter beast'
@@ -164,8 +157,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Not in battle', 'ENTRYPOINT_FAILED'))]
     fn test_cant_attack_outside_battle() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         game.attack(adventurer_id, true);
         // attack dead beast
@@ -175,8 +168,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Not in battle', 'ENTRYPOINT_FAILED'))]
     fn test_cant_flee_outside_battle() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         game.attack(adventurer_id, false);
         game.flee(adventurer_id, false);
@@ -185,7 +178,7 @@ mod tests {
     #[test]
     fn test_game_flow() { // adventurer_id 1 with simple entropy
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // attack starter beast
         game.attack(adventurer_id, false);
@@ -213,12 +206,12 @@ mod tests {
         game.explore(adventurer_id, true);
 
         // verify we found a beast
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         assert(adventurer.beast_health != 0, 'should have found a beast');
 
         // flee from beast
         game.flee(adventurer_id, true);
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         assert(adventurer.beast_health == 0 || adventurer.health == 0, 'flee or die');
     }
 
@@ -226,13 +219,13 @@ mod tests {
     #[should_panic(expected: ('Stat upgrade available', 'ENTRYPOINT_FAILED'))]
     fn test_explore_not_allowed_with_avail_stat_upgrade() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
         // get updated adventurer
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         // assert adventurer is now level 2 and has 1 stat upgrade available
         assert(adventurer.get_level() == 2, 'advntr should be lvl 2');
@@ -246,8 +239,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Action not allowed in battle', 'ENTRYPOINT_FAILED'))]
     fn test_buy_items_during_battle() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let stat_upgrades = Stats {
@@ -261,17 +254,19 @@ mod tests {
     #[should_panic(expected: ('Market is closed', 'ENTRYPOINT_FAILED'))]
     fn test_buy_items_without_stat_upgrade() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
         // get adventurer and entropy
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
 
         // get valid item from market
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
         let item_id = *market_items.at(0);
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
 
@@ -293,15 +288,17 @@ mod tests {
     #[should_panic(expected: ('Item already owned', 'ENTRYPOINT_FAILED'))]
     fn test_buy_duplicate_item_equipped() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
         // get items from market
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         // get first item on the market
         let item_id = *market_items.at(3);
@@ -321,15 +318,17 @@ mod tests {
     #[should_panic(expected: ('Item already owned', 'ENTRYPOINT_FAILED'))]
     fn test_buy_duplicate_item_bagged() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
         // get items from market
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         // try to buy same item but equip one and put one in bag
         let item_id = *market_items.at(0);
@@ -347,8 +346,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Market item does not exist', 'ENTRYPOINT_FAILED'))]
     fn test_buy_item_not_on_market() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
@@ -366,14 +365,16 @@ mod tests {
     #[test]
     fn test_buy_and_bag_item() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
         shopping_cart.append(ItemPurchase { item_id: *market_items.at(0), equip: false });
@@ -384,21 +385,23 @@ mod tests {
 
         game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
 
-        let (_, bag) = game_libs.load_assets(adventurer_id);
+        let (_, bag) = game_libs.adventurer.load_assets(adventurer_id);
         assert(bag.item_1.id == *market_items.at(0), 'item should be in bag');
     }
 
     #[test]
     fn test_buy_items() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         let mut purchased_weapon: u8 = 0;
         let mut purchased_chest: u8 = 0;
@@ -411,14 +414,14 @@ mod tests {
                 break ();
             }
             let market_item_id = *market_items.at(i);
-            let market_item_tier = game_libs.get_tier(market_item_id);
+            let market_item_tier = game_libs.loot.get_tier(market_item_id);
 
             if (market_item_tier != Tier::T5 && market_item_tier != Tier::T4) {
                 i += 1;
                 continue;
             }
 
-            let market_item_slot = game_libs.get_slot(market_item_id);
+            let market_item_slot = game_libs.loot.get_slot(market_item_id);
 
             // if the item is a weapon and we haven't purchased a weapon yet
             // and the item is a tier 4 or 5 item
@@ -447,7 +450,7 @@ mod tests {
         game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart.clone());
 
         // get updated adventurer and bag state
-        let (adventurer, bag) = game_libs.load_assets(adventurer_id);
+        let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
 
         let mut buy_and_equip_tested = false;
         let mut buy_and_bagged_tested = false;
@@ -467,7 +470,7 @@ mod tests {
                 buy_and_equip_tested = true;
             } else {
                 // if equip was false, verify item is in bag
-                let (contains, _) = game_libs.bag_contains(bag, item_purchase.item_id);
+                let (contains, _) = game_libs.adventurer.bag_contains(bag, item_purchase.item_id);
                 assert(contains, 'item not in bag');
                 buy_and_bagged_tested = true;
             }
@@ -481,8 +484,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item not in bag', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED'))]
     fn test_equip_not_in_bag() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // initialize an array of items to equip that contains an item not in bag
         let mut items_to_equip = ArrayTrait::<u8>::new();
@@ -497,8 +500,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Too many items', 'ENTRYPOINT_FAILED'))]
     fn test_equip_too_many_items() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // initialize an array of 9 items (too many to equip)
         let mut items_to_equip = ArrayTrait::<u8>::new();
@@ -521,15 +524,17 @@ mod tests {
     #[test]
     fn test_equip() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get items from market
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         let mut purchased_weapon: u8 = 0;
         let mut purchased_chest: u8 = 0;
@@ -537,7 +542,6 @@ mod tests {
         let mut purchased_waist: u8 = 0;
         let mut purchased_foot: u8 = 0;
         let mut purchased_hand: u8 = 0;
-        let mut purchased_ring: u8 = 0;
         let mut purchased_items = ArrayTrait::<u8>::new();
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
 
@@ -547,8 +551,8 @@ mod tests {
                 break ();
             }
             let item_id = *market_items.at(i);
-            let item_slot = game_libs.get_slot(item_id);
-            let item_tier = game_libs.get_tier(item_id);
+            let item_slot = game_libs.loot.get_slot(item_id);
+            let item_tier = game_libs.loot.get_tier(item_id);
 
             // if the item is a weapon and we haven't purchased a weapon yet
             // and the item is a tier 4 or 5 item
@@ -595,7 +599,7 @@ mod tests {
         game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
 
         // get bag from storage
-        let (adventurer, bag) = game_libs.load_assets(adventurer_id);
+        let (_, bag) = game_libs.adventurer.load_assets(adventurer_id);
 
         let mut items_to_equip = ArrayTrait::<u8>::new();
         // iterate over the items we bought
@@ -605,7 +609,7 @@ mod tests {
                 break ();
             }
             // verify they are all in our bag
-            let (contains, _) = game_libs.bag_contains(bag, *purchased_items_span.at(i));
+            let (contains, _) = game_libs.adventurer.bag_contains(bag, *purchased_items_span.at(i));
             assert(contains, 'item should be in bag');
             items_to_equip.append(*purchased_items_span.at(i));
             i += 1;
@@ -615,7 +619,7 @@ mod tests {
         game.equip(adventurer_id, items_to_equip.clone());
 
         // get update bag from storage
-        let (adventurer, bag) = game_libs.load_assets(adventurer_id);
+        let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
 
         // iterate over the items we equipped
         let mut i: u32 = 0;
@@ -623,7 +627,7 @@ mod tests {
             if i == items_to_equip.len() {
                 break ();
             }
-            let (contains, _) = game_libs.bag_contains(bag, *purchased_items_span.at(i));
+            let (contains, _) = game_libs.adventurer.bag_contains(bag, *purchased_items_span.at(i));
             // verify they are no longer in bag
             assert(!contains, 'item should not be in bag');
             // and equipped on the adventurer
@@ -635,13 +639,13 @@ mod tests {
     #[test]
     fn test_buy_potions() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get updated adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         // store original adventurer health and gold before buying potion
         let adventurer_health_pre_potion = adventurer.health;
@@ -656,7 +660,7 @@ mod tests {
         game.level_up(adventurer_id, number_of_potions, stat_upgrades, shopping_cart);
 
         // get updated adventurer stat
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         // verify potion increased health by POTION_HEALTH_AMOUNT or adventurer health is full
         assert(
             adventurer.health == adventurer_health_pre_potion
@@ -672,13 +676,13 @@ mod tests {
     #[should_panic(expected: ('Health already full', 'ENTRYPOINT_FAILED'))]
     fn test_buy_potions_exceed_max_health() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get updated adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         // get number of potions required to reach full health
         let potions_to_full_health: u8 = (POTION_HEALTH_AMOUNT.into()
@@ -700,8 +704,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Market is closed', 'ENTRYPOINT_FAILED'))]
     fn test_cant_buy_potion_without_stat_upgrade() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
@@ -720,8 +724,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Action not allowed in battle', 'ENTRYPOINT_FAILED'))]
     fn test_cant_buy_potion_during_battle() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // attempt to immediately buy health before clearing starter beast
         // this should result in contract throwing a panic 'Action not allowed in battle'
@@ -737,9 +741,9 @@ mod tests {
     #[test]
     fn test_get_potion_price_underflow() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let potion_price = adventurer.charisma_adjusted_potion_price();
         let adventurer_level = adventurer.get_level();
         assert(potion_price == BASE_POTION_PRICE.into() * adventurer_level.into(), 'wrong lvl1 potion price');
@@ -747,7 +751,7 @@ mod tests {
         // defeat starter beast and advance to level 2
         game.attack(adventurer_id, true);
 
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         // get level 2 potion price
         let potion_price = adventurer.charisma_adjusted_potion_price();
         let adventurer_level = adventurer.get_level();
@@ -762,15 +766,17 @@ mod tests {
     #[test]
     fn test_drop_item() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get items from market
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         // get first item on the market
         let purchased_item_id = *market_items.at(0);
@@ -784,12 +790,12 @@ mod tests {
         game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
 
         // get bag state
-        let (adventurer, bag) = game_libs.load_assets(adventurer_id);
+        let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
 
         // assert adventurer has starting weapon equipped
         assert(adventurer.equipment.weapon.id != 0, 'adventurer should have weapon');
         // assert bag has the purchased item
-        let (contains, _) = game_libs.bag_contains(bag, purchased_item_id);
+        let (contains, _) = game_libs.adventurer.bag_contains(bag, purchased_item_id);
         assert(contains, 'item should be in bag');
 
         // create drop list consisting of adventurers equipped weapon and purchased item that is in
@@ -801,22 +807,22 @@ mod tests {
         // call contract drop
         game.drop(adventurer_id, drop_list);
 
-        let (adventurer, bag) = game_libs.load_assets(adventurer_id);
+        let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
 
         // assert adventurer has no weapon equipped
         assert(adventurer.equipment.weapon.id == 0, 'weapon id should be 0');
         assert(adventurer.equipment.weapon.xp == 0, 'weapon should have no xp');
 
         // assert bag does not have the purchased item
-        let (contains, _) = game_libs.bag_contains(bag, purchased_item_id);
+        let (contains, _) = game_libs.adventurer.bag_contains(bag, purchased_item_id);
         assert(!contains, 'item should not be in bag');
     }
 
     #[test]
     #[should_panic(expected: ('Cant drop during starter beast', 'ENTRYPOINT_FAILED'))]
     fn test_drop_on_starter_beast() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         let mut drop_list = ArrayTrait::<u8>::new();
         drop_list.append(255);
@@ -830,13 +836,13 @@ mod tests {
     #[test]
     fn test_upgrade_stats() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let original_charisma = adventurer.stats.charisma;
 
         // call upgrade_stats with stat upgrades
@@ -849,7 +855,7 @@ mod tests {
         game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
 
         // get update adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         // assert charisma was increased
         assert(adventurer.stats.charisma == original_charisma + 1, 'charisma not increased');
@@ -860,8 +866,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('insufficient stat upgrades', 'ENTRYPOINT_FAILED'))]
     fn test_upgrade_stats_not_enough_points() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
@@ -878,13 +884,13 @@ mod tests {
     #[test]
     fn test_upgrade_adventurer() {
         let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
         // get original adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let original_charisma = adventurer.stats.charisma;
         let original_health = adventurer.health;
 
@@ -893,7 +899,9 @@ mod tests {
 
         // get items from market
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs.get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs
+            .adventurer
+            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
 
         // buy two items
         let mut items_to_purchase = ArrayTrait::<ItemPurchase>::new();
@@ -911,7 +919,7 @@ mod tests {
         game.level_up(adventurer_id, potions, stat_upgrades, items_to_purchase);
 
         // get updated adventurer state
-        let adventurer = game_libs.get_adventurer(adventurer_id);
+        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         // assert health was increased by one potion
         assert(adventurer.health == original_health + POTION_HEALTH_AMOUNT.into(), 'health not increased');
@@ -927,8 +935,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Cant drop during starter beast', 'ENTRYPOINT_FAILED'))]
     fn test_no_dropping_starter_weapon_during_starter_beast() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // try to drop starter weapon during starter beast battle
         let mut drop_items = array![ItemId::Wand];
@@ -937,8 +945,8 @@ mod tests {
 
     #[test]
     fn test_drop_starter_item_after_starter_beast() {
-        let (world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let (world, game, _) = deploy_lootsurvivor();
+        let adventurer_id = new_game(world, game);
 
         // defeat starter beast
         game.attack(adventurer_id, false);
@@ -951,19 +959,19 @@ mod tests {
     #[test]
     fn test_item_level_up_prefix_unlock() {
         let (mut world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // init adventurer with g18 wand
-        let mut adventurer = game_libs.get_adventurer(adventurer_id);
+        let mut adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         adventurer.equipment.weapon.xp = 360;
         adventurer.item_specials_seed = 123;
 
-        let packed = game_libs.pack_adventurer(adventurer);
+        let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model_test(@AdventurerPacked { adventurer_id, packed });
 
         game.attack(adventurer_id, false);
 
-        adventurer = game_libs.get_adventurer(adventurer_id);
+        adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         assert(adventurer.equipment.weapon.xp == 368, 'xp not set correctly');
         assert(adventurer.stat_upgrades_available == 1, 'wrong stats available');
@@ -972,19 +980,19 @@ mod tests {
     #[test]
     fn test_process_item_level_up_greatness_20() {
         let (mut world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(game);
+        let adventurer_id = new_game(world, game);
 
         // init adventurer with g18 wand
-        let mut adventurer = game_libs.get_adventurer(adventurer_id);
+        let mut adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         adventurer.equipment.weapon.xp = 399;
         adventurer.item_specials_seed = 123;
 
-        let packed = game_libs.pack_adventurer(adventurer);
+        let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model_test(@AdventurerPacked { adventurer_id, packed });
 
         game.attack(adventurer_id, false);
 
-        adventurer = game_libs.get_adventurer(adventurer_id);
+        adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
         assert(adventurer.equipment.weapon.xp == 400, 'xp not set correctly');
         assert(adventurer.stat_upgrades_available == 2, 'wrong stats available');
