@@ -14,9 +14,9 @@ world_block = 948010
 default = "ls_0_0_1"
 
 [writers]
-"ls_0_0_1" = ["ls_0_0_1-game_systems"]
+"ls_0_0_1" = ["ls_0_0_1-game_systems", "ls_0_0_1-game_token_systems"]
 
 [init_call_args]
-"ls_0_0_1-game_systems" = [
-    "0x000B39b235b44c53a2E9F0c5D35939D9C8E8dAFDd0a2ba2E695b501Fc1e9fd2f",
+"ls_0_0_1-game_token_systems" = [
+    "0x0238df9Efd27Aba2ccB0bdC97a4cf440caA403e9ed3f1883294Ab6CDBA6C5282",
 ]
