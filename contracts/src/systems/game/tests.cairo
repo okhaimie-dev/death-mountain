@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use dojo::model::{ModelStorage, ModelStorageTest};
-    use dojo::world::{IWorldDispatcherTrait, WorldStorageTrait, WorldStorage};
+    use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
     use dojo_cairo_test::{
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait, spawn_test_world,
     };
@@ -21,9 +21,9 @@ mod tests {
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
     use lootsurvivor::systems::beast::contracts::{beast_systems};
     use lootsurvivor::systems::game::contracts::{IGameSystemsDispatcher, IGameSystemsDispatcherTrait, game_systems};
+    use lootsurvivor::systems::game_token::contracts::{game_token_systems};
     use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcherTrait, loot_systems};
     use lootsurvivor::systems::renderer::contracts::{renderer_systems};
-    use lootsurvivor::systems::game_token::contracts::{game_token_systems};
     use starknet::{contract_address_const};
     use tournaments::components::interfaces::{IGameTokenDispatcher, IGameTokenDispatcherTrait};
 
@@ -72,7 +72,6 @@ mod tests {
             ContractDefTrait::new(@DEFAULT_NS(), @"game_token_systems")
                 .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span())
                 .with_init_calldata(array![contract_address_const::<'player1'>().into()].span()),
-
         ]
             .span()
     }

@@ -1,6 +1,5 @@
 #[starknet::interface]
-pub trait IGameTokenSystems<T> {
-}
+pub trait IGameTokenSystems<T> {}
 
 #[dojo::contract]
 mod game_token_systems {
