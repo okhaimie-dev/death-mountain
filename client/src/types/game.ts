@@ -77,10 +77,30 @@ export interface Beast {
   xpReward: number;
 }
 
+export interface Stats {
+  strength: number;
+  dexterity: number;
+  vitality: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
+}
+
+export interface ItemPurchase {
+  item_id: number;
+  equip: boolean;
+}
+
 export interface AdventurerEntropy {
   id: string;
   market_seed: bigint;
   beast_seed: bigint;
+}
+
+export interface GameEvent {
+  adventurer_id: string;
+  event_type: string;
+  event_data: string;
 }
 
 export interface Metadata {
@@ -93,13 +113,15 @@ export interface Metadata {
 
 export type GameSchemaType = SchemaType;
 export type GameSchemaModels = GameSchemaType['lootsurvivor'];
+export type GameComponentModels = GameSchemaType['tournaments'];
 export type GameSchemaModelNames = keyof GameSchemaModels;
+export type GameComponentModelNames = keyof GameComponentModels;
 export type GameModelType = UnionOfModelData<GameSchemaType>;
 export type GameEntity = ParsedEntity<GameSchemaType>;
 
 export class GameQueryBuilder extends ToriiQueryBuilder<GameSchemaType> { }
 export class GameClauseBuilder extends ClauseBuilder<GameSchemaType> { }
 
-export const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames): M => (
+export const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames | GameComponentModelNames): M => (
   entity?.models[`${import.meta.env.VITE_PUBLIC_NAMESPACE}`]?.[modelName] as M
 )

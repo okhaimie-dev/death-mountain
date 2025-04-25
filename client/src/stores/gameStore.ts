@@ -1,16 +1,14 @@
 import { create } from 'zustand';
-import { Adventurer, AdventurerEntropy, Item, Beast, Metadata } from '../types/game';
-import { getBeast } from '../utils/beast';
-import { MarketItem, generateMarketItems } from '../utils/market';
+import { Adventurer, GameEvent, Item, Metadata } from '../types/game';
 
 interface GameState {
   gameId: number | null;
   adventurer: Adventurer | null;
   bag: Item[] | null;
-  entropy: AdventurerEntropy | null;
-  beast: Beast | null;
-  market: MarketItem[] | null;
+  beastSeed: number | null;
+  marketSeed: number | null;
   metadata: Metadata | null;
+  gameEvent: GameEvent | null;
 
   setGameId: (gameId: number) => void;
   exitGame: () => void;
@@ -19,6 +17,7 @@ interface GameState {
   setBag: (data: Item[] | null) => void;
   setEntropy: (data: any) => void;
   setMetadata: (data: Metadata | null) => void;
+  setGameEvent: (data: GameEvent | null) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -26,9 +25,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   metadata: null,
   adventurer: null,
   bag: null,
-  entropy: null,
-  beast: null,
-  market: null,
+  beastSeed: null,
+  marketSeed: null,
+  gameEvent: null,
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -38,9 +37,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       gameId: null,
       adventurer: null,
       bag: null,
-      beast: null,
-      market: null,
-      entropy: null,
+      beastSeed: null,
+      marketSeed: null,
       metadata: null,
     });
   },
@@ -48,14 +46,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   setAdventurer: (data: Adventurer | null) => set({ adventurer: data }),
   setBag: (data: Item[] | null) => set({ bag: data }),
   setEntropy: (data: any) => {
-    let adventurer = get().adventurer;
-    if (adventurer) {
-      set({
-        beast: getBeast(BigInt(data.beast_seed), adventurer.xp),
-        market: generateMarketItems(BigInt(data.market_seed), adventurer.stat_upgrades_available),
-        entropy: data,
-      });
-    }
+    set({
+      beastSeed: data.beast_seed,
+      marketSeed: data.market_seed,
+    });
   },
   setMetadata: (data: Metadata | null) => set({ metadata: data }),
+  setGameEvent: (data: GameEvent | null) => set({ gameEvent: data }),
 }));

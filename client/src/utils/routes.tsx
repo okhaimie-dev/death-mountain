@@ -1,4 +1,4 @@
-import LandingPage from "../pages/LandingPage";
+import LandingPage from "../pages/StartPage";
 import GamePage from "../pages/GamePage";
 
 export const routes = [

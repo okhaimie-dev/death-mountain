@@ -3,11 +3,11 @@ import { createTheme } from '@mui/material/styles';
 export const mainTheme = createTheme({
   typography: {
     fontFamily: [
-      'oldenburg',
+      'VT323',
       'roboto',
     ].join(','),
     allVariants: {
-      color: '#FFF'
+      color: '#80FF00'
     },
     h1: {
       fontSize: '35px'
@@ -46,31 +46,29 @@ export const mainTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: 'rgba(160, 187, 201, 0.9)',
-      contrastText: '#000'
+      main: '#80FF00',
+      contrastText: '#111111'
     },
     secondary: {
-      main: 'rgba(160, 187, 201, 0.9)',
-      contrastText: "rgb(234, 236, 239)"
+      main: '#EDCF33',
+      contrastText: "rgba(0, 0, 0, 1)"
     },
     warning: {
       main: '#f59100',
       contrastText: "#fff"
     },
-    background: {
-      default: '#1F1E1F',
-      paper: '#000000'
-    },
     text: {
-      primary: '#FFF'
+      primary: '#80FF00',
+      secondary: 'rgba(128, 255, 0, 0.25)'
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          fontSize: '14px',
-          textTransform: 'none'
+          fontSize: '15px',
+          maxHeight: '100%',
+          minWidth: '40px',
         }
       }
     },

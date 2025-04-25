@@ -4,6 +4,7 @@
 @import '@fontsource/roboto/700.css';
 
 body {
+  background-color: #000000;
   overflow: hidden;
   margin: 0;
   -webkit-user-select: none;
@@ -35,20 +36,21 @@ b {
   font-size: 15px;
 }
 
-.background {
-  height: 100%;
-  background: #202020;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  animation: fadeInAnimation ease 2s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+.bgImage {
+  background-image: url("./assets/images/background.png");
 }
 
 .main {
   height: 100vh;
   width: 100vw;
+}
+
+.container {
+  background: rgba(17, 17, 17, 1);
+  border: 3px solid rgba(34, 34, 34, 1);
+  border-radius: 5px;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 input:autofill {
@@ -91,4 +93,34 @@ input:-webkit-autofill {
 
 .notistack-MuiContent-error #notistack-snackbar {
   color: white;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

@@ -12,16 +12,18 @@ const StarknetChainId = {
 
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE
 const game_systems = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
+const game_token_systems = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
+
 
 const cartridge = new ControllerConnector({
   policies: [
     {
-      target: game_systems,
+      target: game_token_systems,
       method: "mint",
     },
     {
       target: game_systems,
-      method: "new_game",
+      method: "start_game",
     },
     {
       target: game_systems,

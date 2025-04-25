@@ -2,14 +2,12 @@ import { useGameStore } from '@/stores/gameStore';
 import { useAccount, useConnect, useDisconnect } from '@starknet-react/core';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { dojoConfig } from "../../dojoConfig";
-import { fetchGameTokens } from '@/dojo/useGameTokens';
 
 export interface ControllerContext {
   account: any;
   address: string | undefined;
   playerName: string;
   connecting: boolean | undefined;
-  gameTokens: string[];
 }
 
 // Create a context
@@ -21,9 +19,7 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
   const { connector } = useConnect();
   const { disconnect } = useDisconnect()
 
-  const { gameId, exitGame } = useGameStore();
   const [userName, setUserName] = useState()
-  const [gameTokens, setGameTokens] = useState([]);
 
   useEffect(() => {
     if (account) {
@@ -31,19 +27,8 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
       if ((account as any).walletProvider?.account?.channel?.nodeUrl && (account as any).walletProvider.account.channel.nodeUrl !== dojoConfig.rpcUrl) {
         return disconnect()
       }
-
-      // Handle game tokens
-      fetchGameTokens(account.address).then(tokens => {
-        setGameTokens(tokens)
-      })
     }
   }, [account]);
-
-  useEffect(() => {
-    if (!account && gameId) {
-      exitGame()
-    }
-  }, [gameId]);
 
   useEffect(() => {
     async function controllerName() {
@@ -65,7 +50,6 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
       address,
       playerName: userName || "",
       connecting: isConnecting,
-      gameTokens,
     }}>
       {children}
     </ControllerContext.Provider>

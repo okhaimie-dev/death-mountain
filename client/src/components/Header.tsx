@@ -2,10 +2,11 @@ import { useGameStore } from '@/stores/gameStore';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from '@mui/material';
 import { useNavigate } from "react-router-dom";
+import WalletConnect from './WalletConnect';
 
-function GameHeader() {
+function Header() {
   const navigate = useNavigate()
-  const { exitGame } = useGameStore();
+  const { gameId, exitGame } = useGameStore();
 
   const backToMenu = () => {
     exitGame();
@@ -13,27 +14,38 @@ function GameHeader() {
   }
 
   return (
-    <Box sx={[styles.header, { height: '42px', pl: 3 }]}>
+    <Box sx={styles.header}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Box sx={{ height: '32px', opacity: 1, cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={backToMenu}>
+        {gameId && <Box sx={{ height: '32px', opacity: 1, cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={backToMenu}>
           <CloseIcon fontSize='medium' htmlColor='white' />
-        </Box>
+        </Box>}
+      </Box>
+
+      <Box sx={styles.headerButtons}>
+        <WalletConnect />
       </Box>
     </Box>
   );
 }
 
-export default GameHeader
+export default Header
 
 const styles = {
   header: {
     width: '100%',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+    height: '50px',
+    borderBottom: '2px solid rgba(17, 17, 17, 1)',
+    background: 'black',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    pr: 1,
     boxSizing: 'border-box',
-    gap: 4,
+    px: '10px'
   },
+  headerButtons: {
+    display: 'flex',
+    height: '36px',
+    alignItems: 'center',
+    gap: 2
+  }
 };

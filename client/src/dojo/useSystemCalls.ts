@@ -1,9 +1,13 @@
 import { useAccount } from "@starknet-react/core";
 import { CallData, provider } from 'starknet';
 import { useSnackbar } from 'notistack';
+import { getContractByName } from "@dojoengine/core";
+import { dojoConfig } from "../../dojoConfig";
 
-const GAME_ADDRESS = import.meta.env.VITE_PUBLIC_GAME_ADDRESS;
+const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 const VRF_PROVIDER_ADDRESS = import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS;
+const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
+const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
 
 /**
  * Custom hook to handle system calls and state management in the Dojo application.
@@ -58,7 +62,7 @@ export const useSystemCalls = () => {
     try {
       await executeAction([
         {
-          contractAddress: GAME_ADDRESS,
+          contractAddress: GAME_TOKEN_ADDRESS,
           entrypoint: 'mint',
           calldata: [
             '0x' + name.split('').map(char => char.charCodeAt(0).toString(16)).join(''),

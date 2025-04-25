@@ -10,7 +10,7 @@ import type { SchemaType } from "./generated/models.gen.ts";
 
 import { dojoConfig } from "../dojoConfig.ts";
 import "./index.css";
-import StarknetProvider from "./providers/starknet.tsx";
+import StarknetProvider from "./contexts/starknet.tsx";
 
 
 async function main() {

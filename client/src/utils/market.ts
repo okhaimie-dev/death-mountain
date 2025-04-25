@@ -39,10 +39,6 @@ function createMarketItem(id: number): MarketItem {
 }
 
 export function generateMarketItems(seed: bigint, statUpgradesAvailable: number): MarketItem[] {
-  if (!statUpgradesAvailable || seed === BigInt(0)) {
-    return [];
-  }
-
   const marketSize = getMarketSize(statUpgradesAvailable);
 
   // If market size >= NUM_ITEMS, return all items

@@ -7,38 +7,35 @@ import { SnackbarProvider } from 'notistack';
 
 import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
-import { ControllerProvider } from './providers/controller';
-import WalletConnect from './components/WalletConnect';
+import { ControllerProvider } from './contexts/controller';
+import Header from './components/Header';
 
 function App() {
-
   return (
     <BrowserRouter>
       <Box className='bgImage'>
-        <Box className='background'>
-          <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={mainTheme}>
-              <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
-                <ControllerProvider>
+        <StyledEngineProvider injectFirst>
+          <ThemeProvider theme={mainTheme}>
+            <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
+              <ControllerProvider>
 
-                  <Box className='main'>
-                    <AnimatePresence mode="wait">
-                      <WalletConnect />
+                <Box className='main'>
+                  <AnimatePresence mode="wait">
+                    <Header />
 
-                      <Routes>
-                        {routes.map((route, index) => {
-                          return <Route key={index} path={route.path} element={route.content} />
-                        })}
-                      </Routes>
+                    <Routes>
+                      {routes.map((route, index) => {
+                        return <Route key={index} path={route.path} element={route.content} />
+                      })}
+                    </Routes>
 
-                    </AnimatePresence>
-                  </Box>
+                  </AnimatePresence>
+                </Box>
 
-                </ControllerProvider>
-              </SnackbarProvider>
-            </ThemeProvider>
-          </StyledEngineProvider>
-        </Box>
+              </ControllerProvider>
+            </SnackbarProvider>
+          </ThemeProvider>
+        </StyledEngineProvider>
       </Box>
     </BrowserRouter >
   );
