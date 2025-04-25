@@ -84,6 +84,7 @@ export interface Stats {
   intelligence: number;
   wisdom: number;
   charisma: number;
+  luck: number;
 }
 
 export interface ItemPurchase {

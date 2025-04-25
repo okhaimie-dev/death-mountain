@@ -378,27 +378,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_systems_approve_calldata = (to: string, tokenId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "approve",
-			calldata: [to, tokenId],
-		};
-	};
-
-	const game_systems_approve = async (snAccount: Account | AccountInterface, to: string, tokenId: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_systems_approve_calldata(to, tokenId),
-				"ls_0_0_1",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_game_systems_attack_calldata = (adventurerId: BigNumberish, toTheDeath: boolean): DojoCall => {
 		return {
 			contractName: "game_systems",
@@ -420,23 +399,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_systems_balanceOf_calldata = (account: string): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "balanceOf",
-			calldata: [account],
-		};
-	};
-
-	const game_systems_balanceOf = async (account: string) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_balanceOf_calldata(account));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_game_systems_drop_calldata = (adventurerId: BigNumberish, items: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "game_systems",
@@ -450,27 +412,6 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_game_systems_drop_calldata(adventurerId, items),
-				"ls_0_0_1",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_emitMetadataUpdate_calldata = (gameId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "emit_metadata_update",
-			calldata: [gameId],
-		};
-	};
-
-	const game_systems_emitMetadataUpdate = async (snAccount: Account | AccountInterface, gameId: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_systems_emitMetadataUpdate_calldata(gameId),
 				"ls_0_0_1",
 			);
 		} catch (error) {
@@ -542,74 +483,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_systems_gameCount_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "game_count",
-			calldata: [],
-		};
-	};
-
-	const game_systems_gameCount = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_gameCount_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_gameMetadata_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "game_metadata",
-			calldata: [],
-		};
-	};
-
-	const game_systems_gameMetadata = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_gameMetadata_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_getApproved_calldata = (tokenId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "getApproved",
-			calldata: [tokenId],
-		};
-	};
-
-	const game_systems_getApproved = async (tokenId: BigNumberish) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_getApproved_calldata(tokenId));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_isApprovedForAll_calldata = (owner: string, operator: string): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "isApprovedForAll",
-			calldata: [owner, operator],
-		};
-	};
-
-	const game_systems_isApprovedForAll = async (owner: string, operator: string) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_isApprovedForAll_calldata(owner, operator));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_game_systems_levelUp_calldata = (adventurerId: BigNumberish, potions: BigNumberish, statUpgrades: models.Stats, items: Array<ItemPurchase>): DojoCall => {
 		return {
 			contractName: "game_systems",
@@ -625,188 +498,6 @@ export function setupWorld(provider: DojoProvider) {
 				build_game_systems_levelUp_calldata(adventurerId, potions, statUpgrades, items),
 				"ls_0_0_1",
 			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_mint_calldata = (playerName: BigNumberish, settingsId: BigNumberish, start: CairoOption<BigNumberish>, end: CairoOption<BigNumberish>, to: string): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "mint",
-			calldata: [playerName, settingsId, start, end, to],
-		};
-	};
-
-	const game_systems_mint = async (snAccount: Account | AccountInterface, playerName: BigNumberish, settingsId: BigNumberish, start: CairoOption<BigNumberish>, end: CairoOption<BigNumberish>, to: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_systems_mint_calldata(playerName, settingsId, start, end, to),
-				"ls_0_0_1",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_name_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "name",
-			calldata: [],
-		};
-	};
-
-	const game_systems_name = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_name_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_ownerOf_calldata = (tokenId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "ownerOf",
-			calldata: [tokenId],
-		};
-	};
-
-	const game_systems_ownerOf = async (tokenId: BigNumberish) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_ownerOf_calldata(tokenId));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_safeTransferFrom_calldata = (from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "safeTransferFrom",
-			calldata: [from, to, tokenId, data],
-		};
-	};
-
-	const game_systems_safeTransferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_systems_safeTransferFrom_calldata(from, to, tokenId, data),
-				"ls_0_0_1",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_score_calldata = (gameId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "score",
-			calldata: [gameId],
-		};
-	};
-
-	const game_systems_score = async (gameId: BigNumberish) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_score_calldata(gameId));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_scoreAttribute_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "score_attribute",
-			calldata: [],
-		};
-	};
-
-	const game_systems_scoreAttribute = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_scoreAttribute_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_scoreModel_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "score_model",
-			calldata: [],
-		};
-	};
-
-	const game_systems_scoreModel = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_scoreModel_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_setApprovalForAll_calldata = (operator: string, approved: boolean): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "setApprovalForAll",
-			calldata: [operator, approved],
-		};
-	};
-
-	const game_systems_setApprovalForAll = async (snAccount: Account | AccountInterface, operator: string, approved: boolean) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_systems_setApprovalForAll_calldata(operator, approved),
-				"ls_0_0_1",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_settingExists_calldata = (settingsId: BigNumberish): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "setting_exists",
-			calldata: [settingsId],
-		};
-	};
-
-	const game_systems_settingExists = async (settingsId: BigNumberish) => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_settingExists_calldata(settingsId));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_systems_settingsModel_calldata = (): DojoCall => {
-		return {
-			contractName: "game_systems",
-			entrypoint: "settings_model",
-			calldata: [],
-		};
-	};
-
-	const game_systems_settingsModel = async () => {
-		try {
-			return await provider.call("ls_0_0_1", build_game_systems_settingsModel_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -834,87 +525,396 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_systems_supportsInterface_calldata = (interfaceId: BigNumberish): DojoCall => {
+	const build_game_token_systems_approve_calldata = (to: string, tokenId: BigNumberish): DojoCall => {
 		return {
-			contractName: "game_systems",
+			contractName: "game_token_systems",
+			entrypoint: "approve",
+			calldata: [to, tokenId],
+		};
+	};
+
+	const game_token_systems_approve = async (snAccount: Account | AccountInterface, to: string, tokenId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_systems_approve_calldata(to, tokenId),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_balanceOf_calldata = (account: string): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "balanceOf",
+			calldata: [account],
+		};
+	};
+
+	const game_token_systems_balanceOf = async (account: string) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_balanceOf_calldata(account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_emitMetadataUpdate_calldata = (gameId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "emit_metadata_update",
+			calldata: [gameId],
+		};
+	};
+
+	const game_token_systems_emitMetadataUpdate = async (snAccount: Account | AccountInterface, gameId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_systems_emitMetadataUpdate_calldata(gameId),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_gameCount_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "game_count",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_gameCount = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_gameCount_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_gameMetadata_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "game_metadata",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_gameMetadata = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_gameMetadata_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_getApproved_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "getApproved",
+			calldata: [tokenId],
+		};
+	};
+
+	const game_token_systems_getApproved = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_getApproved_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_isApprovedForAll_calldata = (owner: string, operator: string): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "isApprovedForAll",
+			calldata: [owner, operator],
+		};
+	};
+
+	const game_token_systems_isApprovedForAll = async (owner: string, operator: string) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_isApprovedForAll_calldata(owner, operator));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_mint_calldata = (playerName: BigNumberish, settingsId: BigNumberish, start: CairoOption<BigNumberish>, end: CairoOption<BigNumberish>, to: string): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "mint",
+			calldata: [playerName, settingsId, start, end, to],
+		};
+	};
+
+	const game_token_systems_mint = async (snAccount: Account | AccountInterface, playerName: BigNumberish, settingsId: BigNumberish, start: CairoOption<BigNumberish>, end: CairoOption<BigNumberish>, to: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_systems_mint_calldata(playerName, settingsId, start, end, to),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_name_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "name",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_name = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_name_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_ownerOf_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "ownerOf",
+			calldata: [tokenId],
+		};
+	};
+
+	const game_token_systems_ownerOf = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_ownerOf_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_safeTransferFrom_calldata = (from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "safeTransferFrom",
+			calldata: [from, to, tokenId, data],
+		};
+	};
+
+	const game_token_systems_safeTransferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_systems_safeTransferFrom_calldata(from, to, tokenId, data),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_score_calldata = (gameId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "score",
+			calldata: [gameId],
+		};
+	};
+
+	const game_token_systems_score = async (gameId: BigNumberish) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_score_calldata(gameId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_scoreAttribute_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "score_attribute",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_scoreAttribute = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_scoreAttribute_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_scoreModel_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "score_model",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_scoreModel = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_scoreModel_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_setApprovalForAll_calldata = (operator: string, approved: boolean): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "setApprovalForAll",
+			calldata: [operator, approved],
+		};
+	};
+
+	const game_token_systems_setApprovalForAll = async (snAccount: Account | AccountInterface, operator: string, approved: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_systems_setApprovalForAll_calldata(operator, approved),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_settingExists_calldata = (settingsId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "setting_exists",
+			calldata: [settingsId],
+		};
+	};
+
+	const game_token_systems_settingExists = async (settingsId: BigNumberish) => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_settingExists_calldata(settingsId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_settingsModel_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token_systems",
+			entrypoint: "settings_model",
+			calldata: [],
+		};
+	};
+
+	const game_token_systems_settingsModel = async () => {
+		try {
+			return await provider.call("ls_0_0_1", build_game_token_systems_settingsModel_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_systems_supportsInterface_calldata = (interfaceId: BigNumberish): DojoCall => {
+		return {
+			contractName: "game_token_systems",
 			entrypoint: "supports_interface",
 			calldata: [interfaceId],
 		};
 	};
 
-	const game_systems_supportsInterface = async (interfaceId: BigNumberish) => {
+	const game_token_systems_supportsInterface = async (interfaceId: BigNumberish) => {
 		try {
-			return await provider.call("ls_0_0_1", build_game_systems_supportsInterface_calldata(interfaceId));
+			return await provider.call("ls_0_0_1", build_game_token_systems_supportsInterface_calldata(interfaceId));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_game_systems_symbol_calldata = (): DojoCall => {
+	const build_game_token_systems_symbol_calldata = (): DojoCall => {
 		return {
-			contractName: "game_systems",
+			contractName: "game_token_systems",
 			entrypoint: "symbol",
 			calldata: [],
 		};
 	};
 
-	const game_systems_symbol = async () => {
+	const game_token_systems_symbol = async () => {
 		try {
-			return await provider.call("ls_0_0_1", build_game_systems_symbol_calldata());
+			return await provider.call("ls_0_0_1", build_game_token_systems_symbol_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_game_systems_tokenMetadata_calldata = (tokenId: BigNumberish): DojoCall => {
+	const build_game_token_systems_tokenMetadata_calldata = (tokenId: BigNumberish): DojoCall => {
 		return {
-			contractName: "game_systems",
+			contractName: "game_token_systems",
 			entrypoint: "token_metadata",
 			calldata: [tokenId],
 		};
 	};
 
-	const game_systems_tokenMetadata = async (tokenId: BigNumberish) => {
+	const game_token_systems_tokenMetadata = async (tokenId: BigNumberish) => {
 		try {
-			return await provider.call("ls_0_0_1", build_game_systems_tokenMetadata_calldata(tokenId));
+			return await provider.call("ls_0_0_1", build_game_token_systems_tokenMetadata_calldata(tokenId));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_game_systems_tokenUri_calldata = (tokenId: BigNumberish): DojoCall => {
+	const build_game_token_systems_tokenUri_calldata = (tokenId: BigNumberish): DojoCall => {
 		return {
-			contractName: "game_systems",
+			contractName: "game_token_systems",
 			entrypoint: "token_uri",
 			calldata: [tokenId],
 		};
 	};
 
-	const game_systems_tokenUri = async (tokenId: BigNumberish) => {
+	const game_token_systems_tokenUri = async (tokenId: BigNumberish) => {
 		try {
-			return await provider.call("ls_0_0_1", build_game_systems_tokenUri_calldata(tokenId));
+			return await provider.call("ls_0_0_1", build_game_token_systems_tokenUri_calldata(tokenId));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_game_systems_transferFrom_calldata = (from: string, to: string, tokenId: BigNumberish): DojoCall => {
+	const build_game_token_systems_transferFrom_calldata = (from: string, to: string, tokenId: BigNumberish): DojoCall => {
 		return {
-			contractName: "game_systems",
+			contractName: "game_token_systems",
 			entrypoint: "transferFrom",
 			calldata: [from, to, tokenId],
 		};
 	};
 
-	const game_systems_transferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish) => {
+	const game_token_systems_transferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_game_systems_transferFrom_calldata(from, to, tokenId),
+				build_game_token_systems_transferFrom_calldata(from, to, tokenId),
 				"ls_0_0_1",
 			);
 		} catch (error) {
@@ -1145,64 +1145,66 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetStarterBeastCalldata: build_beast_systems_getStarterBeast_calldata,
 		},
 		game_systems: {
-			approve: game_systems_approve,
-			buildApproveCalldata: build_game_systems_approve_calldata,
 			attack: game_systems_attack,
 			buildAttackCalldata: build_game_systems_attack_calldata,
-			balanceOf: game_systems_balanceOf,
-			buildBalanceOfCalldata: build_game_systems_balanceOf_calldata,
 			drop: game_systems_drop,
 			buildDropCalldata: build_game_systems_drop_calldata,
-			emitMetadataUpdate: game_systems_emitMetadataUpdate,
-			buildEmitMetadataUpdateCalldata: build_game_systems_emitMetadataUpdate_calldata,
 			equip: game_systems_equip,
 			buildEquipCalldata: build_game_systems_equip_calldata,
 			explore: game_systems_explore,
 			buildExploreCalldata: build_game_systems_explore_calldata,
 			flee: game_systems_flee,
 			buildFleeCalldata: build_game_systems_flee_calldata,
-			gameCount: game_systems_gameCount,
-			buildGameCountCalldata: build_game_systems_gameCount_calldata,
-			gameMetadata: game_systems_gameMetadata,
-			buildGameMetadataCalldata: build_game_systems_gameMetadata_calldata,
-			getApproved: game_systems_getApproved,
-			buildGetApprovedCalldata: build_game_systems_getApproved_calldata,
-			isApprovedForAll: game_systems_isApprovedForAll,
-			buildIsApprovedForAllCalldata: build_game_systems_isApprovedForAll_calldata,
 			levelUp: game_systems_levelUp,
 			buildLevelUpCalldata: build_game_systems_levelUp_calldata,
-			mint: game_systems_mint,
-			buildMintCalldata: build_game_systems_mint_calldata,
-			name: game_systems_name,
-			buildNameCalldata: build_game_systems_name_calldata,
-			ownerOf: game_systems_ownerOf,
-			buildOwnerOfCalldata: build_game_systems_ownerOf_calldata,
-			safeTransferFrom: game_systems_safeTransferFrom,
-			buildSafeTransferFromCalldata: build_game_systems_safeTransferFrom_calldata,
-			score: game_systems_score,
-			buildScoreCalldata: build_game_systems_score_calldata,
-			scoreAttribute: game_systems_scoreAttribute,
-			buildScoreAttributeCalldata: build_game_systems_scoreAttribute_calldata,
-			scoreModel: game_systems_scoreModel,
-			buildScoreModelCalldata: build_game_systems_scoreModel_calldata,
-			setApprovalForAll: game_systems_setApprovalForAll,
-			buildSetApprovalForAllCalldata: build_game_systems_setApprovalForAll_calldata,
-			settingExists: game_systems_settingExists,
-			buildSettingExistsCalldata: build_game_systems_settingExists_calldata,
-			settingsModel: game_systems_settingsModel,
-			buildSettingsModelCalldata: build_game_systems_settingsModel_calldata,
 			startGame: game_systems_startGame,
 			buildStartGameCalldata: build_game_systems_startGame_calldata,
-			supportsInterface: game_systems_supportsInterface,
-			buildSupportsInterfaceCalldata: build_game_systems_supportsInterface_calldata,
-			symbol: game_systems_symbol,
-			buildSymbolCalldata: build_game_systems_symbol_calldata,
-			tokenMetadata: game_systems_tokenMetadata,
-			buildTokenMetadataCalldata: build_game_systems_tokenMetadata_calldata,
-			tokenUri: game_systems_tokenUri,
-			buildTokenUriCalldata: build_game_systems_tokenUri_calldata,
-			transferFrom: game_systems_transferFrom,
-			buildTransferFromCalldata: build_game_systems_transferFrom_calldata,
+		},
+		game_token_systems: {
+			approve: game_token_systems_approve,
+			buildApproveCalldata: build_game_token_systems_approve_calldata,
+			balanceOf: game_token_systems_balanceOf,
+			buildBalanceOfCalldata: build_game_token_systems_balanceOf_calldata,
+			emitMetadataUpdate: game_token_systems_emitMetadataUpdate,
+			buildEmitMetadataUpdateCalldata: build_game_token_systems_emitMetadataUpdate_calldata,
+			gameCount: game_token_systems_gameCount,
+			buildGameCountCalldata: build_game_token_systems_gameCount_calldata,
+			gameMetadata: game_token_systems_gameMetadata,
+			buildGameMetadataCalldata: build_game_token_systems_gameMetadata_calldata,
+			getApproved: game_token_systems_getApproved,
+			buildGetApprovedCalldata: build_game_token_systems_getApproved_calldata,
+			isApprovedForAll: game_token_systems_isApprovedForAll,
+			buildIsApprovedForAllCalldata: build_game_token_systems_isApprovedForAll_calldata,
+			mint: game_token_systems_mint,
+			buildMintCalldata: build_game_token_systems_mint_calldata,
+			name: game_token_systems_name,
+			buildNameCalldata: build_game_token_systems_name_calldata,
+			ownerOf: game_token_systems_ownerOf,
+			buildOwnerOfCalldata: build_game_token_systems_ownerOf_calldata,
+			safeTransferFrom: game_token_systems_safeTransferFrom,
+			buildSafeTransferFromCalldata: build_game_token_systems_safeTransferFrom_calldata,
+			score: game_token_systems_score,
+			buildScoreCalldata: build_game_token_systems_score_calldata,
+			scoreAttribute: game_token_systems_scoreAttribute,
+			buildScoreAttributeCalldata: build_game_token_systems_scoreAttribute_calldata,
+			scoreModel: game_token_systems_scoreModel,
+			buildScoreModelCalldata: build_game_token_systems_scoreModel_calldata,
+			setApprovalForAll: game_token_systems_setApprovalForAll,
+			buildSetApprovalForAllCalldata: build_game_token_systems_setApprovalForAll_calldata,
+			settingExists: game_token_systems_settingExists,
+			buildSettingExistsCalldata: build_game_token_systems_settingExists_calldata,
+			settingsModel: game_token_systems_settingsModel,
+			buildSettingsModelCalldata: build_game_token_systems_settingsModel_calldata,
+			supportsInterface: game_token_systems_supportsInterface,
+			buildSupportsInterfaceCalldata: build_game_token_systems_supportsInterface_calldata,
+			symbol: game_token_systems_symbol,
+			buildSymbolCalldata: build_game_token_systems_symbol_calldata,
+			tokenMetadata: game_token_systems_tokenMetadata,
+			buildTokenMetadataCalldata: build_game_token_systems_tokenMetadata_calldata,
+			tokenUri: game_token_systems_tokenUri,
+			buildTokenUriCalldata: build_game_token_systems_tokenUri_calldata,
+			transferFrom: game_token_systems_transferFrom,
+			buildTransferFromCalldata: build_game_token_systems_transferFrom_calldata,
 		},
 		loot_systems: {
 			getItem: loot_systems_getItem,

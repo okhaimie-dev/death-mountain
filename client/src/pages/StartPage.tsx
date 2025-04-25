@@ -2,6 +2,7 @@ import diceIcon from '@/assets/images/dice.png';
 import logo from '@/assets/images/logo.png';
 import GameTokensList from '@/components/GameTokensList';
 import { useController } from '@/contexts/controller';
+import { useSystemCalls } from '@/dojo/useSystemCalls';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +10,10 @@ import { useNavigate } from 'react-router-dom';
 export default function LandingPage() {
   const { address } = useController();
   const navigate = useNavigate();
+  const { mintGame } = useSystemCalls();
 
-  const handleStartGame = () => {
-    navigate('/play');
+  const handleStartGame = async () => {
+    await mintGame("Await");
   };
 
   return (

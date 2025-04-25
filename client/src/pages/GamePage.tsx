@@ -15,7 +15,7 @@ import { useSearchParams } from 'react-router-dom';
 export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { account } = useController();
-  const { adventurer, exitGame, setGameId, marketSeed, beastSeed } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed } = useGameStore();
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
@@ -30,12 +30,12 @@ export default function GamePage() {
   }, [game_id, sdk]);
 
   useEffect(() => {
-    if (!account) {
+    if (!account && gameId) {
       exitGame()
     }
   }, [account]);
 
-  let loadingScreen = !game_id || !adventurer;
+  let loadingScreen = !gameId || !adventurer;
   let beastScreen = adventurer && adventurer.beast_health > 0 && beastSeed;
   let levelUpScreen = adventurer && adventurer.stat_upgrades_available > 0 && marketSeed;
   let exploreScreen = adventurer && !beastScreen && !levelUpScreen;

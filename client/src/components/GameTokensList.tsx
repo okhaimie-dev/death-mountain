@@ -45,7 +45,8 @@ export default function GameTokensList() {
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
             <Typography variant="h6" color="primary" lineHeight={1}>
-              {game.player_name}
+              {/* {game.player_name} */}
+              Await
             </Typography>
 
             <Typography color="text.secondary">

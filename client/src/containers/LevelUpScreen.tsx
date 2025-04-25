@@ -15,7 +15,8 @@ export default function LevelUpScreen() {
     vitality: 0,
     intelligence: 0,
     wisdom: 0,
-    charisma: 0
+    charisma: 0,
+    luck: 0
   });
 
   const [itemPurchases, setItemPurchases] = useState<ItemPurchase[]>([]);
@@ -141,22 +142,24 @@ export default function LevelUpScreen() {
 const styles = {
   container: {
     maxWidth: '500px',
-    height: 'calc(100vh - 50px)',
+    maxHeight: 'calc(100vh - 50px)',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     boxSizing: 'border-box',
     padding: '16px',
     margin: '0 auto',
-    gap: 2
+    gap: 2,
+    overflowY: 'auto'
   },
   title: {
     textAlign: 'center',
     marginBottom: 2
   },
   section: {
-    width: '100%',
+    minWidth: '400px',
     padding: '16px',
     display: 'flex',
     flexDirection: 'column',

@@ -27,16 +27,16 @@ export function getBeast(beastSeed: bigint, xp: number): Beast {
   } = getRandomness(xp, beastSeed);
 
   const adventurerLevel = calculateLevel(xp);
-  
+
   // Beast ID calculation matching Cairo's get_beast_id function
   const id = Number((BigInt(beastIdSeed) % BigInt(MAX_BEAST_ID)) + 1n);
-  
+
   // Health calculation matching Cairo's get_starting_health
   const health = getStartingHealth(adventurerLevel, Number(healthRnd));
-  
+
   // Level calculation matching Cairo's get_level
   const level = getBeastLevel(adventurerLevel, Number(levelRnd));
-  
+
   const special2 = Number(BigInt(special1Rnd) % BigInt(MAX_SPECIAL2));
   const special3 = Number(BigInt(special2Rnd) % BigInt(MAX_SPECIAL3));
 
@@ -72,30 +72,30 @@ export function getBeast(beastSeed: bigint, xp: number): Beast {
  * @returns Starting health of the beast
  */
 function getStartingHealth(adventurerLevel: number, rnd: number): number {
-    // For first beast, use fixed starter health
-    if (adventurerLevel === 1) {
-        return STARTER_BEAST_HEALTH;
-    }
-    
-    // Base health calculation matching Cairo's get_random_starting_health
-    const baseHealth = 1 + (rnd % (adventurerLevel * 20));
-    
-    // Add discrete difficulty increases based on adventurer level
-    let health = baseHealth;
-    if (adventurerLevel >= 50) {
-        health += 500;
-    } else if (adventurerLevel >= 40) {
-        health += 400;
-    } else if (adventurerLevel >= 30) {
-        health += 200;
-    } else if (adventurerLevel >= 20) {
-        health += 100;
-    } else {
-        health += 10;
-    }
+  // For first beast, use fixed starter health
+  if (adventurerLevel <= 1) {
+    return STARTER_BEAST_HEALTH;
+  }
 
-    // Cap health at maximum
-    return Math.min(health, MAXIMUM_HEALTH);
+  // Base health calculation matching Cairo's get_random_starting_health
+  const baseHealth = 1 + (rnd % (adventurerLevel * 20));
+
+  // Add discrete difficulty increases based on adventurer level
+  let health = baseHealth;
+  if (adventurerLevel >= 50) {
+    health += 500;
+  } else if (adventurerLevel >= 40) {
+    health += 400;
+  } else if (adventurerLevel >= 30) {
+    health += 200;
+  } else if (adventurerLevel >= 20) {
+    health += 100;
+  } else {
+    health += 10;
+  }
+
+  // Cap health at maximum
+  return Math.min(health, MAXIMUM_HEALTH);
 }
 
 /**
@@ -108,7 +108,7 @@ function getBeastLevel(adventurerLevel: number, rnd: number): number {
   if (adventurerLevel === 1) {
     return 1;
   }
-  
+
   // Level calculation similar to Cairo's get_random_level
   const levelRange = Math.min(adventurerLevel + 2, 12);
   return 1 + (rnd % levelRange);
@@ -134,11 +134,11 @@ function getGoldReward(tier: string, level: number): number {
 function getXpReward(level: number, adventurerLevel: number): number {
   // Base reward is the beast's level
   const baseReward = level;
-  
+
   // If adventurer is higher level, reduce reward
   const levelDiff = Math.max(0, adventurerLevel - level);
   const reward = Math.max(1, baseReward - levelDiff);
-  
+
   return Math.max(MINIMUM_XP_REWARD, reward);
 }
 
@@ -165,11 +165,11 @@ export function getBeastType(id: number): string {
  * @returns The tier of the beast (T1-T5)
  */
 export function getBeastTier(id: number): string {
-  if (isT1(id)) return 'T1';
-  if (isT2(id)) return 'T2';
-  if (isT3(id)) return 'T3';
-  if (isT4(id)) return 'T4';
-  return 'T5';
+  if (isT1(id)) return '1';
+  if (isT2(id)) return '2';
+  if (isT3(id)) return '3';
+  if (isT4(id)) return '4';
+  return '5';
 }
 
 // Helper functions from beast.cairo
