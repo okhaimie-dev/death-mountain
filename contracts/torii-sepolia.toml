@@ -1,0 +1,4 @@
+[indexing]
+contracts = [
+    "erc721:0x75cbb14d200ff23ebbf36c94ef8ae3dbb33cd2f447fd82818bb190ab7c8cf94"
+]

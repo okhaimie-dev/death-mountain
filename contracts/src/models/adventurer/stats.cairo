@@ -370,6 +370,11 @@ pub impl ImplStats of IStat {
             panic_with_felt252('stat out of range');
         }
     }
+
+    #[inline(always)]
+    fn count_total_stats(self: Stats) -> u16 {
+        self.strength.into() + self.dexterity.into() + self.vitality.into() + self.intelligence.into() + self.wisdom.into() + self.charisma.into()
+    }
 }
 
 const SIX_NZ: NonZero<u64> = 6;

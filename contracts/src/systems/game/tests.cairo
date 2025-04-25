@@ -14,9 +14,9 @@ mod tests {
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
     use lootsurvivor::models::adventurer::adventurer::{IAdventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::stats::{Stats};
+    use lootsurvivor::models::adventurer::stats::{Stats, IStat};
     use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked};
-    use lootsurvivor::models::game::{m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
+    use lootsurvivor::models::game::{m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked, e_GameEvent};
     use lootsurvivor::models::market::{ItemPurchase};
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
     use lootsurvivor::systems::beast::contracts::{beast_systems};
@@ -51,6 +51,7 @@ mod tests {
                 TestResource::Contract(adventurer_systems::TEST_CLASS_HASH),
                 TestResource::Contract(beast_systems::TEST_CLASS_HASH),
                 TestResource::Contract(game_token_systems::TEST_CLASS_HASH),
+                TestResource::Event(e_GameEvent::TEST_CLASS_HASH.try_into().unwrap()),
             ]
                 .span(),
         };
@@ -141,6 +142,7 @@ mod tests {
         assert(adventurer.beast_health == 0, 'beast should be dead');
         assert(adventurer.get_level() == 2, 'should be level 2');
         assert(adventurer.stat_upgrades_available == 1, 'should have 1 stat available');
+        assert(adventurer.stats.count_total_stats() > 0, 'should have starting stats');
     }
 
     #[test]
@@ -962,16 +964,16 @@ mod tests {
         let adventurer_id = new_game(world, game);
 
         // init adventurer with g18 wand
-        let mut adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-        adventurer.equipment.weapon.xp = 360;
-        adventurer.item_specials_seed = 123;
+        let mut _adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        _adventurer.equipment.weapon.xp = 360;
+        _adventurer.item_specials_seed = 123;
 
-        let packed = game_libs.adventurer.pack_adventurer(adventurer);
+        let packed = game_libs.adventurer.pack_adventurer(_adventurer);
         world.write_model_test(@AdventurerPacked { adventurer_id, packed });
 
         game.attack(adventurer_id, false);
 
-        adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        let (mut adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
 
         assert(adventurer.equipment.weapon.xp == 368, 'xp not set correctly');
         assert(adventurer.stat_upgrades_available == 1, 'wrong stats available');
@@ -983,16 +985,16 @@ mod tests {
         let adventurer_id = new_game(world, game);
 
         // init adventurer with g18 wand
-        let mut adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-        adventurer.equipment.weapon.xp = 399;
-        adventurer.item_specials_seed = 123;
+        let mut _adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        _adventurer.equipment.weapon.xp = 399;
+        _adventurer.item_specials_seed = 123;
 
-        let packed = game_libs.adventurer.pack_adventurer(adventurer);
+        let packed = game_libs.adventurer.pack_adventurer(_adventurer);
         world.write_model_test(@AdventurerPacked { adventurer_id, packed });
 
         game.attack(adventurer_id, false);
 
-        adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        let (adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
 
         assert(adventurer.equipment.weapon.xp == 400, 'xp not set correctly');
         assert(adventurer.stat_upgrades_available == 2, 'wrong stats available');

@@ -601,7 +601,7 @@ mod game_systems {
 
         // get xp reward and increase adventurers xp
         let xp_earned_adventurer = beast.get_xp_reward(adventurer.get_level());
-        let (_previous_level, _new_level) = adventurer.increase_adventurer_xp(xp_earned_adventurer);
+        let (previous_level, new_level) = adventurer.increase_adventurer_xp(xp_earned_adventurer);
 
         // items use adventurer xp with an item multplier so they level faster than Adventurer
         let xp_earned_items = xp_earned_adventurer * ITEM_XP_MULTIPLIER_BEASTS.into();
@@ -609,7 +609,7 @@ mod game_systems {
         _grant_xp_to_equipped_items(ref adventurer, xp_earned_items, item_specials_rnd, game_libs);
 
         // Reveal starting stats if adventurer is on level 1
-        if (adventurer.get_level() == 1) {
+        if (previous_level == 1 && new_level == 2) {
             reveal_starting_stats(ref adventurer, level_seed, game_libs);
         }
         // // if beast beast level is above collectible threshold
