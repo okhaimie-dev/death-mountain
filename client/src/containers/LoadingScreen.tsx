@@ -110,7 +110,8 @@ export default LoadingContainer
 
 const styles = {
   container: {
-    width: '100%',
+    width: '500px',
+    maxWidth: '100vw',
     height: '100%',
     boxSizing: 'border-box',
     display: 'flex',

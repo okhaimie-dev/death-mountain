@@ -1,6 +1,9 @@
+import BottomNav from '@/components/BottomNav';
 import BeastScreen from '@/containers/BeastScreen';
+import CharacterScreen from '@/containers/CharacterScreen';
 import ExploreScreen from '@/containers/ExploreScreen';
-import LevelUpScreen from '@/containers/LevelUpScreen';
+import MarketScreen from '@/containers/MarketScreen';
+import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import { useController } from '@/contexts/controller';
 import { setupGameSubscription } from '@/dojo/useGameEntities';
@@ -9,13 +12,15 @@ import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { account } = useController();
-  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed, keepScreen, setKeepScreen } = useGameStore();
+  const [screen, setScreen] = useState('loading');
+  const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
@@ -35,35 +40,58 @@ export default function GamePage() {
     }
   }, [account]);
 
-  let loadingScreen = !gameId || !adventurer;
-  let beastScreen = adventurer && adventurer.beast_health > 0 && beastSeed;
-  let levelUpScreen = adventurer && adventurer.stat_upgrades_available > 0 && marketSeed;
-  let exploreScreen = adventurer && !beastScreen && !levelUpScreen;
+  useEffect(() => {
+    if (!keepScreen) {
+      if (!gameId || !adventurer) {
+        setScreen('loading');
+      } else if (adventurer && adventurer.beast_health > 0 && beastSeed) {
+        // setKeepScreen(true);
+        setScreen('beast');
+      } else if (adventurer && adventurer.stat_upgrades_available > 0) {
+        setScreen('statSelection');
+      } else {
+        setScreen('explore');
+      }
+    }
+  }, [keepScreen, gameId, adventurer, beastSeed, marketSeed]);
 
   return (
-    <Box sx={styles.container}>
-      {loadingScreen && <LoadingContainer />}
+    <Box className="container" sx={styles.container}>
+      {screen === 'loading' && <LoadingContainer />}
 
-      {beastScreen && <BeastScreen />}
+      {screen === 'beast' && <BeastScreen />}
 
-      {levelUpScreen && <LevelUpScreen />}
+      {screen === 'statSelection' && <StatSelectionScreen />}
 
-      {exploreScreen && <ExploreScreen />}
+      {screen === 'explore' && <ExploreScreen />}
+
+      {activeNavItem === 'CHARACTER' && <CharacterScreen />}
+
+      {activeNavItem === 'MARKET' && <MarketScreen />}
+
+      {screen !== 'loading' && (
+        <BottomNav
+          activeNavItem={activeNavItem}
+          setActiveNavItem={setActiveNavItem}
+          currentScreen={screen}
+        />
+      )}
     </Box>
   );
 }
 
 const styles = {
   container: {
-    width: '100%',
+    width: '450px',
+    maxWidth: '100vw',
     height: 'calc(100vh - 50px)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     boxSizing: 'border-box',
-    padding: '16px',
     margin: '0 auto',
-    gap: 2
+    gap: 2,
+    position: 'relative'
   },
 };

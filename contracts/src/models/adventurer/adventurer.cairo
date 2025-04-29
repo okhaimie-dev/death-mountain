@@ -4348,4 +4348,15 @@ mod tests {
         adventurer.apply_health_boost_from_vitality_unlock(giant_specials);
         assert(adventurer.health == previous_health, 'Health should not exceed max');
     }
+
+    #[test]
+    fn test_unpacking_seed() {
+        let seed = 0x000000000001000000000000000000000000000001030250802200743200105a;
+        let unpacked: Adventurer = ImplAdventurer::unpack(seed);
+        
+        println!("unpacked.beast_health: {:?}", unpacked.beast_health);
+        println!("unpacked.health: {:?}", unpacked.health);
+        println!("unpacked.xp: {:?}", unpacked.xp);
+        println!("unpacked.action_count: {:?}", unpacked.action_count);
+    }
 }

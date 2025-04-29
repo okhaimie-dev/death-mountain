@@ -29,6 +29,7 @@ const gameEventsQuery = (gameId: number) => {
         }
       ]
     )
+    .withLimit(1)
 }
 
 export async function setupGameEventsSubscription(sdk: any, gameId: number) {
@@ -52,7 +53,7 @@ export async function setupGameEventsSubscription(sdk: any, gameId: number) {
       }
     })
 
-    console.log('initialData', initialData);
+    console.log('initialData gameEvent', initialData);
     useGameStore.getState().setGameEvent(initialData.map((event: any) => event.models[`${namespace}`]));
     eventSubscription = subscription;
   } catch (error) {

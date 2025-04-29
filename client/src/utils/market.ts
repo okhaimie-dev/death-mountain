@@ -1,4 +1,4 @@
-import { ItemString, ItemUtils, Tier } from './items';
+import { ItemUtils, Tier } from './loot';
 import { NUM_ITEMS, NUM_ITEMS_NZ_MINUS_ONE, NUMBER_OF_ITEMS_PER_LEVEL } from '../constants/game';
 
 export interface MarketItem {
@@ -6,6 +6,7 @@ export interface MarketItem {
   name: string;
   tier: Tier;
   type: string;
+  imageUrl: string;
   price: number;
 }
 
@@ -16,38 +17,29 @@ function getMarketSeedAndOffset(seed: bigint): [bigint, number] {
   return [newSeed, offset];
 }
 
-function getMarketSize(statUpgradesAvailable: number): number {
-  if (statUpgradesAvailable > 5) {
-    return NUM_ITEMS;
-  }
-  return statUpgradesAvailable * NUMBER_OF_ITEMS_PER_LEVEL;
-}
-
 function getId(seed: bigint): number {
   return Number(seed % BigInt(NUM_ITEMS)) + 1;
 }
 
-function createMarketItem(id: number): MarketItem {
+function createMarketItem(id: number, charisma: number): MarketItem {
   const tier = ItemUtils.getItemTier(id);
+  const price = ItemUtils.getItemPrice(tier, charisma);
+  const name = ItemUtils.getItemName(id);
+  const type = ItemUtils.getItemType(id);
+  const imageUrl = ItemUtils.getItemImage(name);
+
   return {
     id,
-    name: ItemString[id] || `Unknown Item ${id}`,
+    name,
     tier,
-    type: ItemUtils.getItemType(id),
-    price: ItemUtils.getItemPrice(tier)
+    type,
+    imageUrl,
+    price
   };
 }
 
-export function generateMarketItems(seed: bigint, statUpgradesAvailable: number): MarketItem[] {
-  const marketSize = getMarketSize(statUpgradesAvailable);
-
-  // If market size >= NUM_ITEMS, return all items
-  if (marketSize >= NUM_ITEMS) {
-    return Array.from(
-      { length: NUM_ITEMS },
-      (_, i) => createMarketItem(i + 1)
-    );
-  }
+export function generateMarketItems(seed: bigint, charisma: number): MarketItem[] {
+  const marketSize = NUMBER_OF_ITEMS_PER_LEVEL;
 
   // Generate items based on seed
   const [marketSeed, offset] = getMarketSeedAndOffset(seed);
@@ -56,7 +48,7 @@ export function generateMarketItems(seed: bigint, statUpgradesAvailable: number)
   for (let i = 0; i < marketSize; i++) {
     const itemSeed = marketSeed + BigInt(offset * i);
     const itemId = getId(itemSeed);
-    items.push(createMarketItem(itemId));
+    items.push(createMarketItem(itemId, charisma));
   }
 
   return items;

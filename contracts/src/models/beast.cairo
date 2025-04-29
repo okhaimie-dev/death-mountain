@@ -257,6 +257,7 @@ mod tests {
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
     use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
 
     #[test]
     #[available_gas(70000)]
@@ -476,5 +477,29 @@ mod tests {
         let is_ambush = false;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
         assert(chance == 100, 'crit hit ambush exceeded 100');
+    }
+
+    #[test]
+    fn test_get_beast_from_seed() {
+        let xp = 4;
+        let seed = 9972942310244935680;
+        let adventurer_level = 2;
+
+        let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+            ImplAdventurer::get_randomness(xp, seed);
+
+        // get beast based on entropy seeds
+        let beast = ImplBeast::get_beast(
+            adventurer_level,
+            Type::Magic_or_Cloth(()),
+            beast_seed,
+            beast_health_rnd,
+            beast_level_rnd,
+            beast_specials1_rnd,
+            beast_specials2_rnd,
+        );
+
+        println!("beast id: {:?}", beast.id);
+        println!("beast starting health: {:?}", beast.starting_health);
     }
 }

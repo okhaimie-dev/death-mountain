@@ -1,12 +1,12 @@
 // Constants from beast.cairo and loot.cairo
 export const BEAST_SPECIAL_NAME_LEVEL_UNLOCK = 19;
-export const MAX_SPECIAL2 = 69;  // Max prefix index
-export const MAX_SPECIAL3 = 18;  // Max suffix index
-export const MAX_BEAST_ID = 75;
+export const MAX_SPECIAL2 = BigInt(69);  // Max prefix index
+export const MAX_SPECIAL3 = BigInt(18);  // Max suffix index
+export const MAX_BEAST_ID = BigInt(75);
 
 // Health-related constants
-export const STARTER_BEAST_HEALTH = 3;
-export const MAXIMUM_HEALTH = 1023; // 2^10 - 1
+export const STARTER_BEAST_HEALTH = BigInt(3);
+export const MAXIMUM_HEALTH = BigInt(1023); // 2^10 - 1
 
 // Constants for reward calculations
 export const GOLD_MULTIPLIER = {

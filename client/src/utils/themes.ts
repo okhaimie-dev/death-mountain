@@ -69,6 +69,11 @@ export const mainTheme = createTheme({
           fontSize: '15px',
           maxHeight: '100%',
           minWidth: '40px',
+          '&:disabled': {
+            opacity: 0.5,
+            color: 'rgba(1, 1, 1, 0.8)',
+            border: '1px solid rgba(1, 1, 1, 1)'
+          }
         }
       }
     },
@@ -76,7 +81,9 @@ export const mainTheme = createTheme({
       styleOverrides: {
         tooltip: {
           fontSize: '16px',
-          background: 'transparent'
+          background: '#000',
+          color: '#80FF00',
+          border: '1px solid rgba(128, 255, 0, 0.6)',
         }
       }
     },

@@ -1,13 +1,10 @@
 import { getRandomness } from "./entropy";
-import { Beast } from "../types/game";
+import { Beast, Item } from "../types/game";
 import {
   BEAST_SPECIAL_NAME_LEVEL_UNLOCK,
   MAX_SPECIAL2,
   MAX_SPECIAL3,
   MAX_BEAST_ID,
-  GOLD_MULTIPLIER,
-  GOLD_REWARD_DIVISOR,
-  MINIMUM_XP_REWARD,
   BEAST_NAME_PREFIXES,
   BEAST_NAME_SUFFIXES,
   BEAST_NAMES,
@@ -15,6 +12,7 @@ import {
   MAXIMUM_HEALTH
 } from "../constants/beast";
 import { calculateLevel } from "./game";
+import { ItemUtils } from "./loot";
 
 export function getBeast(beastSeed: bigint, xp: number): Beast {
   // Get randomness values using the same logic as Cairo implementation
@@ -26,19 +24,19 @@ export function getBeast(beastSeed: bigint, xp: number): Beast {
     rnd6: special2Rnd,  // Used for special2 (u8)
   } = getRandomness(xp, beastSeed);
 
-  const adventurerLevel = calculateLevel(xp);
+  const adventurerLevel = BigInt(calculateLevel(xp));
 
   // Beast ID calculation matching Cairo's get_beast_id function
-  const id = Number((BigInt(beastIdSeed) % BigInt(MAX_BEAST_ID)) + 1n);
+  const id = (beastIdSeed % MAX_BEAST_ID) + BigInt(1);
 
   // Health calculation matching Cairo's get_starting_health
-  const health = getStartingHealth(adventurerLevel, Number(healthRnd));
+  const health = getStartingHealth(adventurerLevel, healthRnd);
 
   // Level calculation matching Cairo's get_level
-  const level = getBeastLevel(adventurerLevel, Number(levelRnd));
+  const level = getBeastLevel(adventurerLevel, levelRnd);
 
-  const special2 = Number(BigInt(special1Rnd) % BigInt(MAX_SPECIAL2));
-  const special3 = Number(BigInt(special2Rnd) % BigInt(MAX_SPECIAL3));
+  const special2 = Number(special1Rnd % MAX_SPECIAL2);
+  const special3 = Number(special2Rnd % MAX_SPECIAL3);
 
   // Get special name components if level requirement is met
   const specialPrefix = level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK ? BEAST_NAME_PREFIXES[special2] : undefined;
@@ -47,55 +45,49 @@ export function getBeast(beastSeed: bigint, xp: number): Beast {
   const type = getBeastType(id);
   const tier = getBeastTier(id);
 
-  // Calculate rewards
-  const goldReward = getGoldReward(tier, level);
-  const xpReward = getXpReward(level, adventurerLevel);
-
   return {
-    id,
-    name: getBeastName(id, level, special2, special3),
-    health,
-    level,
+    id: Number(id),
+    health: Number(health),
+    level: Number(level),
     type,
     tier,
+    name: getBeastName(Number(id), specialPrefix, specialSuffix),
     specialPrefix,
     specialSuffix,
-    goldReward,
-    xpReward
   };
 }
 
 /**
  * Calculates the starting health of a beast based on adventurer level and random value
  * @param adventurerLevel Level of the adventurer
- * @param rnd Random value for health calculation
+ * @param seed Random value for health calculation
  * @returns Starting health of the beast
  */
-function getStartingHealth(adventurerLevel: number, rnd: number): number {
+function getStartingHealth(adventurerLevel: bigint, seed: bigint): bigint {
   // For first beast, use fixed starter health
   if (adventurerLevel <= 1) {
     return STARTER_BEAST_HEALTH;
   }
 
-  // Base health calculation matching Cairo's get_random_starting_health
-  const baseHealth = 1 + (rnd % (adventurerLevel * 20));
+  let health = BigInt(1) + (seed % (adventurerLevel * BigInt(20)));
 
-  // Add discrete difficulty increases based on adventurer level
-  let health = baseHealth;
   if (adventurerLevel >= 50) {
-    health += 500;
+    health += BigInt(500);
   } else if (adventurerLevel >= 40) {
-    health += 400;
+    health += BigInt(400);
   } else if (adventurerLevel >= 30) {
-    health += 200;
+    health += BigInt(200);
   } else if (adventurerLevel >= 20) {
-    health += 100;
+    health += BigInt(100);
   } else {
-    health += 10;
+    health += BigInt(10);
   }
 
-  // Cap health at maximum
-  return Math.min(health, MAXIMUM_HEALTH);
+  if (health > MAXIMUM_HEALTH) {
+    return MAXIMUM_HEALTH;
+  } else {
+    return health;
+  }
 }
 
 /**
@@ -104,14 +96,20 @@ function getStartingHealth(adventurerLevel: number, rnd: number): number {
  * @param rnd Random value for level calculation
  * @returns Level of the beast
  */
-function getBeastLevel(adventurerLevel: number, rnd: number): number {
-  if (adventurerLevel === 1) {
-    return 1;
+function getBeastLevel(adventurerLevel: bigint, seed: bigint): bigint {
+  let level = BigInt(1) + (seed % (adventurerLevel * BigInt(3)));
+
+  if (adventurerLevel >= 50) {
+    level += BigInt(80);
+  } else if (adventurerLevel >= 40) {
+    level += BigInt(40);
+  } else if (adventurerLevel >= 30) {
+    level += BigInt(20);
+  } else if (adventurerLevel >= 20) {
+    level += BigInt(10);
   }
 
-  // Level calculation similar to Cairo's get_random_level
-  const levelRange = Math.min(adventurerLevel + 2, 12);
-  return 1 + (rnd % levelRange);
+  return level;
 }
 
 /**
@@ -120,9 +118,16 @@ function getBeastLevel(adventurerLevel: number, rnd: number): number {
  * @param level Beast level
  * @returns Gold reward amount
  */
-function getGoldReward(tier: string, level: number): number {
-  const multiplier = GOLD_MULTIPLIER[tier as keyof typeof GOLD_MULTIPLIER] || 1;
-  return Math.floor((multiplier * level) / GOLD_REWARD_DIVISOR);
+export function getGoldReward(beast_tier: number, beast_level: number, ring: Item): number {
+  let base_reward = Math.floor(((6 - beast_tier) * beast_level) / 2);
+
+  if (ring && ItemUtils.getItemName(ring.id) === "GoldRing") {
+    base_reward += Math.floor(
+      (base_reward * Math.floor(Math.sqrt(ring.xp!)) * 3) / 100
+    );
+  }
+
+  return base_reward;
 }
 
 /**
@@ -131,15 +136,17 @@ function getGoldReward(tier: string, level: number): number {
  * @param adventurerLevel Adventurer's level
  * @returns XP reward amount
  */
-function getXpReward(level: number, adventurerLevel: number): number {
-  // Base reward is the beast's level
-  const baseReward = level;
+function getXpReward(level: bigint, tier: bigint, adventurerLevel: number): bigint {
+  let xp = ((BigInt(6) - tier) * level) / BigInt(2);
 
-  // If adventurer is higher level, reduce reward
-  const levelDiff = Math.max(0, adventurerLevel - level);
-  const reward = Math.max(1, baseReward - levelDiff);
+  let adusted_xp =
+    (xp * BigInt(100 - Math.min(adventurerLevel * 2, 95))) / BigInt(100);
 
-  return Math.max(MINIMUM_XP_REWARD, reward);
+  if (adusted_xp < 4) {
+    return BigInt(4);
+  }
+
+  return adusted_xp;
 }
 
 /**
@@ -147,13 +154,47 @@ function getXpReward(level: number, adventurerLevel: number): number {
  * @param id Beast ID
  * @returns The type of the beast (Magic_or_Cloth, Blade_or_Hide, or Bludgeon_or_Metal)
  */
-export function getBeastType(id: number): string {
+export function getBeastType(id: bigint): string {
   if (id >= 0 && id < 26) {
-    return 'Magic_or_Cloth';
+    return 'Magic';
   } else if (id < 51) {
-    return 'Blade_or_Hide';
+    return 'Hunter';
   } else if (id < 76) {
-    return 'Bludgeon_or_Metal';
+    return 'Brute';
+  } else {
+    return 'None';
+  }
+}
+
+/**
+ * Determines the attack type based on its ID
+ * @param id Attack ID
+ * @returns The type of the attack (Magic, Hunter, or Brute)
+ */
+export function getAttackType(id: number): string {
+  if (id >= 0 && id < 26) {
+    return 'Magic';
+  } else if (id < 51) {
+    return 'Blade';
+  } else if (id < 76) {
+    return 'Bludgeon';
+  } else {
+    return 'None';
+  }
+}
+
+/**
+ * Determines the armor type based on its ID
+ * @param id Armor ID
+ * @returns The type of the armor (Cloth, Hide, or Metal)
+ */
+export function getArmorType(id: number): string {
+  if (id >= 0 && id < 26) {
+    return 'Cloth';
+  } else if (id < 51) {
+    return 'Hide';
+  } else if (id < 76) {
+    return 'Metal';
   } else {
     return 'None';
   }
@@ -164,7 +205,7 @@ export function getBeastType(id: number): string {
  * @param id Beast ID
  * @returns The tier of the beast (T1-T5)
  */
-export function getBeastTier(id: number): string {
+export function getBeastTier(id: bigint): string {
   if (isT1(id)) return '1';
   if (isT2(id)) return '2';
   if (isT3(id)) return '3';
@@ -173,19 +214,19 @@ export function getBeastTier(id: number): string {
 }
 
 // Helper functions from beast.cairo
-function isT1(id: number): boolean {
+function isT1(id: bigint): boolean {
   return (id >= 1 && id <= 5) || (id >= 26 && id < 31) || (id >= 51 && id < 56);
 }
 
-function isT2(id: number): boolean {
+function isT2(id: bigint): boolean {
   return (id >= 6 && id < 11) || (id >= 31 && id < 36) || (id >= 56 && id < 61);
 }
 
-function isT3(id: number): boolean {
+function isT3(id: bigint): boolean {
   return (id >= 11 && id < 16) || (id >= 36 && id < 41) || (id >= 61 && id < 66);
 }
 
-function isT4(id: number): boolean {
+function isT4(id: bigint): boolean {
   return (id >= 16 && id < 21) || (id >= 41 && id < 46) || (id >= 66 && id < 71);
 }
 
@@ -215,15 +256,8 @@ function getBeastSpecialName(level: number, special2: number, special3: number):
  * @param special3 Special suffix index
  * @returns The name of the beast, including special prefix/suffix if applicable
  */
-export function getBeastName(id: number, level?: number, special2?: number, special3?: number): string {
-  const baseName = BEAST_NAMES[id] || "Unknown Beast";
-
-  // If no special attributes provided, return base name
-  if (level === undefined || special2 === undefined || special3 === undefined) {
-    return baseName;
-  }
-
-  const { prefix, suffix } = getBeastSpecialName(level, special2, special3);
+export function getBeastName(id: number, prefix?: string, suffix?: string): string {
+  const baseName = BEAST_NAMES[id];
 
   if (prefix && suffix) {
     return `${prefix} ${baseName} ${suffix}`;
@@ -243,3 +277,47 @@ export const getBeastImage = (name: string) => {
     return ""
   }
 }
+
+export const getTierGlowColor = (tier: string): string => {
+  switch (tier) {
+    case '1':
+      return 'rgba(255, 0, 0, 0.5)'; // Red glow for T1
+    case '2':
+      return 'rgba(255, 165, 0, 0.5)'; // Orange glow for T2
+    case '3':
+      return 'rgba(255, 255, 0, 0.5)'; // Yellow glow for T3
+    case '4':
+      return 'rgba(0, 255, 0, 0.5)'; // Green glow for T4
+    case '5':
+      return 'rgba(0, 0, 255, 0.5)'; // Blue glow for T5
+    default:
+      return 'rgba(128, 128, 128, 0.5)'; // Default gray glow
+  }
+}
+
+// Helper functions for type strengths/weaknesses
+export const getTypeStrength = (type: string): string => {
+  switch (type) {
+    case 'Magic':
+      return 'Metal';
+    case 'Hunter':
+      return 'Cloth';
+    case 'Brute':
+      return 'Hide';
+    default:
+      return '';
+  }
+};
+
+export const getTypeWeakness = (type: string): string => {
+  switch (type) {
+    case 'Magic':
+      return 'Blade';
+    case 'Hunter':
+      return 'Bludgeon';
+    case 'Brute':
+      return 'Magic';
+    default:
+      return '';
+  }
+};

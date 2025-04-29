@@ -35,35 +35,6 @@ export interface Adventurer {
   item_specials_seed: number;
 }
 
-export interface AdventurerPacked {
-  health: number;
-  xp: number;
-  gold: number;
-  beast_health: number;
-  stat_upgrades_available: number;
-  stats: {
-    strength: number;
-    dexterity: number;
-    vitality: number;
-    intelligence: number;
-    wisdom: number;
-    charisma: number;
-    luck: number;
-  };
-  equipment: {
-    weapon: Item;
-    chest: Item;
-    head: Item;
-    waist: Item;
-    foot: Item;
-    hand: Item;
-    neck: Item;
-    ring: Item;
-  };
-  action_count: number;
-  item_specials_seed: number;
-}
-
 export interface Beast {
   id: number;
   name: string;
@@ -73,8 +44,8 @@ export interface Beast {
   tier: string;
   specialPrefix?: string;
   specialSuffix?: string;
-  goldReward: number;
-  xpReward: number;
+  goldReward?: number;
+  xpReward?: number;
 }
 
 export interface Stats {

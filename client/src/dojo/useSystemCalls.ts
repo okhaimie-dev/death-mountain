@@ -34,7 +34,6 @@ export const useSystemCalls = () => {
    * @returns {Promise<any>} The result of the execution
    */
   const executeAction = async (calls: any[], includeVRF: boolean = false) => {
-    console.log("Executing action:", calls);
     if (includeVRF) {
       const vrfCall = {
         contractAddress: VRF_PROVIDER_ADDRESS,

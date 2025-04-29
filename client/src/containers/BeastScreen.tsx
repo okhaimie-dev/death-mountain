@@ -1,22 +1,38 @@
+import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { Beast } from '@/types/game';
-import { getBeast, getBeastImage } from '@/utils/beast';
-import { Box, Button, FormControlLabel, Paper, Switch, Typography, LinearProgress } from '@mui/material';
-import { useState } from 'react';
+import { getBeast, getBeastImage, getTierGlowColor, getTypeStrength, getTypeWeakness } from '@/utils/beast';
+import { calculateAttackDamage, simulateBattle, simulateFlee } from '@/utils/game';
+import { Box, Button, Checkbox, LinearProgress, Tooltip, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function BeastScreen() {
   const { attack, flee } = useSystemCalls();
-  const { gameId, adventurer, beastSeed, metadata } = useGameStore();
-  const [untilDeath, setUntilDeath] = useState(false);
+  const { gameId, adventurer, beastSeed, setKeepScreen, gameEvent } = useGameStore();
+  const [untilDeath, setUntilDeath] = useState(true);
 
   const [beast] = useState<Beast>(
     getBeast(BigInt(beastSeed!), adventurer!.xp)
   );
+  const [combatLog, setCombatLog] = useState("");
 
-  const [combatLog, setCombatLog] = useState<string>("A wild " + beast.name + " appears!");
+  useEffect(() => {
+    if (adventurer?.xp === 0) {
+      setCombatLog(beast.name + " ambushed you for 10 damage!");
+    }
+  }, [gameEvent]);
 
-  const beastPower = Number(beast.level) * (6 - Number(beast.tier));
+  // Calculate probabilities only if both combatants are alive
+  const { killChance, fleeChance } = useMemo(() => {
+    if (adventurer!.health === 0 || adventurer!.beast_health === 0) {
+      return { killChance: 0, fleeChance: 0 };
+    }
+    return {
+      killChance: simulateBattle(adventurer!, beast, 1000),
+      fleeChance: simulateFlee(adventurer!, beast, 1000)
+    };
+  }, [adventurer, beast]);
 
   const handleAttack = () => {
     attack(gameId!, untilDeath);
@@ -28,53 +44,78 @@ export default function BeastScreen() {
     setCombatLog(`You attempted to flee from ${beast.name}`);
   };
 
+  console.log('gameEvent', gameEvent);
+
+  const beastName = Number(beast.level) >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK && (beast.specialPrefix || beast.specialSuffix)
+    ? `"${[beast.specialPrefix, beast.specialSuffix].filter(Boolean).join(' ')}" ${beast.name}`
+    : beast.name;
+
+  const beastPower = Number(beast.level) * (6 - Number(beast.tier));
+  const maxHealth = 100 + (adventurer!.stats.vitality * 15);
+
   return (
     <Box sx={styles.container}>
-      <Box className="container" sx={styles.battleContainer}>
+      <Box sx={styles.battleContainer}>
         {/* Top Section - Beast */}
         <Box sx={styles.topSection}>
           <Box sx={styles.beastInfo}>
             <Box sx={styles.beastHeader}>
-              <Typography variant="h4" sx={styles.beastName}>
-                {beast.name}
+              <Typography
+                variant={beastName.length > 30 ? "h5" : "h4"}
+                sx={styles.beastName}
+              >
+                {beastName}
               </Typography>
               <Box sx={styles.beastType}>
-                <Typography variant="body2" sx={styles.typeText}>
-                  {beast.type}
-                </Typography>
-                <Typography variant="body2" sx={styles.levelText}>
-                  Lvl {beast.level} • {beast.tier}
-                </Typography>
-              </Box>
-            </Box>
-            <Box sx={styles.statsContainer}>
-              <Box sx={styles.statItem}>
-                <Typography variant="body2" sx={styles.statLabel}>Power</Typography>
-                <Typography variant="h6" sx={styles.statValue}>{beastPower}</Typography>
-              </Box>
-              <Box sx={styles.statItem}>
-                <Typography variant="body2" sx={styles.statLabel}>Health</Typography>
-                <Box sx={styles.healthContainer}>
-                  <Typography variant="h6" sx={styles.healthValue}>{beast.health}</Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={(beast.health / 100) * 100}
-                    sx={styles.healthBar}
-                  />
+                <Box sx={styles.statBox}>
+                  <Typography sx={styles.statLabel}>Type</Typography>
+                  <Tooltip
+                    title={
+                      <Box>
+                        <Typography>
+                          Strong against {getTypeStrength(beast.type).toLowerCase()} armor
+                        </Typography>
+                        <Typography>
+                          Weak against {getTypeWeakness(beast.type).toLowerCase()} weapons
+                        </Typography>
+                      </Box>
+                    }
+                  >
+                    <Typography sx={styles.statValue}>{beast.type}</Typography>
+                  </Tooltip>
+                </Box>
+                <Box sx={styles.statBox}>
+                  <Typography sx={styles.statLabel}>Power</Typography>
+                  <Typography sx={styles.statValue}>{beastPower}</Typography>
+                </Box>
+                <Box sx={styles.levelBox}>
+                  <Typography sx={styles.levelLabel}>Level</Typography>
+                  <Typography sx={styles.levelValue}>{beast.level}</Typography>
                 </Box>
               </Box>
             </Box>
-            <Box sx={styles.rewardsContainer}>
-              <Typography variant="body1" sx={styles.rewardText}>
-                Rewards: {beast.goldReward} Gold • {beast.xpReward} XP
-              </Typography>
+            <Box sx={styles.healthContainer} mt={2} mb={1}>
+              <Box sx={styles.healthRow}>
+                <Typography sx={styles.healthLabel}>Health</Typography>
+                <Typography sx={styles.healthValue}>
+                  {adventurer?.beast_health || 0}/{beast.health}
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={(adventurer!.beast_health / beast.health) * 100}
+                sx={styles.healthBar}
+              />
             </Box>
           </Box>
           <Box sx={styles.beastImageContainer}>
             <img
               src={getBeastImage(beast.name)}
               alt={beast.name}
-              style={styles.beastImage}
+              style={{
+                ...styles.beastImage,
+                filter: `drop-shadow(0 0 10px ${getTierGlowColor(beast.tier)})`
+              }}
             />
           </Box>
         </Box>
@@ -103,39 +144,59 @@ export default function BeastScreen() {
 
               <Box sx={styles.healthContainer}>
                 <Box sx={styles.statsRow}>
-                  <Box sx={styles.statCard}>
-                    <Typography sx={styles.statLabel}>Attack</Typography>
-                    <Typography sx={styles.statValue}>{adventurer?.xp || 4}</Typography>
-                  </Box>
-                  <Box sx={styles.statCard}>
-                    <Typography sx={styles.statLabel}>Health</Typography>
-                    <Typography sx={styles.statValue}>{adventurer?.health || 0}</Typography>
-                  </Box>
+                </Box>
+                <Box sx={styles.healthRow}>
+                  <Typography sx={styles.healthLabel}>Health</Typography>
+                  <Typography sx={styles.healthValue}>
+                    {adventurer!.health}/{maxHealth}
+                  </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={(adventurer?.health || 0)}
+                  value={(adventurer!.health / maxHealth) * 100}
                   sx={styles.healthBar}
                 />
               </Box>
             </Box>
             <Box sx={styles.actionsContainer}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleAttack}
-                sx={styles.attackButton}
-              >
-                ATTACK
-              </Button>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleFlee}
-                sx={styles.fleeButton}
-              >
-                FLEE
-              </Button>
+              <Box sx={styles.actionButtonContainer}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleAttack}
+                  sx={styles.attackButton}
+                >
+                  ATTACK
+                </Button>
+                <Typography sx={styles.probabilityText}>
+                  {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast, 0)} damage`}
+                </Typography>
+              </Box>
+              <Box sx={styles.actionButtonContainer}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleFlee}
+                  sx={styles.fleeButton}
+                  disabled={adventurer!.stats.dexterity === 0}
+                >
+                  FLEE
+                </Button>
+                <Typography sx={styles.probabilityText}>
+                  {fleeChance}% chance
+                </Typography>
+              </Box>
+              <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>
+                <Typography sx={styles.deathCheckboxLabel}>
+                  until<br />death
+                </Typography>
+                <Checkbox
+                  checked={untilDeath}
+                  onChange={(e) => setUntilDeath(e.target.checked)}
+                  size="small"
+                  sx={styles.deathCheckbox}
+                />
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -146,7 +207,7 @@ export default function BeastScreen() {
 
 const styles = {
   container: {
-    maxWidth: '100%',
+    width: '100%',
     height: '100vh',
     display: 'flex',
     flexDirection: 'column',
@@ -155,22 +216,52 @@ const styles = {
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    borderRadius: '0 !important',
+    pt: '4px !important',
+  },
+  probabilityContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 3,
+    borderRadius: '10px',
+    mb: '8px',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    py: 1
+  },
+  probabilityBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '4px 12px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '6px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+  },
+  probabilityLabel: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.85rem',
+    fontFamily: 'VT323, monospace',
+  },
+  probabilityValue: {
+    color: '#80FF00',
+    fontSize: '0.85rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
   },
   topSection: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: '20px',
+    padding: '12px 16px',
     background: 'rgba(128, 255, 0, 0.05)',
-    borderRadius: '20px',
+    borderRadius: '10px',
     border: '1px solid rgba(128, 255, 0, 0.1)',
+    gap: 2
   },
   beastInfo: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
   },
   beastHeader: {
     display: 'flex',
@@ -184,19 +275,59 @@ const styles = {
   },
   beastType: {
     display: 'flex',
-    gap: '12px',
+    gap: '8px',
+    marginTop: '8px',
   },
-  typeText: {
-    color: '#80FF00',
-    background: 'rgba(128, 255, 0, 0.1)',
-    padding: '4px 12px',
-    borderRadius: '20px',
-  },
-  levelText: {
-    color: '#EDCF33',
+  levelBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    p: '2px 6px',
     background: 'rgba(237, 207, 51, 0.1)',
-    padding: '4px 12px',
-    borderRadius: '20px',
+    borderRadius: '4px',
+    border: '1px solid rgba(237, 207, 51, 0.2)',
+    minWidth: '50px',
+  },
+  statBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    p: '2px 6px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '4px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+    minWidth: '50px',
+  },
+  levelLabel: {
+    color: 'rgba(237, 207, 51, 0.7)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    lineHeight: '1',
+  },
+  statLabel: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    lineHeight: '1',
+  },
+  statValue: {
+    color: '#80FF00',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    lineHeight: '1',
+  },
+  levelValue: {
+    color: '#EDCF33',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    lineHeight: '1',
   },
   statsContainer: {
     display: 'flex',
@@ -206,14 +337,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-  },
-  statLabel: {
-    color: 'rgba(128, 255, 0, 0.7)',
-    fontSize: '0.875rem',
-  },
-  statValue: {
-    color: '#80FF00',
-    fontWeight: 'bold',
   },
   healthContainer: {
     display: 'flex',
@@ -233,8 +356,10 @@ const styles = {
     },
   },
   beastImageContainer: {
-    width: '180px',
-    height: '180px',
+    width: '160px',
+    height: '160px',
+    maxWidth: '35vw',
+    maxHeight: '35vw',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -243,7 +368,6 @@ const styles = {
     maxWidth: '100%',
     maxHeight: '100%',
     objectFit: 'contain' as const,
-    filter: 'drop-shadow(0 0 10px rgba(128, 255, 0, 0.3))',
   },
   middleSection: {
     display: 'flex',
@@ -251,12 +375,13 @@ const styles = {
     alignItems: 'center',
     padding: '12px 20px',
     background: 'rgba(128, 255, 0, 0.05)',
-    borderRadius: '20px',
+    borderRadius: '10px',
     border: '1px solid rgba(128, 255, 0, 0.1)',
+    my: '10px'
   },
   combatLogContainer: {
     width: '100%',
-    minHeight: '20px',
+    minHeight: '40px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -270,11 +395,20 @@ const styles = {
   },
   actionsContainer: {
     display: 'flex',
-    gap: '10px',
+    gap: 1,
+    width: '100%',
+    mb: '2px'
+  },
+  actionButtonContainer: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
     width: '100%',
   },
   attackButton: {
-    flex: 1,
+    width: '100%',
     fontSize: '1.2rem',
     fontWeight: 'bold',
     background: 'linear-gradient(45deg, #80FF00 30%, #9dff33 90%)',
@@ -285,7 +419,7 @@ const styles = {
     },
   },
   fleeButton: {
-    flex: 1,
+    width: '100%',
     fontSize: '1.2rem',
     fontWeight: 'bold',
     background: 'linear-gradient(45deg, #EDCF33 30%, #f5e066 90%)',
@@ -295,24 +429,35 @@ const styles = {
       background: 'linear-gradient(45deg, #f5e066 30%, #EDCF33 90%)',
     },
   },
-  deathSwitch: {
-    '& .MuiSwitch-thumb': {
-      backgroundColor: '#80FF00',
-    },
-    '& .MuiSwitch-track': {
-      backgroundColor: 'rgba(128, 255, 0, 0.3)',
-    },
+  deathCheckboxContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '1px',
+    minWidth: '32px',
+    cursor: 'pointer',
   },
-  deathSwitchLabel: {
+  deathCheckboxLabel: {
     color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.75rem',
+    fontFamily: 'VT323, monospace',
+    lineHeight: '0.9',
+    textAlign: 'center',
+  },
+  deathCheckbox: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    padding: '0',
+    '&.Mui-checked': {
+      color: '#80FF00',
+    },
   },
   bottomSection: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    padding: '20px',
+    padding: '12px 16px',
     background: 'rgba(128, 255, 0, 0.05)',
-    borderRadius: '20px',
+    borderRadius: '10px',
     border: '1px solid rgba(128, 255, 0, 0.1)',
     gap: 2
   },
@@ -333,18 +478,23 @@ const styles = {
     textShadow: '0 0 10px rgba(128, 255, 0, 0.3)',
   },
   rewardsContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    padding: '4px 8px',
     background: 'rgba(237, 207, 51, 0.1)',
-    padding: '12px 20px',
-    borderRadius: '12px',
+    borderRadius: '6px',
     border: '1px solid rgba(237, 207, 51, 0.2)',
+    marginTop: '8px',
   },
   rewardText: {
     color: '#EDCF33',
+    fontSize: '0.9rem',
+    fontFamily: 'VT323, monospace',
     fontWeight: 'bold',
   },
   adventurerImageContainer: {
-    width: '120px',
-    height: '120px',
+    width: '110px',
+    height: '110px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -360,27 +510,31 @@ const styles = {
     gap: '4px',
     marginBottom: '8px',
   },
-  statCard: {
+  healthRow: {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-    padding: '2px 6px',
-    background: 'rgba(128, 255, 0, 0.1)',
-    borderRadius: '4px',
-    border: '1px solid rgba(128, 255, 0, 0.2)',
-    minWidth: '32px',
+    justifyContent: 'space-between',
+    gap: '4px',
   },
-  statLabel: {
+  healthLabel: {
     color: 'rgba(128, 255, 0, 0.7)',
-    fontSize: '0.7rem',
+    fontSize: '0.875rem',
     lineHeight: '1',
     fontFamily: 'VT323, monospace',
   },
-  statValue: {
-    color: '#80FF00',
-    fontSize: '0.9rem',
-    lineHeight: '1',
+  probabilityText: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.85rem',
     fontFamily: 'VT323, monospace',
-    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  beastPower: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '4px 8px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '6px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
   },
 };
