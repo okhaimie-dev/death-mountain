@@ -58,15 +58,10 @@ pub impl ImplMarket of IMarket {
         all_items
     }
 
-    /// @notice Returns the size of the market based on the number of stat points available.
-    /// @param stat_upgrades_available The number of stat points available to the adventurer.
+    /// @notice Returns the size of the market.
     /// @return The size of the market as an unsigned 8-bit integer.
-    fn get_market_size(stat_upgrades_available: u8) -> u8 {
-        if stat_upgrades_available > 5 {
-            NUM_ITEMS.into()
-        } else {
-            stat_upgrades_available * NUMBER_OF_ITEMS_PER_LEVEL
-        }
+    fn get_market_size() -> u8 {
+        NUMBER_OF_ITEMS_PER_LEVEL
     }
 
     /// @notice Gets a u8 item id from a u64 seed

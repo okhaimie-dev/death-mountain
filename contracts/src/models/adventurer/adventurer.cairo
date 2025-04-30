@@ -2986,6 +2986,7 @@ mod tests {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Power);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Power);
         assert(adventurer.stats.strength == 3, 'strength should be 3');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
@@ -2994,6 +2995,7 @@ mod tests {
         assert(adventurer.stats.charisma == 0, 'charisma should be 0');
 
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Giant);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Giant);
         assert(adventurer.stats.strength == 3, 'strength should be 3');
         assert(adventurer.stats.vitality == 3, 'vitality should be 3');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3002,6 +3004,7 @@ mod tests {
         assert(adventurer.stats.charisma == 0, 'charisma should be 0');
 
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Perfection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Perfection);
         assert(adventurer.stats.strength == 4, 'strength should be 4');
         assert(adventurer.stats.vitality == 4, 'vitality should be 4');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3010,6 +3013,7 @@ mod tests {
         assert(adventurer.stats.charisma == 0, 'charisma should be 0');
 
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Rage);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Rage);
         assert(adventurer.stats.strength == 5, 'strength should be 5');
         assert(adventurer.stats.vitality == 4, 'vitality should be 4');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3018,6 +3022,7 @@ mod tests {
         assert(adventurer.stats.charisma == 1, 'charisma should be 1');
 
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Fury);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Fury);
         assert(adventurer.stats.strength == 5, 'strength should be 5');
         assert(adventurer.stats.vitality == 5, 'vitality should be 5');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3032,6 +3037,7 @@ mod tests {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.strength = 4;
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Power);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Power);
         assert(adventurer.stats.strength == 1, 'strength should be 1');
     }
 
@@ -3039,6 +3045,7 @@ mod tests {
     fn test_apply_power_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Power);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Power);
         assert(adventurer.stats.strength == 3, 'strength should be 3');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3051,6 +3058,7 @@ mod tests {
     fn test_apply_giant_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Giant);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Giant);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 3, 'vitality should be 3');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3063,6 +3071,7 @@ mod tests {
     fn test_apply_skill_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Skill);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Skill);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 3, 'dexterity should be 3');
@@ -3075,6 +3084,7 @@ mod tests {
     fn test_apply_perfection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Perfection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Perfection);
         assert(adventurer.stats.strength == 1, 'strength should be 1');
         assert(adventurer.stats.vitality == 1, 'vitality should be 1');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3087,6 +3097,7 @@ mod tests {
     fn test_apply_brilliance_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Brilliance);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Brilliance);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3099,6 +3110,7 @@ mod tests {
     fn test_apply_enlightenment_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Enlightenment);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Enlightenment);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3111,6 +3123,7 @@ mod tests {
     fn test_apply_protection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Protection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Protection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 2, 'vitality should be 2');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3123,6 +3136,7 @@ mod tests {
     fn test_apply_anger_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Anger);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Anger);
         assert(adventurer.stats.strength == 2, 'strength should be 2');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3135,6 +3149,7 @@ mod tests {
     fn test_apply_rage_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Rage);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Rage);
         assert(adventurer.stats.strength == 1, 'strength should be 1');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3147,6 +3162,7 @@ mod tests {
     fn test_apply_fury_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Fury);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Fury);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 1, 'vitality should be 1');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3159,6 +3175,7 @@ mod tests {
     fn test_apply_vitriol_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Vitriol);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Vitriol);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3171,6 +3188,7 @@ mod tests {
     fn test_apply_fox_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_the_Fox);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_the_Fox);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 2, 'dexterity should be 2');
@@ -3183,6 +3201,7 @@ mod tests {
     fn test_apply_detection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Detection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Detection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 1, 'dexterity should be 1');
@@ -3195,6 +3214,7 @@ mod tests {
     fn test_apply_reflection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Reflection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Reflection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3207,6 +3227,7 @@ mod tests {
     fn test_apply_twins_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_the_Twins);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_the_Twins);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3219,7 +3240,9 @@ mod tests {
     fn test_apply_and_remove_power_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Power);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Power);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Power);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Power);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3232,7 +3255,9 @@ mod tests {
     fn test_apply_and_remove_giant_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Giant);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Giant);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Giant);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Giant);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3245,7 +3270,9 @@ mod tests {
     fn test_apply_and_remove_titans_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Titans);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Titans);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Titans);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Titans);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3258,7 +3285,9 @@ mod tests {
     fn test_apply_and_remove_skill_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Skill);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Skill);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Skill);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Skill);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3271,7 +3300,9 @@ mod tests {
     fn test_apply_and_remove_perfection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Perfection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Perfection);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Perfection);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Perfection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3284,7 +3315,9 @@ mod tests {
     fn test_apply_and_remove_brilliance_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Brilliance);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Brilliance);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Brilliance);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Brilliance);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3297,7 +3330,9 @@ mod tests {
     fn test_apply_and_remove_enlightenment_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Enlightenment);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Enlightenment);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Enlightenment);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Enlightenment);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3310,7 +3345,9 @@ mod tests {
     fn test_apply_and_remove_protection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Protection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Protection);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Protection);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Protection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3323,7 +3360,9 @@ mod tests {
     fn test_apply_and_remove_anger_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Anger);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Anger);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Anger);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Anger);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3336,7 +3375,9 @@ mod tests {
     fn test_apply_and_remove_rage_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Rage);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Rage);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Rage);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Rage);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3349,7 +3390,9 @@ mod tests {
     fn test_apply_and_remove_fury_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Fury);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Fury);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Fury);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Fury);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3362,7 +3405,9 @@ mod tests {
     fn test_apply_and_remove_vitriol_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Vitriol);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Vitriol);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Vitriol);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Vitriol);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3375,7 +3420,9 @@ mod tests {
     fn test_apply_and_remove_fox_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_the_Fox);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_the_Fox);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_the_Fox);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_the_Fox);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3388,7 +3435,9 @@ mod tests {
     fn test_apply_and_remove_detection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Detection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Detection);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Detection);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Detection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3401,7 +3450,9 @@ mod tests {
     fn test_apply_and_remove_reflection_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_Reflection);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_Reflection);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_Reflection);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_Reflection);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');
@@ -3414,7 +3465,9 @@ mod tests {
     fn test_apply_and_remove_twins_boost() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         adventurer.stats.apply_suffix_boost(ItemSuffix::of_the_Twins);
+        adventurer.stats.apply_bag_boost(ItemSuffix::of_the_Twins);
         adventurer.stats.remove_suffix_boost(ItemSuffix::of_the_Twins);
+        adventurer.stats.remove_bag_boost(ItemSuffix::of_the_Twins);
         assert(adventurer.stats.strength == 0, 'strength should be 0');
         assert(adventurer.stats.vitality == 0, 'vitality should be 0');
         assert(adventurer.stats.dexterity == 0, 'dexterity should be 0');

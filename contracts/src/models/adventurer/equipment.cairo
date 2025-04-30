@@ -259,28 +259,44 @@ pub impl ImplEquipment of IEquipment {
         };
 
         if (self.weapon.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.weapon.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.weapon.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.chest.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.chest.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.chest.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.head.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.head.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.head.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.waist.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.waist.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.waist.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.foot.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.foot.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.foot.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.hand.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.hand.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.hand.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.neck.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.neck.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.neck.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         if (self.ring.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
-            stats.apply_suffix_boost(ImplLoot::get_suffix(self.ring.id, specials_seed));
+            let suffix = ImplLoot::get_suffix(self.ring.id, specials_seed);
+            stats.apply_suffix_boost(suffix);
+            stats.apply_bag_boost(suffix);
         }
         stats
     }

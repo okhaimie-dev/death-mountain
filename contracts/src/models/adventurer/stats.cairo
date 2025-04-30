@@ -121,49 +121,38 @@ pub impl ImplStats of IStat {
     fn apply_suffix_boost(ref self: Stats, suffix: u8) {
         if (suffix == ItemSuffix::of_Power) {
             self.increase_strength(3);
-        } else if (suffix == ItemSuffix::of_Giant) {
-            self.increase_vitality(3);
         } else if (suffix == ItemSuffix::of_Titans) {
             self.increase_strength(2);
-            self.increase_charisma(1);
         } else if (suffix == ItemSuffix::of_Skill) {
             self.increase_dexterity(3);
         } else if (suffix == ItemSuffix::of_Perfection) {
             self.increase_strength(1);
             self.increase_dexterity(1);
-            self.increase_vitality(1);
         } else if (suffix == ItemSuffix::of_Brilliance) {
             self.increase_intelligence(3);
         } else if (suffix == ItemSuffix::of_Enlightenment) {
             self.increase_wisdom(3);
         } else if (suffix == ItemSuffix::of_Protection) {
-            self.increase_vitality(2);
             self.increase_dexterity(1);
         } else if (suffix == ItemSuffix::of_Anger) {
             self.increase_strength(2);
             self.increase_dexterity(1);
         } else if (suffix == ItemSuffix::of_Rage) {
             self.increase_strength(1);
-            self.increase_charisma(1);
             self.increase_wisdom(1);
         } else if (suffix == ItemSuffix::of_Fury) {
-            self.increase_vitality(1);
-            self.increase_charisma(1);
             self.increase_intelligence(1);
         } else if (suffix == ItemSuffix::of_Vitriol) {
             self.increase_intelligence(2);
             self.increase_wisdom(1);
         } else if (suffix == ItemSuffix::of_the_Fox) {
             self.increase_dexterity(2);
-            self.increase_charisma(1);
         } else if (suffix == ItemSuffix::of_Detection) {
             self.increase_wisdom(2);
             self.increase_dexterity(1);
         } else if (suffix == ItemSuffix::of_Reflection) {
             self.increase_intelligence(1);
             self.increase_wisdom(2);
-        } else if (suffix == ItemSuffix::of_the_Twins) {
-            self.increase_charisma(3);
         }
     }
 
@@ -173,47 +162,78 @@ pub impl ImplStats of IStat {
     fn remove_suffix_boost(ref self: Stats, suffix: u8) {
         if (suffix == ItemSuffix::of_Power) {
             self.decrease_strength(3);
-        } else if (suffix == ItemSuffix::of_Giant) {
-            self.decrease_vitality(3);
         } else if (suffix == ItemSuffix::of_Titans) {
             self.decrease_strength(2);
-            self.decrease_charisma(1);
         } else if (suffix == ItemSuffix::of_Skill) {
             self.decrease_dexterity(3);
         } else if (suffix == ItemSuffix::of_Perfection) {
             self.decrease_strength(1);
             self.decrease_dexterity(1);
-            self.decrease_vitality(1);
         } else if (suffix == ItemSuffix::of_Brilliance) {
             self.decrease_intelligence(3);
         } else if (suffix == ItemSuffix::of_Enlightenment) {
             self.decrease_wisdom(3);
         } else if (suffix == ItemSuffix::of_Protection) {
-            self.decrease_vitality(2);
             self.decrease_dexterity(1);
         } else if (suffix == ItemSuffix::of_Anger) {
             self.decrease_strength(2);
             self.decrease_dexterity(1);
         } else if (suffix == ItemSuffix::of_Rage) {
             self.decrease_strength(1);
-            self.decrease_charisma(1);
             self.decrease_wisdom(1);
         } else if (suffix == ItemSuffix::of_Fury) {
-            self.decrease_vitality(1);
-            self.decrease_charisma(1);
             self.decrease_intelligence(1);
         } else if (suffix == ItemSuffix::of_Vitriol) {
             self.decrease_intelligence(2);
             self.decrease_wisdom(1);
         } else if (suffix == ItemSuffix::of_the_Fox) {
             self.decrease_dexterity(2);
-            self.decrease_charisma(1);
         } else if (suffix == ItemSuffix::of_Detection) {
             self.decrease_wisdom(2);
             self.decrease_dexterity(1);
         } else if (suffix == ItemSuffix::of_Reflection) {
             self.decrease_intelligence(1);
             self.decrease_wisdom(2);
+        }
+    }
+
+    fn apply_bag_boost(ref self: Stats, suffix: u8) {
+        if (suffix == ItemSuffix::of_Giant) {
+            self.increase_vitality(3);
+        } else if (suffix == ItemSuffix::of_Titans) {
+            self.increase_charisma(1);
+        } else if (suffix == ItemSuffix::of_Perfection) {
+            self.increase_vitality(1);
+        } else if (suffix == ItemSuffix::of_Protection) {
+            self.increase_vitality(2);
+        } else if (suffix == ItemSuffix::of_Rage) {
+            self.increase_charisma(1);
+        } else if (suffix == ItemSuffix::of_Fury) {
+            self.increase_vitality(1);
+            self.increase_charisma(1);
+        } else if (suffix == ItemSuffix::of_the_Fox) {
+            self.increase_charisma(1);
+        } else if (suffix == ItemSuffix::of_the_Twins) {
+            self.increase_charisma(3);
+        }
+    }
+
+    fn remove_bag_boost(ref self: Stats, suffix: u8) {
+        if (suffix == ItemSuffix::of_Giant) {
+            self.decrease_vitality(3);
+        } else if (suffix == ItemSuffix::of_Titans) {
+            self.decrease_charisma(1);
+        } else if (suffix == ItemSuffix::of_Perfection) {
+            self.decrease_vitality(1);
+        } else if (suffix == ItemSuffix::of_Protection) {
+            self.decrease_vitality(2);
+        } else if (suffix == ItemSuffix::of_Rage) {
+            self.decrease_charisma(1);
+        } else if (suffix == ItemSuffix::of_Fury) {
+            self.decrease_vitality(1);
+            self.decrease_charisma(1);
+        } else if (suffix == ItemSuffix::of_the_Fox) {
+            self.decrease_charisma(1);
         } else if (suffix == ItemSuffix::of_the_Twins) {
             self.decrease_charisma(3);
         }
@@ -369,6 +389,16 @@ pub impl ImplStats of IStat {
         } else {
             panic_with_felt252('stat out of range');
         }
+    }
+
+    #[inline(always)]
+    fn count_total_stats(self: Stats) -> u16 {
+        self.strength.into()
+            + self.dexterity.into()
+            + self.vitality.into()
+            + self.intelligence.into()
+            + self.wisdom.into()
+            + self.charisma.into()
     }
 }
 

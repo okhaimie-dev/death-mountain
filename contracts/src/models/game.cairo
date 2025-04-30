@@ -3,6 +3,9 @@ use lootsurvivor::constants::discovery::DiscoveryEnums::DiscoveryType;
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
+// ------------------------------------------ //
+// ------------ Models ---------------------- //
+// ------------------------------------------ //
 #[derive(IntrospectPacked, Copy, Drop, Serde)]
 #[dojo::model]
 pub struct AdventurerPacked {
@@ -28,76 +31,103 @@ pub struct AdventurerEntropy {
     pub beast_seed: u64,
 }
 
+// ------------------------------------------ //
+// ------------ Events ---------------------- //
+// ------------------------------------------ //
 #[derive(Introspect, Copy, Drop, Serde)]
 #[dojo::event]
 pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,
     #[key]
+    pub adventurer_level: u8,
     pub action_count: u16,
     pub details: GameEventDetails,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
 pub enum GameEventDetails {
-    explore: Span<ExploreEvent>,
-    attack: Span<AttackDetails>,
-    flee: Span<FleeEvent>,
-    equip: EquipEvent,
-    drop: DropEvent,
-    level_up: LevelUpEvent,
+    discovery: DiscoveryEvent,
+    obstacle: ObstacleEvent,
+    defeated_beast: DefeatedBeastEvent,
+    fled_beast: FledBeastEvent,
+    stat_upgrade: StatUpgradeEvent,
+    market: MarketEvent,
+    equip: ItemEvent,
+    drop: ItemEvent,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub struct AttackDetails {
-    pub damage: u16,
-    pub location: Slot,
-    pub critical_hit: bool,
+pub struct DiscoveryEvent {
+    pub discovery_type: DiscoveryType,
+    pub xp_reward: u16,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub enum ExploreEvent {
-    Beast: ExploreBeastEvent,
-    Obstacle: ExploreObstacleEvent,
-    Discovery: DiscoveryType,
-}
-
-#[derive(Introspect, Copy, Drop, Serde)]
-pub struct ExploreBeastEvent {
-    pub beast_seed: u64,
-    pub ambush: AttackDetails,
-}
-
-#[derive(Introspect, Copy, Drop, Serde)]
-pub struct ExploreObstacleEvent {
+pub struct ObstacleEvent {
     pub obstacle_id: u8,
     pub dodged: bool,
     pub damage: u16,
     pub location: Slot,
     pub critical_hit: bool,
+    pub xp_reward: u16,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub struct FleeEvent {
-    pub success: bool,
-    pub beast_attack: AttackDetails,
+pub struct DefeatedBeastEvent {
+    pub beast_id: u8,
+    pub gold_reward: u16,
+    pub xp_reward: u16,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub struct EquipEvent {
-    pub items: Span<u8>,
-    pub beast_attack: AttackDetails,
+pub struct FledBeastEvent {
+    pub beast_id: u8,
+    pub xp_reward: u16,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub struct DropEvent {
-    pub items: Span<u8>,
+pub struct StatUpgradeEvent {
+    pub stats: Stats,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-pub struct LevelUpEvent {
-    pub market_seed: u64,
+pub struct MarketEvent {
     pub potions: u8,
-    pub attributes: Stats,
-    pub items: Span<ItemPurchase>,
+    pub items_purchased: Span<ItemPurchase>,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+pub struct ItemEvent {
+    pub items: Span<u8>,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+#[dojo::event]
+pub struct BattleEvent {
+    #[key]
+    pub adventurer_id: u64,
+    #[key]
+    pub adventurer_xp: u16,
+    pub action_count: u16,
+    pub event_count: u16,
+    pub details: BattleEventDetails,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+pub enum BattleEventDetails {
+    ambush: AttackEvent,
+    flee: bool,
+    attack: AttackEvent,
+    beast_attack: AttackEvent,
+    equip: ItemEvent,
+    fled_beast: FledBeastEvent,
+    defeated_beast: DefeatedBeastEvent,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+pub struct AttackEvent {
+    pub damage: u16,
+    pub location: Slot,
+    pub critical_hit: bool,
 }

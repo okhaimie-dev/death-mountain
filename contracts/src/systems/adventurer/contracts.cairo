@@ -11,7 +11,7 @@ pub trait IAdventurerSystems<T> {
     fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
     fn get_bag(self: @T, adventurer_id: u64) -> Bag;
     fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
-    fn remove_stat_boosts(self: @T, adventurer: Adventurer) -> Adventurer;
+    fn remove_stat_boosts(self: @T, adventurer: Adventurer, bag: Bag) -> Adventurer;
     fn pack_adventurer(self: @T, adventurer: Adventurer) -> felt252;
     fn get_discovery(
         self: @T, adventurer_level: u8, discovery_type_rnd: u8, amount_rnd1: u8, amount_rnd2: u8,
@@ -25,7 +25,7 @@ pub trait IAdventurerSystems<T> {
     fn bag_contains(self: @T, bag: Bag, item_id: u8) -> (bool, Item);
     fn get_randomness(self: @T, adventurer_xp: u16, seed: u64) -> (u32, u32, u16, u16, u8, u8, u8, u8);
     fn get_battle_randomness(self: @T, xp: u16, action_count: u16, seed: u64) -> (u8, u8, u8, u8);
-    fn get_market(self: @T, seed: u64, stat_upgrades_available: u8) -> Array<u8>;
+    fn get_market(self: @T, seed: u64) -> Array<u8>;
 }
 
 #[dojo::contract]
@@ -36,7 +36,7 @@ mod adventurer_systems {
 
     use lootsurvivor::constants::world::{DEFAULT_NS};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::bag::{Bag, ImplBag};
+    use lootsurvivor::models::adventurer::bag::{Bag, IBag, ImplBag};
     use lootsurvivor::models::adventurer::equipment::IEquipment;
     use lootsurvivor::models::adventurer::item::Item;
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
@@ -62,8 +62,12 @@ mod adventurer_systems {
             }
 
             let bag = _load_bag(world, adventurer_id);
-            adventurer.set_luck(bag);
+            if bag.has_specials() {
+                let bag_stat_boosts = _get_bag_stat_boosts(adventurer, bag);
+                adventurer.stats.apply_stats(bag_stat_boosts);
+            }
 
+            adventurer.set_luck(bag);
             (adventurer, bag)
         }
 
@@ -81,10 +85,14 @@ mod adventurer_systems {
             token_metadata.player_name
         }
 
-        fn remove_stat_boosts(self: @ContractState, mut adventurer: Adventurer) -> Adventurer {
-            if adventurer.equipment.has_specials() && adventurer.item_specials_seed != 0 {
+        fn remove_stat_boosts(self: @ContractState, mut adventurer: Adventurer, bag: Bag) -> Adventurer {
+            if adventurer.equipment.has_specials() {
                 let item_stat_boosts = _get_stat_boosts(adventurer);
                 adventurer.stats.remove_stats(item_stat_boosts);
+            }
+            if bag.has_specials() {
+                let bag_stat_boosts = _get_bag_stat_boosts(adventurer, bag);
+                adventurer.stats.remove_stats(bag_stat_boosts);
             }
             adventurer
         }
@@ -138,8 +146,8 @@ mod adventurer_systems {
             ImplAdventurer::get_battle_randomness(xp, action_count, seed)
         }
 
-        fn get_market(self: @ContractState, seed: u64, stat_upgrades_available: u8) -> Array<u8> {
-            let market_size = ImplMarket::get_market_size(stat_upgrades_available);
+        fn get_market(self: @ContractState, seed: u64) -> Array<u8> {
+            let market_size = ImplMarket::get_market_size();
             ImplMarket::get_available_items(seed, market_size)
         }
     }
@@ -169,5 +177,9 @@ mod adventurer_systems {
 
     fn _get_stat_boosts(adventurer: Adventurer) -> Stats {
         adventurer.equipment.get_stat_boosts(adventurer.item_specials_seed)
+    }
+
+    fn _get_bag_stat_boosts(adventurer: Adventurer, bag: Bag) -> Stats {
+        bag.get_stat_boosts(adventurer.item_specials_seed)
     }
 }
