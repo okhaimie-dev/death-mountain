@@ -12,7 +12,8 @@ pub trait IGameSystems<T> {
     fn flee(ref self: T, adventurer_id: u64, to_the_death: bool);
     fn equip(ref self: T, adventurer_id: u64, items: Array<u8>);
     fn drop(ref self: T, adventurer_id: u64, items: Array<u8>);
-    fn level_up(ref self: T, adventurer_id: u64, potions: u8, stat_upgrades: Stats, items: Array<ItemPurchase>);
+    fn buy_items(ref self: T, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>);
+    fn select_stat_upgrades(ref self: T, adventurer_id: u64, stat_upgrades: Stats);
 }
 
 
@@ -41,9 +42,10 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
+    use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked};
     use lootsurvivor::models::game::{
-        AdventurerEntropy, AdventurerPacked, AttackDetails, BagPacked, DropEvent, EquipEvent, ExploreBeastEvent,
-        ExploreEvent, ExploreObstacleEvent, FleeEvent, GameEvent, GameEventDetails, LevelUpEvent,
+        GameEvent, GameEventDetails, DiscoveryEvent, ObstacleEvent, DefeatedBeastEvent, FledBeastEvent,
+        StatUpgradeEvent, MarketEvent, ItemEvent, BattleEvent, BattleEventDetails, AttackEvent,
     };
     use lootsurvivor::models::market::{ImplMarket, ItemPurchase};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
@@ -121,38 +123,28 @@ mod game_systems {
             let (explore_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             // go explore
-            let mut explore_results: Array<ExploreEvent> = array![];
             _explore(
                 ref world,
                 ref adventurer,
                 ref bag,
-                ref explore_results,
                 adventurer_id,
                 explore_seed,
                 till_beast,
                 game_libs,
             );
 
-            // save state
-            if (adventurer.stat_upgrades_available != 0) {
+            // rotate market seed if level up
+            if (immutable_adventurer.get_level() < adventurer.get_level()) {
                 _save_market_seed(ref world, adventurer_id, market_seed);
             }
-
+            
+            // save state
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
-
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::explore(explore_results.span()),
-                    },
-                );
         }
 
         /// @title Attack Function
@@ -224,10 +216,10 @@ mod game_systems {
 
             let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
-            let mut attack_results: Array<AttackDetails> = array![];
+            let mut battle_events: Array<BattleEventDetails> = array![];
             _attack(
                 ref adventurer,
-                ref attack_results,
+                ref battle_events,
                 weapon_combat_spec,
                 level_seed,
                 beast,
@@ -237,22 +229,33 @@ mod game_systems {
                 game_libs,
             );
 
-            // save state
-            if (adventurer.stat_upgrades_available != 0) {
+            // rotate market seed if level up
+            if (immutable_adventurer.get_level() < adventurer.get_level()) {
                 _save_market_seed(ref world, adventurer_id, market_seed);
             }
-
+            
+            // save state
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::attack(attack_results.span()),
+            // emit events
+            let mut event_count = 0;
+            while (battle_events.len() > 0) {
+                let event = battle_events.pop_front().unwrap();
+                match event {
+                    BattleEventDetails::defeated_beast(event) => {
+                        _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::defeated_beast(event));
                     },
-                );
+                    BattleEventDetails::attack(event) => {
+                        _emit_battle_event(ref world, adventurer_id, adventurer, event_count, BattleEventDetails::attack(event));
+                    },
+                    BattleEventDetails::beast_attack(event) => {
+                        _emit_battle_event(ref world, adventurer_id, adventurer, event_count, BattleEventDetails::beast_attack(event));
+                    },
+                    _ => {}
+                }
+                event_count += 1;
+            }
         }
 
         /// @title Flee Function
@@ -310,25 +313,36 @@ mod game_systems {
             let (flee_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             // attempt to flee
-            let mut flee_results: Array<FleeEvent> = array![];
-            _flee(ref adventurer, ref flee_results, flee_seed, beast_seed, beast, to_the_death, game_libs);
+            let mut battle_events: Array<BattleEventDetails> = array![];
+            _flee(ref adventurer, ref battle_events, flee_seed, beast_seed, beast, to_the_death, game_libs);
 
-            // save state
-            if (adventurer.stat_upgrades_available != 0) {
+            // rotate market seed if level up
+            if (immutable_adventurer.get_level() < adventurer.get_level()) {
                 _save_market_seed(ref world, adventurer_id, market_seed);
             }
-
+            
+            // save state
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::flee(flee_results.span()),
+            // emit events
+            let mut event_count = 0;
+            while (battle_events.len() > 0) {
+                let event = battle_events.pop_front().unwrap();
+                match event {
+                    BattleEventDetails::fled_beast(event) => {
+                        _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::fled_beast(event));
                     },
-                );
+                    BattleEventDetails::flee(event) => {
+                        _emit_battle_event(ref world, adventurer_id, adventurer, event_count, BattleEventDetails::flee(event));
+                    },
+                    BattleEventDetails::beast_attack(event) => {
+                        _emit_battle_event(ref world, adventurer_id, adventurer, event_count, BattleEventDetails::beast_attack(event));
+                    },
+                    _ => {}
+                }
+                event_count += 1;
+            }
         }
 
         /// @title Equip Function
@@ -360,7 +374,6 @@ mod game_systems {
             _equip_items(ref adventurer, ref bag, items.clone(), false, game_libs);
 
             // if the adventurer is equipping an item during battle, the beast will counter attack
-            let mut beast_attack_details = _empty_attack_details();
             if (adventurer.in_battle()) {
                 // get previous entropy to fetch correct beast
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
@@ -393,10 +406,12 @@ mod game_systems {
                     .get_battle_randomness(adventurer.xp, adventurer.action_count, seed);
 
                 // process beast attack
-                beast_attack_details =
+                let beast_attack_details =
                     _beast_attack(
                         ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
                     );
+
+                _emit_battle_event(ref world, adventurer_id, adventurer, 0, BattleEventDetails::beast_attack(beast_attack_details));
             }
 
             // save state
@@ -408,16 +423,7 @@ mod game_systems {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
 
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::equip(
-                            EquipEvent { items: items.span(), beast_attack: beast_attack_details },
-                        ),
-                    },
-                );
+            _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::equip(ItemEvent { items: items.span() }));
         }
 
         /// @title Drop Function
@@ -457,14 +463,59 @@ mod game_systems {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
 
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::drop(DropEvent { items: items.span() }),
-                    },
+            _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::drop(ItemEvent { items: items.span() }));
+        }
+
+        /// @title Buy Items Function
+        /// @notice Allows an adventurer to buy items from the market
+        /// @param adventurer_id A u256 representing the unique ID of the adventurer.
+        /// @param potions A u8 representing the number of potions to purchase
+        /// @param items An array of ItemPurchase detailing the items the adventurer wishes to purchase
+        fn buy_items(ref self: ContractState, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>) {
+            let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            _assert_token_ownership(world, adventurer_id);
+            
+            let token_metadata: TokenMetadata = world.read_model(adventurer_id);
+            token_metadata.lifecycle.assert_is_playable(adventurer_id, starknet::get_block_timestamp());
+
+            // get game libaries
+            let game_libs = ImplGameLibs::new(world);
+            
+            // load player assets
+            let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+
+            // assert action is valid
+            _assert_not_dead(adventurer);
+            _assert_not_in_battle(adventurer);
+            _assert_not_selecting_stat_upgrades(adventurer.stat_upgrades_available);
+
+            // if the player is buying items, process purchases
+            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
+            if (items.len() != 0) {
+                _buy_items(
+                    adventurer_entropy.market_seed,
+                    ref adventurer,
+                    ref bag,
+                    items.clone(),
+                    game_libs,
                 );
+            }
+
+            // if the player is buying potions as part of the upgrade, process purchase
+            // @dev process potion purchase after items in case item purchases changes item stat
+            // boosts
+            if potions != 0 {
+                _buy_potions(ref adventurer, potions);
+            }
+
+            adventurer.increment_action_count();
+            _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
+
+            if bag.mutated {
+                _save_bag(ref world, adventurer_id, bag, game_libs);
+            }
+
+            _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::market(MarketEvent { potions: potions, items_purchased: items.span() }));
         }
 
         /// @title Upgrade Function
@@ -478,8 +529,8 @@ mod game_systems {
         /// to their stats.
         /// @param items An array of ItemPurchase detailing the items the adventurer wishes to
         /// purchase during the upgrade.
-        fn level_up(
-            ref self: ContractState, adventurer_id: u64, potions: u8, stat_upgrades: Stats, items: Array<ItemPurchase>,
+        fn select_stat_upgrades(
+            ref self: ContractState, adventurer_id: u64, stat_upgrades: Stats,
         ) {
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
             _assert_token_ownership(world, adventurer_id);
@@ -491,7 +542,7 @@ mod game_systems {
             let game_libs = ImplGameLibs::new(world);
 
             // load player assets
-            let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            let (mut adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
 
             let immutable_adventurer = adventurer.clone();
 
@@ -499,9 +550,6 @@ mod game_systems {
             _assert_not_dead(immutable_adventurer);
             _assert_not_in_battle(immutable_adventurer);
             _assert_valid_stat_selection(immutable_adventurer, stat_upgrades);
-
-            // get number of stat upgrades available before we use them
-            let pre_upgrade_stat_points = adventurer.stat_upgrades_available;
 
             // reset stat upgrades available
             adventurer.stat_upgrades_available = 0;
@@ -515,49 +563,10 @@ mod game_systems {
                 adventurer.apply_vitality_health_boost(stat_upgrades.vitality);
             }
 
-            // if the player is buying items, process purchases
-            let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
-            if (items.len() != 0) {
-                _buy_items(
-                    adventurer_entropy.market_seed,
-                    ref adventurer,
-                    ref bag,
-                    pre_upgrade_stat_points,
-                    items.clone(),
-                    game_libs,
-                );
-            }
-
-            // if the player is buying potions as part of the upgrade, process purchase
-            // @dev process potion purchase after items in case item purchases changes item stat
-            // boosts
-            if potions != 0 {
-                _buy_potions(ref adventurer, potions);
-            }
-
-            // if the upgrade mutated the adventurer's bag
-            if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag, game_libs);
-            }
-
             adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, adventurer_id, game_libs);
 
-            world
-                .emit_event(
-                    @GameEvent {
-                        adventurer_id,
-                        action_count: adventurer.action_count,
-                        details: GameEventDetails::level_up(
-                            LevelUpEvent {
-                                market_seed: adventurer_entropy.market_seed,
-                                potions,
-                                attributes: stat_upgrades,
-                                items: items.span(),
-                            },
-                        ),
-                    },
-                );
+            _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::stat_upgrade(StatUpgradeEvent { stats: stat_upgrades }));
         }
     }
 
@@ -583,6 +592,7 @@ mod game_systems {
     /// @param critical_hit A boolean representing whether the attack was a critical hit.
     fn _process_beast_death(
         ref adventurer: Adventurer,
+        ref battle_events: Array<BattleEventDetails>,
         beast: Beast,
         beast_seed: u32,
         damage_dealt: u16,
@@ -612,6 +622,12 @@ mod game_systems {
         if (previous_level == 1 && new_level == 2) {
             reveal_starting_stats(ref adventurer, level_seed, game_libs);
         }
+
+        battle_events.append(BattleEventDetails::defeated_beast(DefeatedBeastEvent {
+            beast_id: beast.id,
+            gold_reward: gold_earned + ring_bonus,
+            xp_reward: xp_earned_adventurer,
+        }));
         // // if beast beast level is above collectible threshold
     // if beast.combat_spec.level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK.into() && _network_supports_vrf() {
     //     // mint beast to owner of the adventurer or controller delegate if set
@@ -652,15 +668,15 @@ mod game_systems {
     /// @dev This function is called when the adventurer explores the world.
     /// @param adventurer A reference to the adventurer.
     /// @param bag A reference to the bag.
-    /// @param explore_results A reference to the array of explore results.
-    /// @param seed A felt252 representing the entropy for the adventurer.
+    /// @param adventurer_id A u64 representing the unique ID of the adventurer.
+    /// @param explore_seed A felt252 representing the entropy for the adventurer.
     /// @param explore_till_beast A bool representing whether to explore until a beast is
     /// encountered.
+    /// @param game_libs A reference to the game libraries.
     fn _explore(
         ref world: WorldStorage,
         ref adventurer: Adventurer,
         ref bag: Bag,
-        ref explore_results: Array<ExploreEvent>,
         adventurer_id: u64,
         explore_seed: u64,
         explore_till_beast: bool,
@@ -674,7 +690,7 @@ mod game_systems {
         let explore_result = ImplAdventurer::get_random_explore(explore_rnd);
         match explore_result {
             ExploreResult::Beast(()) => {
-                let beast_details = _beast_encounter(
+                let ambush_event = _beast_encounter(
                     ref adventurer,
                     seed: rnd1_u32,
                     health_rnd: rnd3_u16,
@@ -690,11 +706,12 @@ mod game_systems {
                 // save seed to get correct beast
                 _save_beast_seed(ref world, adventurer_id, explore_seed);
 
-                explore_results
-                    .append(ExploreEvent::Beast(ExploreBeastEvent { beast_seed: explore_seed, ambush: beast_details }));
+                if (ambush_event.damage > 0) {
+                    _emit_battle_event(ref world, adventurer_id, adventurer, 0, BattleEventDetails::ambush(ambush_event));
+                }
             },
             ExploreResult::Obstacle(()) => {
-                let obstacle_details = _obstacle_encounter(
+                let obstacle_event = _obstacle_encounter(
                     ref adventurer,
                     seed: rnd1_u32,
                     level_rnd: rnd4_u16,
@@ -704,10 +721,10 @@ mod game_systems {
                     item_specials_rnd: rnd3_u16,
                     game_libs: game_libs,
                 );
-                explore_results.append(ExploreEvent::Obstacle(obstacle_details));
+                _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::obstacle(obstacle_event));
             },
             ExploreResult::Discovery(()) => {
-                let discovery_details = _process_discovery(
+                let discovery_event = _process_discovery(
                     ref adventurer,
                     ref bag,
                     discovery_type_rnd: rnd5_u8,
@@ -715,7 +732,7 @@ mod game_systems {
                     amount_rnd2: rnd7_u8,
                     game_libs: game_libs,
                 );
-                explore_results.append(ExploreEvent::Discovery(discovery_details));
+                _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::discovery(discovery_event));
             },
         }
 
@@ -726,7 +743,6 @@ mod game_systems {
                 ref world,
                 ref adventurer,
                 ref bag,
-                ref explore_results,
                 adventurer_id,
                 explore_seed,
                 explore_till_beast,
@@ -748,7 +764,7 @@ mod game_systems {
         amount_rnd1: u8,
         amount_rnd2: u8,
         game_libs: GameLibs,
-    ) -> DiscoveryType {
+    ) -> DiscoveryEvent {
         // get discovery type
         let discovery_type = game_libs
             .adventurer
@@ -798,7 +814,10 @@ mod game_systems {
             },
         }
 
-        discovery_type
+        DiscoveryEvent {
+            discovery_type,
+            xp_reward: XP_FOR_DISCOVERIES.into(),
+        }
     }
 
     /// @title Beast Encounter
@@ -822,7 +841,7 @@ mod game_systems {
         specials1_rnd: u8,
         specials2_rnd: u8,
         game_libs: GameLibs,
-    ) -> AttackDetails {
+    ) -> AttackEvent {
         let adventurer_level = adventurer.get_level();
 
         let beast = game_libs
@@ -845,7 +864,7 @@ mod game_systems {
         let is_ambush = ImplAdventurer::is_ambushed(adventurer_level, adventurer.stats.wisdom, ambush_rnd);
 
         // if adventurer was ambushed
-        let mut beast_attack_details = _empty_attack_details();
+        let mut beast_attack_details = _empty_attack_event();
         if (is_ambush) {
             // process beast attack
             beast_attack_details =
@@ -869,7 +888,7 @@ mod game_systems {
         dodge_rnd: u8,
         item_specials_rnd: u16,
         game_libs: GameLibs,
-    ) -> ExploreObstacleEvent {
+    ) -> ObstacleEvent {
         // get adventurer's level
         let adventurer_level = adventurer.get_level();
 
@@ -899,12 +918,13 @@ mod game_systems {
         let dodged = ImplCombat::ability_based_avoid_threat(adventurer_level, adventurer.stats.intelligence, dodge_rnd);
 
         // create obstacle details for event
-        let obstacle_details = ExploreObstacleEvent {
+        let obstacle_details = ObstacleEvent {
             obstacle_id: obstacle.id,
             dodged,
             damage: damage_taken,
             location: damage_slot,
             critical_hit: combat_result.critical_hit_bonus > 0,
+            xp_reward: base_reward,
         };
 
         // if adventurer did not dodge obstacle
@@ -1009,6 +1029,8 @@ mod game_systems {
                 if suffix_unlocked {
                     // apply stat boosts for suffix special to adventurer
                     adventurer.stats.apply_suffix_boost(specials.special1);
+                    adventurer.stats.apply_bag_boost(specials.special1);
+
                     // apply health boost for any vitality gained (one time event)
                     adventurer.apply_health_boost_from_vitality_unlock(specials);
                 }
@@ -1025,6 +1047,8 @@ mod game_systems {
                 if suffix_unlocked {
                     // apply stat boosts for suffix special to adventurer
                     adventurer.stats.apply_suffix_boost(specials.special1);
+                    adventurer.stats.apply_bag_boost(specials.special1);
+                    
                     // apply health boost for any vitality gained (one time event)
                     adventurer.apply_health_boost_from_vitality_unlock(specials);
                 }
@@ -1050,7 +1074,7 @@ mod game_systems {
     /// until either they or the beast is defeated
     fn _attack(
         ref adventurer: Adventurer,
-        ref attack_results: Array<AttackDetails>,
+        ref battle_events: Array<BattleEventDetails>,
         weapon_combat_spec: CombatSpec,
         level_seed: u64,
         beast: Beast,
@@ -1073,18 +1097,18 @@ mod game_systems {
         // provide critical hit as a boolean for events
         let is_critical_hit = combat_result.critical_hit_bonus > 0;
 
-        attack_results
-            .append(
-                AttackDetails {
-                    damage: combat_result.total_damage, location: Slot::None, critical_hit: is_critical_hit,
-                },
-            );
+        battle_events.append(BattleEventDetails::attack(AttackEvent {
+            damage: combat_result.total_damage,
+            location: Slot::None,
+            critical_hit: is_critical_hit,
+        }));
 
         // if the damage dealt exceeds the beasts health
         if (combat_result.total_damage >= adventurer.beast_health) {
             // process beast death
             _process_beast_death(
                 ref adventurer,
+                ref battle_events,
                 beast,
                 beast_seed,
                 combat_result.total_damage,
@@ -1102,7 +1126,7 @@ mod game_systems {
                 ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
             );
 
-            attack_results.append(_beast_attack_details);
+            battle_events.append(BattleEventDetails::beast_attack(_beast_attack_details));
 
             // if adventurer is dead
             if (adventurer.health == 0) {
@@ -1114,7 +1138,7 @@ mod game_systems {
                 // attack again
                 _attack(
                     ref adventurer,
-                    ref attack_results,
+                    ref battle_events,
                     weapon_combat_spec,
                     level_seed,
                     beast,
@@ -1146,7 +1170,7 @@ mod game_systems {
         attack_location_rnd: u8,
         is_ambush: bool,
         game_libs: GameLibs,
-    ) -> AttackDetails {
+    ) -> AttackEvent {
         // beasts attack random location on adventurer
         let attack_location = ImplAdventurer::get_attack_location(attack_location_rnd);
 
@@ -1169,7 +1193,7 @@ mod game_systems {
         // deduct damage taken from adventurer's health
         adventurer.decrease_health(combat_result.total_damage);
 
-        AttackDetails {
+        AttackEvent {
             damage: combat_result.total_damage,
             location: attack_location,
             critical_hit: combat_result.critical_hit_bonus > 0,
@@ -1189,7 +1213,7 @@ mod game_systems {
     /// @param flee_to_the_death A bool representing whether to flee until death.
     fn _flee(
         ref adventurer: Adventurer,
-        ref flee_results: Array<FleeEvent>,
+        ref battle_events: Array<BattleEventDetails>,
         flee_seed: u64,
         beast_seed: u32,
         beast: Beast,
@@ -1213,23 +1237,25 @@ mod game_systems {
             adventurer.beast_health = 0;
 
             // increment adventurer xp by one to change adventurer entropy state
-            let (_previous_level, _new_level) = adventurer.increase_adventurer_xp(1);
+            adventurer.increase_adventurer_xp(1);
 
-            // Save flee result for event
-            flee_results.append(FleeEvent { success: fled, beast_attack: _empty_attack_details() });
+            // Save battle events
+            battle_events.append(BattleEventDetails::flee(true));
+            battle_events.append(BattleEventDetails::fled_beast(FledBeastEvent { beast_id: beast.id, xp_reward: 1 }));
         } else {
             // if the flee attempt failed, beast counter attacks
             let _beast_attack_details = _beast_attack(
                 ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
             );
 
-            // Save flee result for event
-            flee_results.append(FleeEvent { success: fled, beast_attack: _beast_attack_details });
+            // Save battle events
+            battle_events.append(BattleEventDetails::flee(false));
+            battle_events.append(BattleEventDetails::beast_attack(_beast_attack_details));
 
             // if player is still alive and elected to flee till death
             if (flee_to_the_death && adventurer.health != 0) {
                 // reattempt flee
-                _flee(ref adventurer, ref flee_results, flee_seed, beast_seed, beast, true, game_libs);
+                _flee(ref adventurer, ref battle_events, flee_seed, beast_seed, beast, true, game_libs);
             }
         }
     }
@@ -1255,7 +1281,8 @@ mod game_systems {
 
             // if the item was providing a stat boosts, remove it
             if unequipping_item.get_greatness() >= SUFFIX_UNLOCK_GREATNESS {
-                _remove_item_stat_boost(ref adventurer, unequipping_item, game_libs);
+                let item_suffix = game_libs.loot.get_suffix(unequipping_item.id, adventurer.item_specials_seed);
+                adventurer.stats.remove_suffix_boost(item_suffix);
             }
         }
 
@@ -1358,7 +1385,7 @@ mod game_systems {
                 // if the item was providing a stat boosts
                 if item.get_greatness() >= SUFFIX_UNLOCK_GREATNESS {
                     // remove it
-                    _remove_item_stat_boost(ref adventurer, item, game_libs);
+                    _remove_dropped_item_stat_boost(ref adventurer, item, game_libs);
                 }
 
                 // drop the item
@@ -1387,12 +1414,11 @@ mod game_systems {
     /// @notice Facilitates the purchase of multiple items and returns the items that were
     /// purchased, equipped, and unequipped.
     /// @dev This function is called when the adventurer purchases items.
-    /// @param seed A felt252 representing the seed for the market.
+    /// @param market_seed A felt252 representing the seed for the market.
     /// @param adventurer A reference to the adventurer.
     /// @param bag A reference to the bag.
-    /// @param stat_upgrades_available A u8 representing the number of stat points available to the
-    /// adventurer.
     /// @param items_to_purchase An array of ItemPurchase representing the items to be purchased.
+    /// @param game_libs A reference to the game libraries.
     /// @return A tuple containing three arrays: the first contains the items purchased, the second
     /// contains the items that were equipped as part of the purchase, and the third contains the
     /// items that were unequipped as a result of equipping the newly purchased items.
@@ -1400,12 +1426,11 @@ mod game_systems {
         market_seed: u64,
         ref adventurer: Adventurer,
         ref bag: Bag,
-        stat_upgrades_available: u8,
         items_to_purchase: Array<ItemPurchase>,
         game_libs: GameLibs,
     ) {
         // get adventurer entropy
-        let market_inventory = game_libs.adventurer.get_market(market_seed, stat_upgrades_available);
+        let market_inventory = game_libs.adventurer.get_market(market_seed);
 
         // mutable array for returning items that need to be equipped as part of this purchase
         let mut items_to_equip = ArrayTrait::<u8>::new();
@@ -1593,16 +1618,17 @@ mod game_systems {
         adventurer.stats.apply_suffix_boost(item_suffix);
     }
 
-    /// @title Remove Item Stat Boost
+    /// @title Remove Item Stat Boost from Dropped Item
     /// @notice Removes the item stat boost from the adventurer.
     /// @dev This function is called when the item stat boost is removed from the adventurer.
     /// @param self A reference to the ContractState object.
     /// @param adventurer A reference to the adventurer.
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param item A reference to the item.
-    fn _remove_item_stat_boost(ref adventurer: Adventurer, item: Item, game_libs: GameLibs) {
+    fn _remove_dropped_item_stat_boost(ref adventurer: Adventurer, item: Item, game_libs: GameLibs) {
         let item_suffix = game_libs.loot.get_suffix(item.id, adventurer.item_specials_seed);
         adventurer.stats.remove_suffix_boost(item_suffix);
+        adventurer.stats.remove_bag_boost(item_suffix);
 
         // if the adventurer's health is now above the max health due to a change in Vitality
         let max_health = adventurer.stats.get_max_health();
@@ -1612,9 +1638,13 @@ mod game_systems {
         }
     }
 
-    fn _empty_attack_details() -> AttackDetails {
-        AttackDetails { damage: 0, location: Slot::None, critical_hit: false }
+    fn _empty_attack_event() -> AttackEvent {
+        AttackEvent { damage: 0, location: Slot::None, critical_hit: false }
     }
+
+    // ------------------------------------------ //
+    // ------------ Assertions ------------------ //
+    // ------------------------------------------ //
 
     fn _assert_in_battle(adventurer: Adventurer) {
         assert(adventurer.beast_health != 0, messages::NOT_IN_BATTLE);
@@ -1624,6 +1654,9 @@ mod game_systems {
     }
     fn _assert_not_in_battle(adventurer: Adventurer) {
         assert(adventurer.beast_health == 0, messages::ACTION_NOT_ALLOWED_DURING_BATTLE);
+    }
+    fn _assert_not_selecting_stat_upgrades(stat_upgrades_available: u8) {
+        assert(stat_upgrades_available == 0, messages::MARKET_CLOSED);
     }
     fn _assert_upgrades_available(stat_upgrades_available: u8) {
         assert(stat_upgrades_available != 0, messages::MARKET_CLOSED);
@@ -1705,6 +1738,32 @@ mod game_systems {
             adventurer.xp == 0 && adventurer.health == 0,
             "Loot Survivor: Adventurer {} has already started",
             adventurer_id,
+        );
+    }
+
+    // ------------------------------------------ //
+    // ------------ Emit events ----------------- //
+    // ------------------------------------------ //
+    fn _emit_game_event(ref world: WorldStorage, adventurer_id: u64, adventurer: Adventurer, event: GameEventDetails) {
+        world.emit_event(
+            @GameEvent { 
+                adventurer_id,
+                adventurer_level: adventurer.get_level(),
+                action_count: adventurer.action_count,
+                details: event,
+            },
+        );
+    }
+
+    fn _emit_battle_event(ref world: WorldStorage, adventurer_id: u64, adventurer: Adventurer, event_count: u16, event: BattleEventDetails) {
+        world.emit_event(
+            @BattleEvent { 
+                adventurer_id,
+                adventurer_xp: adventurer.xp,
+                action_count: adventurer.action_count,
+                event_count: event_count,
+                details: event,
+            },
         );
     }
 }
