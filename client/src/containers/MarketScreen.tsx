@@ -437,8 +437,9 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '8px',
+    pr: '5px',
+    pb: 1,
     overflowY: 'auto',
-    padding: '4px',
     '&::-webkit-scrollbar': {
       width: '4px',
     },
@@ -449,6 +450,7 @@ const styles = {
       background: 'rgba(128, 255, 0, 0.2)',
       borderRadius: '2px',
     },
+    mb: '50px'
   },
   itemCard: {
     background: 'rgba(128, 255, 0, 0.05)',
@@ -460,8 +462,8 @@ const styles = {
     gap: '8px',
     transition: 'transform 0.2s, box-shadow 0.2s',
     '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 4px 12px rgba(128, 255, 0, 0.1)',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 1px 3px rgba(128, 255, 0, 0.1)',
     },
   },
   itemImageContainer: {
