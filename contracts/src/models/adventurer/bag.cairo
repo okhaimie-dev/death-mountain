@@ -2,6 +2,8 @@ use core::panic_with_felt252;
 use core::traits::DivRem;
 use lootsurvivor::constants::loot::SUFFIX_UNLOCK_GREATNESS;
 use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item};
+use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
+use lootsurvivor::models::loot::ImplLoot;
 
 // Bag is used for storing gear not equipped to the adventurer
 // Bag is a fixed at 15 items to fit in a felt252
@@ -427,40 +429,97 @@ pub impl ImplBag of IBag {
     // @notice checks if the bag has any items with specials.
     // @param self The Bag to check for specials.
     // @return Returns true if bag has specials, false otherwise.
-    fn has_specials(bag: Bag) -> bool {
-        if (bag.item_1.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+    fn has_specials(self: Bag) -> bool {
+        if (self.item_1.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_2.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_2.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_3.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_3.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_4.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_4.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_5.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_5.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_6.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_6.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_7.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_7.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_8.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_8.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_9.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_9.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_10.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_10.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_11.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_11.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_12.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_12.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_13.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_13.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_14.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_14.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
-        } else if (bag.item_15.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+        } else if (self.item_15.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
             true
         } else {
             false
         }
+    }
+
+    /// @notice Gets stat boosts based on item specials
+    /// @param self: The Bag to get stat boosts for
+    /// @param specials_seed: The seed to use for generating item specials
+    /// @return Stats: The stat boosts for the bag
+    fn get_stat_boosts(self: Bag, specials_seed: u16) -> Stats {
+        let mut stats = Stats {
+            strength: 0, dexterity: 0, vitality: 0, charisma: 0, intelligence: 0, wisdom: 0, luck: 0,
+        };
+
+        if (self.item_1.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_1.id, specials_seed));
+        }
+        if (self.item_2.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_2.id, specials_seed));
+        }
+        if (self.item_3.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_3.id, specials_seed));
+        }
+        if (self.item_4.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_4.id, specials_seed));
+        }
+        if (self.item_5.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_5.id, specials_seed));
+        }
+        if (self.item_6.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_6.id, specials_seed));
+        }
+        if (self.item_7.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_7.id, specials_seed));
+        }
+        if (self.item_8.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_8.id, specials_seed));
+        }
+        if (self.item_9.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_9.id, specials_seed));
+        }
+        if (self.item_10.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_10.id, specials_seed));
+        }
+        if (self.item_11.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_11.id, specials_seed));
+        }
+        if (self.item_12.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_12.id, specials_seed));
+        }
+        if (self.item_13.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_13.id, specials_seed));
+        }
+        if (self.item_14.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_14.id, specials_seed));
+        }
+        if (self.item_15.get_greatness() >= SUFFIX_UNLOCK_GREATNESS) {
+            stats.apply_bag_boost(ImplLoot::get_suffix(self.item_15.id, specials_seed));
+        }
+        stats
     }
 }
 const TWO_POW_21: u256 = 0x200000;
@@ -1137,8 +1196,8 @@ mod tests {
             mutated: false,
         };
 
-        assert(ImplBag::has_specials(bag_with_specials), 'Bag should have specials');
-        assert(!ImplBag::has_specials(bag_without_specials), 'Bag should not have specials');
+        assert(bag_with_specials.has_specials(), 'Bag should have specials');
+        assert(!bag_without_specials.has_specials(), 'Bag should not have specials');
     }
 
     #[test]
@@ -1162,6 +1221,6 @@ mod tests {
             mutated: false,
         };
 
-        assert!(ImplBag::has_specials(empty_bag) == false, "Empty bag should not have specials");
+        assert!(empty_bag.has_specials() == false, "Empty bag should not have specials");
     }
 }

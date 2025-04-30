@@ -142,10 +142,17 @@ pub impl ImplStats of IStat {
             self.increase_wisdom(1);
         } else if (suffix == ItemSuffix::of_Fury) {
             self.increase_intelligence(1);
+        } else if (suffix == ItemSuffix::of_Vitriol) {
+            self.increase_intelligence(2);
+            self.increase_wisdom(1);
         } else if (suffix == ItemSuffix::of_the_Fox) {
-            self.increase_charisma(1);
-        } else if (suffix == ItemSuffix::of_the_Twins) {
-            self.increase_charisma(3);
+            self.increase_dexterity(2);
+        } else if (suffix == ItemSuffix::of_Detection) {
+            self.increase_wisdom(2);
+            self.increase_dexterity(1);
+        } else if (suffix == ItemSuffix::of_Reflection) {
+            self.increase_intelligence(1);
+            self.increase_wisdom(2);
         }
     }
 
@@ -386,7 +393,12 @@ pub impl ImplStats of IStat {
 
     #[inline(always)]
     fn count_total_stats(self: Stats) -> u16 {
-        self.strength.into() + self.dexterity.into() + self.vitality.into() + self.intelligence.into() + self.wisdom.into() + self.charisma.into()
+        self.strength.into()
+            + self.dexterity.into()
+            + self.vitality.into()
+            + self.intelligence.into()
+            + self.wisdom.into()
+            + self.charisma.into()
     }
 }
 

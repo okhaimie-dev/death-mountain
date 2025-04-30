@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use dojo::model::{ModelStorage, ModelStorageTest};
+    use dojo::model::{ModelStorage};
     use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
     use dojo_cairo_test::{
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait, spawn_test_world,
@@ -14,9 +14,9 @@ mod tests {
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
     use lootsurvivor::models::adventurer::adventurer::{IAdventurer, ImplAdventurer};
-    use lootsurvivor::models::adventurer::stats::{Stats, IStat};
-    use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked};
-    use lootsurvivor::models::game::{m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked, e_GameEvent};
+    use lootsurvivor::models::adventurer::stats::{IStat, Stats};
+    use lootsurvivor::models::game::{AdventurerEntropy};
+    use lootsurvivor::models::game::{e_BattleEvent, e_GameEvent, m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
     use lootsurvivor::models::market::{ItemPurchase};
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
     use lootsurvivor::systems::beast::contracts::{beast_systems};
@@ -52,6 +52,7 @@ mod tests {
                 TestResource::Contract(beast_systems::TEST_CLASS_HASH),
                 TestResource::Contract(game_token_systems::TEST_CLASS_HASH),
                 TestResource::Event(e_GameEvent::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Event(e_BattleEvent::TEST_CLASS_HASH.try_into().unwrap()),
             ]
                 .span(),
         };
@@ -185,24 +186,22 @@ mod tests {
         // attack starter beast
         game.attack(adventurer_id, false);
 
-        // perform upgrade
-        let shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let stat_upgrades = Stats {
             strength: 0, dexterity: 1, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
-        game.level_up(adventurer_id, 0, stat_upgrades.clone(), shopping_cart.clone());
+        game.select_stat_upgrades(adventurer_id, stat_upgrades.clone());
 
         // go exploring
         game.explore(adventurer_id, true);
 
         // upgrade
-        game.level_up(adventurer_id, 0, stat_upgrades.clone(), shopping_cart.clone());
+        game.select_stat_upgrades(adventurer_id, stat_upgrades.clone());
 
         // go exploring
         game.explore(adventurer_id, true);
 
         // upgrade
-        game.level_up(adventurer_id, 0, stat_upgrades.clone(), shopping_cart.clone());
+        game.select_stat_upgrades(adventurer_id, stat_upgrades.clone());
 
         // go exploring
         game.explore(adventurer_id, true);
@@ -245,45 +244,30 @@ mod tests {
         let adventurer_id = new_game(world, game);
 
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
 
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
     }
 
     #[test]
     #[should_panic(expected: ('Market is closed', 'ENTRYPOINT_FAILED'))]
-    fn test_buy_items_without_stat_upgrade() {
+    fn test_buy_items_with_stat_upgrades() {
         let (world, game, game_libs) = deploy_lootsurvivor();
         let adventurer_id = new_game(world, game);
 
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        // get adventurer and entropy
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        // get entropy
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
 
         // get valid item from market
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
         let item_id = *market_items.at(0);
         let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
 
         shopping_cart.append(ItemPurchase { item_id: item_id, equip: true });
-
-        // upgrade adventurer and don't buy anything
-        let mut empty_shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, empty_shopping_cart.clone());
-
-        // after upgrade try to buy item
         // should panic with message 'Market is closed'
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
     }
 
     #[test]
@@ -295,12 +279,16 @@ mod tests {
         // take out starter beast
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get items from market
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         // get first item on the market
         let item_id = *market_items.at(3);
@@ -308,12 +296,7 @@ mod tests {
         shopping_cart.append(ItemPurchase { item_id: item_id, equip: true });
         shopping_cart.append(ItemPurchase { item_id: item_id, equip: true });
 
-        // submit an upgrade with duplicate items in the shopping cart
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
     }
 
     #[test]
@@ -325,12 +308,16 @@ mod tests {
         // take out starter beast
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get items from market
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         // try to buy same item but equip one and put one in bag
         let item_id = *market_items.at(0);
@@ -339,10 +326,7 @@ mod tests {
         shopping_cart.append(ItemPurchase { item_id: item_id, equip: true });
 
         // should throw 'Item already owned' panic
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
     }
 
     #[test]
@@ -354,14 +338,17 @@ mod tests {
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        shopping_cart.append(ItemPurchase { item_id: 255, equip: false });
-
+        // select stat upgrades
         let stat_upgrades = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
         };
 
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
+        let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
+        shopping_cart.append(ItemPurchase { item_id: 255, equip: false });
+
+        game.buy_items(adventurer_id, 0, shopping_cart);
     }
 
     #[test]
@@ -372,20 +359,20 @@ mod tests {
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-        let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
-
-        let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        shopping_cart.append(ItemPurchase { item_id: *market_items.at(0), equip: false });
-
+        // select stat upgrades
         let stat_upgrades = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
         };
 
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
+        let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
+
+        let mut shopping_cart = ArrayTrait::<ItemPurchase>::new();
+        shopping_cart.append(ItemPurchase { item_id: *market_items.at(0), equip: false });
+
+        game.buy_items(adventurer_id, 0, shopping_cart);
 
         let (_, bag) = game_libs.adventurer.load_assets(adventurer_id);
         assert(bag.item_1.id == *market_items.at(0), 'item should be in bag');
@@ -399,11 +386,15 @@ mod tests {
         // take out starter beast
         game.attack(adventurer_id, false);
 
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         let mut purchased_weapon: u8 = 0;
         let mut purchased_chest: u8 = 0;
@@ -446,10 +437,7 @@ mod tests {
         assert(shopping_cart_length > 1, 'need more items to buy');
 
         // buy items in shopping cart
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart.clone());
+        game.buy_items(adventurer_id, 0, shopping_cart.clone());
 
         // get updated adventurer and bag state
         let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
@@ -531,12 +519,16 @@ mod tests {
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get items from market
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         let mut purchased_weapon: u8 = 0;
         let mut purchased_chest: u8 = 0;
@@ -595,10 +587,7 @@ mod tests {
         // verify we have at least 2 items in our shopping cart
         assert(shopping_cart.len() >= 2, 'insufficient item purchase');
         // buy items
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
 
         // get bag from storage
         let (_, bag) = game_libs.adventurer.load_assets(adventurer_id);
@@ -646,6 +635,13 @@ mod tests {
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get updated adventurer state
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
@@ -656,10 +652,7 @@ mod tests {
         // buy potions
         let number_of_potions = 1;
         let shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        let stat_upgrades = Stats {
-            strength: 1, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
-        };
-        game.level_up(adventurer_id, number_of_potions, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, number_of_potions, shopping_cart);
 
         // get updated adventurer stat
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
@@ -683,6 +676,13 @@ mod tests {
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get updated adventurer state
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
 
@@ -697,15 +697,12 @@ mod tests {
         // this test is annotated to expect that panic
         let shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let potions = potions_to_full_health + 1;
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, potions, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, potions, shopping_cart);
     }
 
     #[test]
     #[should_panic(expected: ('Market is closed', 'ENTRYPOINT_FAILED'))]
-    fn test_cant_buy_potion_without_stat_upgrade() {
+    fn test_cant_buy_potion_with_stat_upgrade() {
         let (world, game, _) = deploy_lootsurvivor();
         let adventurer_id = new_game(world, game);
 
@@ -714,13 +711,8 @@ mod tests {
 
         // upgrade adventurer
         let shopping_cart = ArrayTrait::<ItemPurchase>::new();
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart.clone());
-
         let potions = 1;
-        game.level_up(adventurer_id, potions, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, potions, shopping_cart);
     }
 
     #[test]
@@ -734,10 +726,7 @@ mod tests {
         // This test is annotated to expect that panic
         let shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let potions = 1;
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, potions, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, potions, shopping_cart);
     }
 
     #[test]
@@ -752,6 +741,13 @@ mod tests {
 
         // defeat starter beast and advance to level 2
         game.attack(adventurer_id, true);
+
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
 
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         // get level 2 potion price
@@ -773,12 +769,15 @@ mod tests {
         // defeat starter beast to get access to market
         game.attack(adventurer_id, false);
 
+        // select stat upgrades
+        let stat_upgrades = Stats {
+            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
+        };
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+
         // get items from market
-        let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         // get first item on the market
         let purchased_item_id = *market_items.at(0);
@@ -786,10 +785,7 @@ mod tests {
         shopping_cart.append(ItemPurchase { item_id: purchased_item_id, equip: false });
 
         // buy first item on market and bag it
-        let stat_upgrades = Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
-        };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.buy_items(adventurer_id, 0, shopping_cart);
 
         // get bag state
         let (adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
@@ -850,11 +846,10 @@ mod tests {
         // call upgrade_stats with stat upgrades
         // TODO: test with more than one which is challenging
         // because we need a multi-level or G20 stat unlocks
-        let shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let stat_upgrades = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 1, luck: 0,
         };
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
 
         // get update adventurer state
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
@@ -875,12 +870,11 @@ mod tests {
         game.attack(adventurer_id, false);
 
         // try to upgrade charisma x2 with only 1 stat available
-        let shopping_cart = ArrayTrait::<ItemPurchase>::new();
         let stat_upgrades = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 2, luck: 0,
         };
 
-        game.level_up(adventurer_id, 0, stat_upgrades, shopping_cart);
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
     }
 
     #[test]
@@ -901,9 +895,7 @@ mod tests {
 
         // get items from market
         let adventurer_entropy: AdventurerEntropy = world.read_model(adventurer_id);
-        let market_items = game_libs
-            .adventurer
-            .get_market(adventurer_entropy.market_seed, adventurer.stat_upgrades_available);
+        let market_items = game_libs.adventurer.get_market(adventurer_entropy.market_seed);
 
         // buy two items
         let mut items_to_purchase = ArrayTrait::<ItemPurchase>::new();
@@ -918,7 +910,8 @@ mod tests {
         };
 
         // call upgrade
-        game.level_up(adventurer_id, potions, stat_upgrades, items_to_purchase);
+        game.select_stat_upgrades(adventurer_id, stat_upgrades);
+        game.buy_items(adventurer_id, potions, items_to_purchase);
 
         // get updated adventurer state
         let adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
@@ -959,44 +952,15 @@ mod tests {
     }
 
     #[test]
-    fn test_item_level_up_prefix_unlock() {
+    fn test_item_level_up() {
         let (mut world, game, game_libs) = deploy_lootsurvivor();
         let adventurer_id = new_game(world, game);
-
-        // init adventurer with g18 wand
-        let mut _adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-        _adventurer.equipment.weapon.xp = 360;
-        _adventurer.item_specials_seed = 123;
-
-        let packed = game_libs.adventurer.pack_adventurer(_adventurer);
-        world.write_model_test(@AdventurerPacked { adventurer_id, packed });
 
         game.attack(adventurer_id, false);
 
         let (mut adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
 
-        assert(adventurer.equipment.weapon.xp == 368, 'xp not set correctly');
+        assert(adventurer.equipment.weapon.xp == 8, 'xp not set correctly');
         assert(adventurer.stat_upgrades_available == 1, 'wrong stats available');
-    }
-
-    #[test]
-    fn test_process_item_level_up_greatness_20() {
-        let (mut world, game, game_libs) = deploy_lootsurvivor();
-        let adventurer_id = new_game(world, game);
-
-        // init adventurer with g18 wand
-        let mut _adventurer = game_libs.adventurer.get_adventurer(adventurer_id);
-        _adventurer.equipment.weapon.xp = 399;
-        _adventurer.item_specials_seed = 123;
-
-        let packed = game_libs.adventurer.pack_adventurer(_adventurer);
-        world.write_model_test(@AdventurerPacked { adventurer_id, packed });
-
-        game.attack(adventurer_id, false);
-
-        let (adventurer, _) = game_libs.adventurer.load_assets(adventurer_id);
-
-        assert(adventurer.equipment.weapon.xp == 400, 'xp not set correctly');
-        assert(adventurer.stat_upgrades_available == 2, 'wrong stats available');
     }
 }
