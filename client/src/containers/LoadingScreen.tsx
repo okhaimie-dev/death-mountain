@@ -103,11 +103,11 @@ function LoadingContainer(props: any) {
       <Box sx={styles.progressContainer}>
         <LinearProgress
           variant="determinate"
-          value={loadingProgress}
+          value={animatedProgress}
           sx={styles.progressBar}
         />
         <Typography variant="body2" color="primary" sx={styles.progressText}>
-          {Math.round(loadingProgress)}%
+          {Math.round(animatedProgress)}%
         </Typography>
       </Box>
     </Box>

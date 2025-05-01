@@ -184,20 +184,36 @@ export const useSystemCalls = () => {
    * @param items Array of items to purchase
    * @returns {Promise<void>}
    */
-  const levelUp = async (gameId: number, potions: number, statUpgrades: any, items: any[]) => {
+  const buyItems = async (gameId: number, potions: number, items: any[]) => {
     try {
       await executeAction([
         {
           contractAddress: GAME_ADDRESS,
-          entrypoint: 'level_up',
-          calldata: [gameId, potions, statUpgrades, items]
+          entrypoint: 'buy_items',
+          calldata: [gameId, potions, items]
         }
       ], false);
     } catch (error) {
-      console.error("Error leveling up:", error);
+      console.error("Error buying items:", error);
       throw error;
     }
   };
+
+  const selectStatUpgrades = async (gameId: number, statUpgrades: any) => {
+    try {
+      await executeAction([
+        {
+          contractAddress: GAME_ADDRESS,
+          entrypoint: 'select_stat_upgrades',
+          calldata: [gameId, statUpgrades]
+        }
+      ], false);
+    } catch (error) {
+      console.error("Error selecting stat upgrades:", error);
+      throw error;
+    }
+  };
+
 
   const mintGame = async (account: any, name: string, settingsId = 0) => {
     try {
@@ -232,7 +248,8 @@ export const useSystemCalls = () => {
     flee,
     equip,
     drop,
-    levelUp,
+    buyItems,
+    selectStatUpgrades,
     mintGame,
   };
 };
