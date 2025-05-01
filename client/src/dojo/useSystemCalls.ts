@@ -1,7 +1,6 @@
-import { useAccount } from "@starknet-react/core";
-import { CallData, provider } from 'starknet';
-import { useSnackbar } from 'notistack';
 import { getContractByName } from "@dojoengine/core";
+import { useAccount } from "@starknet-react/core";
+import { CallData } from 'starknet';
 import { dojoConfig } from "../../dojoConfig";
 
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
@@ -14,7 +13,7 @@ const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "ga
  * Provides functionality for game actions and managing optimistic updates.
  *
  * @returns An object containing system call functions:
- *   - mintGame: Function to mint a new game
+ *   - mintAndStartGame: Function to mint a new game
  *   - startGame: Function to start a new game with a weapon
  *   - explore: Function to explore the world
  *   - attack: Function to attack a beast
@@ -25,7 +24,6 @@ const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "ga
  */
 export const useSystemCalls = () => {
   const { account } = useAccount();
-  const { enqueueSnackbar } = useSnackbar();
 
   /**
    * Executes a list of calls with optional VRF
@@ -46,45 +44,18 @@ export const useSystemCalls = () => {
       calls.unshift(vrfCall);
     }
 
-    let tx = await account!.execute(calls, { version: 3 });
-    const receipt: any = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 1000 })
-
-    console.log('contract error', receipt)
-    if (receipt?.execution_status === "REVERTED") {
-      console.log('contract error', receipt)
-      enqueueSnackbar("Transaction has failed", { variant: "error" });
-    }
+    await account!.execute(calls, { version: 3 });
   };
 
-  const mintGame = async (name: string, settingsId = 0) => {
-    console.log("Minting game:", name, settingsId);
-    try {
-      await executeAction([
-        {
-          contractAddress: GAME_TOKEN_ADDRESS,
-          entrypoint: 'mint',
-          calldata: [
-            '0x' + name.split('').map(char => char.charCodeAt(0).toString(16)).join(''),
-            settingsId,
-            1,
-            1,
-            account!.address
-          ]
-        }
-      ], false);
-    } catch (error) {
-      console.error("Error minting game:", error);
-      throw error;
-    }
-  }
-
   /**
-   * Starts a new game with the provided weapon.
+   * Starts a new game with a random weapon.
    * @param gameId The ID of the game to start
-   * @param weapon The weapon ID to start with
    * @returns {Promise<void>}
    */
-  const startGame = async (gameId: number, weapon: number) => {
+  const startGame = async (gameId: number) => {
+    let starterWeapons = [12, 16, 46, 76]
+    let weapon = starterWeapons[Math.floor(Math.random() * starterWeapons.length)]
+
     try {
       await executeAction([
         {
@@ -228,8 +199,33 @@ export const useSystemCalls = () => {
     }
   };
 
+  const mintGame = async (account: any, name: string, settingsId = 0) => {
+    try {
+      let tx = await account!.execute([
+        {
+          contractAddress: GAME_TOKEN_ADDRESS,
+          entrypoint: 'mint',
+          calldata: [
+            '0x' + name.split('').map((char: any) => char.charCodeAt(0).toString(16)).join(''),
+            settingsId,
+            1,
+            1,
+            account!.address
+          ]
+        }
+      ], { version: 3 });
+
+      const receipt: any = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 500 })
+      let gameId = parseInt(receipt.events[0].data[3], 16)
+
+      return gameId;
+    } catch (error) {
+      console.error("Error minting game:", error);
+      throw error;
+    }
+  }
+
   return {
-    mintGame,
     startGame,
     explore,
     attack,
@@ -237,5 +233,6 @@ export const useSystemCalls = () => {
     equip,
     drop,
     levelUp,
+    mintGame,
   };
 };

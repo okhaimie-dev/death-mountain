@@ -9,11 +9,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 export default function BeastScreen() {
   const { attack, flee } = useSystemCalls();
-  const { gameId, adventurer, beastSeed, setKeepScreen, gameEvent } = useGameStore();
+  const { gameId, adventurer, beastSeed, setKeepScreen, gameEvents } = useGameStore();
   const [untilDeath, setUntilDeath] = useState(true);
 
   const [beast] = useState<Beast>(
-    getBeast(BigInt(beastSeed!), adventurer!.xp)
+    getBeast(BigInt(beastSeed!), adventurer!.xp, adventurer!.equipment.weapon)
   );
   const [combatLog, setCombatLog] = useState("");
 
@@ -21,7 +21,7 @@ export default function BeastScreen() {
     if (adventurer?.xp === 0) {
       setCombatLog(beast.name + " ambushed you for 10 damage!");
     }
-  }, [gameEvent]);
+  }, [gameEvents]);
 
   // Calculate probabilities only if both combatants are alive
   const { killChance, fleeChance } = useMemo(() => {
@@ -44,7 +44,7 @@ export default function BeastScreen() {
     setCombatLog(`You attempted to flee from ${beast.name}`);
   };
 
-  console.log('gameEvent', gameEvent);
+  console.log('gameEvents', gameEvents);
 
   const beastName = Number(beast.level) >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK && (beast.specialPrefix || beast.specialSuffix)
     ? `"${[beast.specialPrefix, beast.specialSuffix].filter(Boolean).join(' ')}" ${beast.name}`

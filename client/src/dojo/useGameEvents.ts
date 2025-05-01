@@ -54,7 +54,7 @@ export async function setupGameEventsSubscription(sdk: any, gameId: number) {
     })
 
     console.log('initialData gameEvent', initialData);
-    useGameStore.getState().setGameEvent(initialData.map((event: any) => event.models[`${namespace}`]));
+    useGameStore.getState().setGameEvents(initialData.map((event: any) => event.models[`${namespace}`]));
     eventSubscription = subscription;
   } catch (error) {
     console.error('Subscription error:', error);

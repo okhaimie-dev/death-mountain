@@ -40,9 +40,19 @@ pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,
     #[key]
-    pub adventurer_level: u8,
     pub action_count: u16,
     pub details: GameEventDetails,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+#[dojo::event]
+pub struct BattleEvent {
+    #[key]
+    pub adventurer_id: u64,
+    #[key]
+    pub action_count: u16,
+    pub adventurer_xp: u16,
+    pub details: BattleEventDetails,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
@@ -100,18 +110,6 @@ pub struct MarketEvent {
 #[derive(Introspect, Copy, Drop, Serde)]
 pub struct ItemEvent {
     pub items: Span<u8>,
-}
-
-#[derive(Introspect, Copy, Drop, Serde)]
-#[dojo::event]
-pub struct BattleEvent {
-    #[key]
-    pub adventurer_id: u64,
-    #[key]
-    pub adventurer_xp: u16,
-    pub action_count: u16,
-    pub event_count: u16,
-    pub details: BattleEventDetails,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]

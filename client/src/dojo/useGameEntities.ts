@@ -28,7 +28,7 @@ const gameQuery = (gameId: number) => {
 }
 
 const updateGameStore = (entities: any) => {
-  entities.forEach((entity: any) => {
+  entities.forEach((entity: any) => {0
     if (Boolean(getEntityModel(entity, "AdventurerPacked"))) {
       useGameStore.getState().setAdventurer(
         unpackAdventurer(BigInt(getEntityModel(entity, "AdventurerPacked").packed))
@@ -75,7 +75,12 @@ export async function setupGameSubscription(sdk: any, gameId: number) {
       }
     })
 
-    updateGameStore(initialData)
+    if (initialData && initialData.length === 0) {
+      useGameStore.getState().setNewGame(true);
+    } else {
+      updateGameStore(initialData)
+    }
+
     gameSubscription = subscription;
   } catch (error) {
     console.error('Subscription error:', error);

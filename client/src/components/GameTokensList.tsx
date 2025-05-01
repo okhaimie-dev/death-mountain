@@ -18,7 +18,8 @@ export default function GameTokensList() {
       setLoading(true)
       const gameTokenIds = await fetchGameTokens(account.address)
       let games = await populateGameTokens(gameTokenIds)
-      setGameTokens(games)
+
+      setGameTokens(games.sort((a: any, b: any) => b.adventurer_id - a.adventurer_id))
       setLoading(false)
     }
 
@@ -82,7 +83,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
-    mt: 1
+    mt: 1,
+    pr: 1,
+    overflowY: 'auto',
   },
   listItem: {
     height: '52px',
@@ -90,6 +93,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 2,
-    p: '5px 10px'
+    p: '5px 10px',
+    flexShrink: 0,
   }
 }

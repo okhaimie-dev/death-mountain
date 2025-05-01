@@ -11,6 +11,7 @@ const getAttackLocation = (entropy: number): string => {
 };
 
 export const calculateLevel = (xp: number) => {
+    if (xp === 0) return 1;
     return Math.floor(Math.sqrt(xp));
 };
 

@@ -2,43 +2,67 @@ import BottomNav from '@/components/BottomNav';
 import BeastScreen from '@/containers/BeastScreen';
 import CharacterScreen from '@/containers/CharacterScreen';
 import ExploreScreen from '@/containers/ExploreScreen';
+import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
-import LoadingContainer from '@/containers/LoadingScreen';
 import { useController } from '@/contexts/controller';
 import { setupGameSubscription } from '@/dojo/useGameEntities';
 import { setupGameEventsSubscription } from '@/dojo/useGameEvents';
 import { fetchMetadata } from '@/dojo/useGameTokens';
+import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function GamePage() {
+  const navigate = useNavigate();
   const { sdk } = useDojoSDK();
-  const { account } = useController();
-  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed, keepScreen, setKeepScreen } = useGameStore();
-  const [screen, setScreen] = useState('loading');
+  const { mintGame, startGame } = useSystemCalls();
+  const { account, address, playerName, login, isPending } = useController();
+  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed, keepScreen, setKeepScreen, newGame } = useGameStore();
+
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
+  const [screen, setScreen] = useState('loading');
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
 
+  async function mint() {
+    setLoadingProgress(45)
+    let tokenId = await mintGame(account, playerName);
+    navigate(`/play?id=${tokenId}`);
+  }
+
   useEffect(() => {
+    if (!account && gameId && adventurer) {
+      exitGame()
+    }
+  }, [account]);
+
+  useEffect(() => {
+    if (!sdk || isPending) return;
+
+    if (!address) return login();
+
     if (game_id) {
+      setLoadingProgress(99);
       setGameId(game_id);
       setupGameSubscription(sdk, game_id);
       setupGameEventsSubscription(sdk, game_id);
       fetchMetadata(sdk, game_id);
+    } else if (game_id === 0) {
+      mint();
     }
-  }, [game_id, sdk]);
+  }, [game_id, address, isPending, sdk]);
 
   useEffect(() => {
-    if (!account && gameId) {
-      exitGame()
+    if (gameId && newGame) {
+      startGame(gameId);
     }
-  }, [account]);
+  }, [gameId, newGame]);
 
   useEffect(() => {
     if (!keepScreen) {
@@ -57,7 +81,7 @@ export default function GamePage() {
 
   return (
     <Box className="container" sx={styles.container}>
-      {screen === 'loading' && <LoadingContainer />}
+      {screen === 'loading' && <LoadingContainer loadingProgress={loadingProgress} />}
 
       {screen === 'beast' && <BeastScreen />}
 

@@ -2,18 +2,16 @@ import { useController } from '@/contexts/controller';
 import { ellipseAddress } from '@/utils/utils';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { LoadingButton } from '@mui/lab';
-import { useConnect } from "@starknet-react/core";
 
 function WalletConnect() {
-  const { account, address, connecting, playerName } = useController()
-  const { connect, connector, connectors } = useConnect();
+  const { account, address, connecting, playerName, login, openProfile } = useController()
 
   return (
     <>
       {account && address
         ? <LoadingButton
           loading={!playerName}
-          onClick={() => (connector as any)?.controller?.openProfile()}
+          onClick={() => openProfile()}
           startIcon={<SportsEsportsIcon />}
           color='primary'
           variant='contained'
@@ -27,7 +25,7 @@ function WalletConnect() {
           loading={connecting}
           variant='contained'
           color='secondary'
-          onClick={() => connect({ connector: connectors.find(conn => conn.id === "controller") })}
+          onClick={() => login()}
           size='small'
           startIcon={<SportsEsportsIcon />}
           sx={{ minWidth: '100px' }}

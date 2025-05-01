@@ -131,7 +131,6 @@ mod game_systems {
             }
 
             // save state
-            adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
 
             if bag.mutated {
@@ -209,9 +208,11 @@ mod game_systems {
             let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
 
             let mut battle_events: Array<BattleEventDetails> = array![];
+            let mut battle_count = 0;
             _attack(
                 ref adventurer,
                 ref battle_events,
+                ref battle_count,
                 weapon_combat_spec,
                 level_seed,
                 beast,
@@ -227,7 +228,6 @@ mod game_systems {
             }
 
             // save state
-            adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
 
             // emit events
@@ -236,16 +236,16 @@ mod game_systems {
                 let event = battle_events.pop_front().unwrap();
                 match event {
                     BattleEventDetails::defeated_beast(event) => {
-                        _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::defeated_beast(event));
+                        _emit_game_event(ref world, adventurer_id, ref adventurer, GameEventDetails::defeated_beast(event));
                     },
                     BattleEventDetails::attack(event) => {
                         _emit_battle_event(
-                            ref world, adventurer_id, adventurer, event_count, BattleEventDetails::attack(event),
+                            ref world, adventurer_id, ref adventurer, BattleEventDetails::attack(event),
                         );
                     },
                     BattleEventDetails::beast_attack(event) => {
                         _emit_battle_event(
-                            ref world, adventurer_id, adventurer, event_count, BattleEventDetails::beast_attack(event),
+                            ref world, adventurer_id, ref adventurer, BattleEventDetails::beast_attack(event),
                         );
                     },
                     _ => {},
@@ -310,7 +310,8 @@ mod game_systems {
 
             // attempt to flee
             let mut battle_events: Array<BattleEventDetails> = array![];
-            _flee(ref adventurer, ref battle_events, flee_seed, beast_seed, beast, to_the_death, game_libs);
+            let mut battle_count = 0;
+            _flee(ref adventurer, ref battle_events, ref battle_count, flee_seed, beast_seed, beast, to_the_death, game_libs);
 
             // rotate market seed if level up
             if (immutable_adventurer.get_level() < adventurer.get_level()) {
@@ -318,30 +319,27 @@ mod game_systems {
             }
 
             // save state
-            adventurer.increment_action_count();
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
 
             // emit events
-            let mut event_count = 0;
             while (battle_events.len() > 0) {
                 let event = battle_events.pop_front().unwrap();
                 match event {
                     BattleEventDetails::fled_beast(event) => {
-                        _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::fled_beast(event));
+                        _emit_game_event(ref world, adventurer_id, ref adventurer, GameEventDetails::fled_beast(event));
                     },
                     BattleEventDetails::flee(event) => {
                         _emit_battle_event(
-                            ref world, adventurer_id, adventurer, event_count, BattleEventDetails::flee(event),
+                            ref world, adventurer_id, ref adventurer, BattleEventDetails::flee(event),
                         );
                     },
                     BattleEventDetails::beast_attack(event) => {
                         _emit_battle_event(
-                            ref world, adventurer_id, adventurer, event_count, BattleEventDetails::beast_attack(event),
+                            ref world, adventurer_id, ref adventurer, BattleEventDetails::beast_attack(event),
                         );
                     },
                     _ => {},
                 }
-                event_count += 1;
             }
         }
 
@@ -411,22 +409,21 @@ mod game_systems {
                 );
 
                 _emit_battle_event(
-                    ref world, adventurer_id, adventurer, 0, BattleEventDetails::beast_attack(beast_attack_details),
+                    ref world, adventurer_id, ref adventurer, BattleEventDetails::beast_attack(beast_attack_details),
                 );
             }
 
+            _emit_game_event(
+                ref world, adventurer_id, ref adventurer, GameEventDetails::equip(ItemEvent { items: items.span() }),
+            );
+            
             // save state
-            adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             // if the bag was mutated, pack and save it
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
-
-            _emit_game_event(
-                ref world, adventurer_id, adventurer, GameEventDetails::equip(ItemEvent { items: items.span() }),
-            );
+            
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Drop Function
@@ -457,18 +454,17 @@ mod game_systems {
             // drop items
             _drop(ref adventurer, ref bag, items.clone(), game_libs);
 
+            _emit_game_event(
+                ref world, adventurer_id, ref adventurer, GameEventDetails::drop(ItemEvent { items: items.span() }),
+            );
+            
             // save state
-            adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             // if the bag was mutated, save it
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
-
-            _emit_game_event(
-                ref world, adventurer_id, adventurer, GameEventDetails::drop(ItemEvent { items: items.span() }),
-            );
+            
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Buy Items Function
@@ -507,19 +503,19 @@ mod game_systems {
                 _buy_potions(ref adventurer, potions);
             }
 
-            adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
+            
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
-
+            
             _emit_game_event(
                 ref world,
                 adventurer_id,
-                adventurer,
+                ref adventurer,
                 GameEventDetails::market(MarketEvent { potions: potions, items_purchased: items.span() }),
             );
+
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Upgrade Function
@@ -565,15 +561,14 @@ mod game_systems {
                 adventurer.apply_vitality_health_boost(stat_upgrades.vitality);
             }
 
-            adventurer.increment_action_count();
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             _emit_game_event(
                 ref world,
                 adventurer_id,
-                adventurer,
+                ref adventurer,
                 GameEventDetails::stat_upgrade(StatUpgradeEvent { stats: stat_upgrades }),
             );
+
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
     }
 
@@ -718,7 +713,7 @@ mod game_systems {
 
                 if (ambush_event.damage > 0) {
                     _emit_battle_event(
-                        ref world, adventurer_id, adventurer, 0, BattleEventDetails::ambush(ambush_event),
+                        ref world, adventurer_id, ref adventurer, BattleEventDetails::ambush(ambush_event),
                     );
                 }
             },
@@ -733,7 +728,7 @@ mod game_systems {
                     item_specials_rnd: rnd3_u16,
                     game_libs: game_libs,
                 );
-                _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::obstacle(obstacle_event));
+                _emit_game_event(ref world, adventurer_id, ref adventurer, GameEventDetails::obstacle(obstacle_event));
             },
             ExploreResult::Discovery(()) => {
                 let discovery_event = _process_discovery(
@@ -744,7 +739,7 @@ mod game_systems {
                     amount_rnd2: rnd7_u8,
                     game_libs: game_libs,
                 );
-                _emit_game_event(ref world, adventurer_id, adventurer, GameEventDetails::discovery(discovery_event));
+                _emit_game_event(ref world, adventurer_id, ref adventurer, GameEventDetails::discovery(discovery_event));
             },
         }
 
@@ -1076,6 +1071,7 @@ mod game_systems {
     fn _attack(
         ref adventurer: Adventurer,
         ref battle_events: Array<BattleEventDetails>,
+        ref battle_count: u16,
         weapon_combat_spec: CombatSpec,
         level_seed: u64,
         beast: Beast,
@@ -1084,13 +1080,12 @@ mod game_systems {
         item_specials_seed: u16,
         game_libs: GameLibs,
     ) {
+        battle_count += 1;
+
         // get randomness for combat
         let (_, adventurer_crit_hit_rnd, beast_crit_hit_rnd, attack_location_rnd) = game_libs
             .adventurer
-            .get_battle_randomness(adventurer.xp, adventurer.action_count, level_seed);
-
-        // increment battle action count (ensures each battle action has unique randomness)
-        adventurer.increment_action_count();
+            .get_battle_randomness(adventurer.xp, battle_count, level_seed);
 
         // attack beast and get combat result that provides damage breakdown
         let combat_result = adventurer.attack(weapon_combat_spec, beast, adventurer_crit_hit_rnd);
@@ -1143,6 +1138,7 @@ mod game_systems {
                 _attack(
                     ref adventurer,
                     ref battle_events,
+                    ref battle_count,
                     weapon_combat_spec,
                     level_seed,
                     beast,
@@ -1218,19 +1214,19 @@ mod game_systems {
     fn _flee(
         ref adventurer: Adventurer,
         ref battle_events: Array<BattleEventDetails>,
+        ref battle_count: u16,
         flee_seed: u64,
         beast_seed: u32,
         beast: Beast,
         flee_to_the_death: bool,
         game_libs: GameLibs,
     ) {
+        battle_count += 1;
+
         // get randomness for flee and ambush
         let (flee_rnd, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs
             .adventurer
-            .get_battle_randomness(adventurer.xp, adventurer.action_count, flee_seed);
-
-        // increment action count (ensures each battle action has unique randomness)
-        adventurer.increment_action_count();
+            .get_battle_randomness(adventurer.xp, battle_count, flee_seed);
 
         // attempt to flee
         let fled = game_libs.beast.attempt_flee(adventurer.get_level(), adventurer.stats.dexterity, flee_rnd);
@@ -1259,7 +1255,7 @@ mod game_systems {
             // if player is still alive and elected to flee till death
             if (flee_to_the_death && adventurer.health != 0) {
                 // reattempt flee
-                _flee(ref adventurer, ref battle_events, flee_seed, beast_seed, beast, true, game_libs);
+                _flee(ref adventurer, ref battle_events, ref battle_count, flee_seed, beast_seed, beast, true, game_libs);
             }
         }
     }
@@ -1750,12 +1746,13 @@ mod game_systems {
     // ------------------------------------------ //
     // ------------ Emit events ----------------- //
     // ------------------------------------------ //
-    fn _emit_game_event(ref world: WorldStorage, adventurer_id: u64, adventurer: Adventurer, event: GameEventDetails) {
+    fn _emit_game_event(ref world: WorldStorage, adventurer_id: u64, ref adventurer: Adventurer, event: GameEventDetails) {
+        adventurer.increment_action_count();
+
         world
             .emit_event(
                 @GameEvent {
                     adventurer_id,
-                    adventurer_level: adventurer.get_level(),
                     action_count: adventurer.action_count,
                     details: event,
                 },
@@ -1765,17 +1762,17 @@ mod game_systems {
     fn _emit_battle_event(
         ref world: WorldStorage,
         adventurer_id: u64,
-        adventurer: Adventurer,
-        event_count: u16,
+        ref adventurer: Adventurer,
         event: BattleEventDetails,
     ) {
+        adventurer.increment_action_count();
+    
         world
             .emit_event(
                 @BattleEvent {
                     adventurer_id,
-                    adventurer_xp: adventurer.xp,
                     action_count: adventurer.action_count,
-                    event_count: event_count,
+                    adventurer_xp: adventurer.xp,
                     details: event,
                 },
             );

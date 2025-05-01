@@ -12,10 +12,13 @@ import {
   MAXIMUM_HEALTH
 } from "../constants/beast";
 import { calculateLevel } from "./game";
-import { ItemUtils } from "./loot";
+import { ItemType, ItemUtils } from "./loot";
 
-export function getBeast(beastSeed: bigint, xp: number): Beast {
-  // Get randomness values using the same logic as Cairo implementation
+export function getBeast(beastSeed: bigint, xp: number, weapon: Item): Beast {
+  if (xp <= 1) {
+    return getStarterBeast(weapon.id, beastSeed);
+  }
+
   const {
     rnd1: beastIdSeed,  // Used for beast ID (u32)
     rnd3: healthRnd,    // Used for health (u16)
@@ -231,24 +234,6 @@ function isT4(id: bigint): boolean {
 }
 
 /**
- * Gets the special name components for a beast if it meets the level requirement
- * @param level Beast level
- * @param special2 Special prefix index (1-69)
- * @param special3 Special suffix index (1-18)
- * @returns Object containing prefix and suffix if applicable
- */
-function getBeastSpecialName(level: number, special2: number, special3: number): { prefix?: string, suffix?: string } {
-  if (level < BEAST_SPECIAL_NAME_LEVEL_UNLOCK) {
-    return {};
-  }
-
-  return {
-    prefix: BEAST_NAME_PREFIXES[special2] || undefined,
-    suffix: BEAST_NAME_SUFFIXES[special3] || undefined
-  };
-}
-
-/**
  * Gets the name of a beast based on its ID and special attributes
  * @param id Beast ID (1-75)
  * @param level Beast level
@@ -321,3 +306,25 @@ export const getTypeWeakness = (type: string): string => {
       return '';
   }
 };
+
+function getStarterBeast(weaponId: number, seed: bigint): Beast {
+  let weaponType = ItemUtils.getItemType(weaponId);
+
+  let beastId = Number(seed) % 5;
+  if (weaponType === ItemType.Magic) {
+    beastId += 71;
+  } else if (weaponType === ItemType.Blade) {
+    beastId += 21;
+  } else if (weaponType === ItemType.Bludgeon) {
+    beastId += 46;
+  }
+
+  return {
+    id: beastId,
+    name: BEAST_NAMES[beastId],
+    health: Number(STARTER_BEAST_HEALTH),
+    level: 1,
+    type: getBeastType(BigInt(beastId)),
+    tier: getBeastTier(BigInt(beastId)),
+  };
+}

@@ -1,4 +1,3 @@
-import { useGameStore } from '@/stores/gameStore';
 import { useAccount, useConnect, useDisconnect } from '@starknet-react/core';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { dojoConfig } from "../../dojoConfig";
@@ -7,7 +6,11 @@ export interface ControllerContext {
   account: any;
   address: string | undefined;
   playerName: string;
-  connecting: boolean | undefined;
+  isPending: boolean | undefined;
+
+  openProfile: () => void;
+  login: () => void;
+  logout: () => void;
 }
 
 // Create a context
@@ -16,7 +19,7 @@ const ControllerContext = createContext<ControllerContext>({} as ControllerConte
 // Create a provider component
 export const ControllerProvider = ({ children }: PropsWithChildren) => {
   const { account, address, isConnecting } = useAccount()
-  const { connector } = useConnect();
+  const { connector, connectors, connect, isPending } = useConnect();
   const { disconnect } = useDisconnect()
 
   const [userName, setUserName] = useState()
@@ -48,8 +51,12 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
     <ControllerContext.Provider value={{
       account,
       address,
-      playerName: userName || "",
-      connecting: isConnecting,
+      playerName: userName || "Adventurer",
+      isPending: isConnecting || isPending,
+
+      openProfile: () => (connector as any)?.controller?.openProfile(),
+      login: () => connect({ connector: connectors.find(conn => conn.id === "controller") }),
+      logout: () => disconnect()
     }}>
       {children}
     </ControllerContext.Provider>

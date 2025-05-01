@@ -1,17 +1,19 @@
 import { getBeastImage } from '@/utils/beast'
 import { Box, LinearProgress, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 
 const loadingBeasts = ["Warlock", "Manticore", "tarrasque", "Colossus", "Basilisk"]
 
-function LoadingContainer() {
+function LoadingContainer(props: any) {
+  const { loadingProgress } = props;
+
   const [isLoading, setIsLoading] = useState(0)
   const [currentBeastIndex, setCurrentBeastIndex] = useState(Math.floor(Math.random() * loadingBeasts.length))
   const [fadeState, setFadeState] = useState('fade-in')
-  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [animatedProgress, setAnimatedProgress] = useState(0)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const beastInterval = setInterval(() => {
       setFadeState('fade-out')
 
@@ -25,20 +27,27 @@ function LoadingContainer() {
     return () => clearInterval(beastInterval)
   }, [])
 
-  // Simulate loading progress
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setLoadingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return prev + 1
-      })
-    }, 50)
+  useEffect(() => {
+    if (loadingProgress < animatedProgress) {
+      setAnimatedProgress(loadingProgress);
+      return;
+    }
 
-    return () => clearInterval(interval)
-  }, [])
+    const diff = loadingProgress - animatedProgress;
+    const step = Math.max(1, Math.ceil(diff / 40));
+
+    const interval = setInterval(() => {
+      setAnimatedProgress(prev => {
+        const newValue = Math.min(prev + step, loadingProgress);
+        if (newValue >= loadingProgress) {
+          clearInterval(interval);
+        }
+        return newValue;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [loadingProgress]);
 
   function PreloadBannerImages() {
     return <>
@@ -83,9 +92,8 @@ function LoadingContainer() {
           <Box display={'flex'} alignItems={'baseline'}>
             <Typography variant="body1" color="white" sx={styles.loadingSubtext}>
               {loadingProgress === 0 && 'Awakening The Beasts'}
-              {loadingProgress >= 1 && loadingProgress < 50 && 'Initializing Game'}
-              {loadingProgress >= 50 && loadingProgress < 70 && 'Loading Assets'}
-              {loadingProgress >= 70 && 'Almost Ready'}
+              {loadingProgress >= 1 && loadingProgress < 50 && 'Minting Game Token'}
+              {loadingProgress >= 50 && 'Loading Assets'}
             </Typography>
             <div className='dotLoader white' />
           </Box>
