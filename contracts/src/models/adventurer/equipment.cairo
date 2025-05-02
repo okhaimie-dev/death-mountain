@@ -9,7 +9,7 @@ use lootsurvivor::models::loot::ImplLoot;
 /// @notice The Equipment struct
 /// @dev The equipment struct is used to store the adventurer's equipment
 /// @dev The equipment struct is packed into a felt252
-#[derive(Drop, Copy, Serde, PartialEq)]
+#[derive(Introspect, Drop, Copy, Serde, PartialEq)]
 pub struct Equipment { // 128 bits
     pub weapon: Item,
     pub chest: Item,

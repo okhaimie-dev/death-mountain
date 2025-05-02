@@ -5,9 +5,9 @@ import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
-import { useController } from '@/contexts/controller';
+import { useController } from '@/contexts/Controller';
 import { setupGameSubscription } from '@/dojo/useGameEntities';
-import { fetchPreviousEvents, setupGameEventsSubscription } from '@/dojo/useGameEvents';
+import { setupGameEventsSubscription } from '@/dojo/useGameEvents';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -52,7 +52,6 @@ export default function GamePage() {
       setGameId(game_id);
       setupGameSubscription(sdk, game_id);
       setupGameEventsSubscription(sdk, game_id);
-      fetchPreviousEvents(sdk, game_id);
       fetchMetadata(sdk, game_id);
     } else if (game_id === 0) {
       mint();
@@ -69,9 +68,9 @@ export default function GamePage() {
     if (!keepScreen) {
       if (!gameId || !adventurer) {
         setScreen('loading');
-      } else if (adventurer && adventurer.beast_health > 0 && beastSeed) {
+      } else if (adventurer.beast_health > 0) {
         setScreen('beast');
-      } else if (adventurer && adventurer.stat_upgrades_available > 0) {
+      } else if (adventurer.stat_upgrades_available > 0) {
         setScreen('statSelection');
       } else if (exploreLog.length > 0) {
         setScreen('explore');

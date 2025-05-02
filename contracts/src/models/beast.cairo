@@ -255,7 +255,7 @@ mod tests {
         CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH,
     };
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
+    use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
     use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
 

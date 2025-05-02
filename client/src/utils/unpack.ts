@@ -58,7 +58,6 @@ export const unpackAdventurer = (packed: bigint): Adventurer => {
     stat_upgrades_available: Number((packed >> BigInt(44)) & ((BigInt(1) << BigInt(4)) - BigInt(1))),  // 4 bits
     stats: unpackStats((packed >> BigInt(48)) & ((BigInt(1) << BigInt(30)) - BigInt(1))),  // 30 bits
     equipment: unpackEquipment((packed >> BigInt(78)) & ((BigInt(1) << BigInt(128)) - BigInt(1))),  // 128 bits
-    action_count: Number((packed >> BigInt(206)) & ((BigInt(1) << BigInt(16)) - BigInt(1))),  // 16 bits
-    item_specials_seed: Number((packed >> BigInt(222)) & ((BigInt(1) << BigInt(16)) - BigInt(1)))  // 16 bits
+    item_specials_seed: Number((packed >> BigInt(206)) & ((BigInt(1) << BigInt(16)) - BigInt(1)))  // 16 bits
   };
 };

@@ -165,7 +165,6 @@ export interface AttackEvent {
 // Type definition for `lootsurvivor::models::game::BattleEvent` struct
 export interface BattleEvent {
 	adventurer_id: BigNumberish;
-	action_count: BigNumberish;
 	adventurer_xp: BigNumberish;
 	details: BattleEventDetailsEnum;
 }
@@ -198,7 +197,6 @@ export interface FledBeastEvent {
 // Type definition for `lootsurvivor::models::game::GameEvent` struct
 export interface GameEvent {
 	adventurer_id: BigNumberish;
-	action_count: BigNumberish;
 	details: GameEventDetailsEnum;
 }
 
@@ -210,6 +208,11 @@ export interface GameEventValue {
 // Type definition for `lootsurvivor::models::game::ItemEvent` struct
 export interface ItemEvent {
 	items: Array<BigNumberish>;
+}
+
+// Type definition for `lootsurvivor::models::game::LevelUpEvent` struct
+export interface LevelUpEvent {
+	level: BigNumberish;
 }
 
 // Type definition for `lootsurvivor::models::game::MarketEvent` struct
@@ -294,6 +297,7 @@ export const gameEventDetails = [
 	'market',
 	'equip',
 	'drop',
+	'level_up',
 ] as const;
 export type GameEventDetails = { 
 	discovery: DiscoveryEvent,
@@ -304,6 +308,7 @@ export type GameEventDetails = {
 	market: MarketEvent,
 	equip: ItemEvent,
 	drop: ItemEvent,
+	level_up: LevelUpEvent,
 };
 export type GameEventDetailsEnum = CairoCustomEnum;
 
@@ -342,6 +347,7 @@ export interface SchemaType extends ISchemaType {
 		GameEvent: GameEvent,
 		GameEventValue: GameEventValue,
 		ItemEvent: ItemEvent,
+		LevelUpEvent: LevelUpEvent,
 		MarketEvent: MarketEvent,
 		ObstacleEvent: ObstacleEvent,
 		StatUpgradeEvent: StatUpgradeEvent,
@@ -475,7 +481,6 @@ export const schema: SchemaType = {
 		},
 		BattleEvent: {
 			adventurer_id: 0,
-			action_count: 0,
 			adventurer_xp: 0,
 		details: new CairoCustomEnum({ 
 				ambush: { damage: 0, location: new CairoCustomEnum({ 
@@ -533,7 +538,6 @@ export const schema: SchemaType = {
 		},
 		GameEvent: {
 			adventurer_id: 0,
-			action_count: 0,
 		details: new CairoCustomEnum({ 
 				discovery: { discovery_type: new CairoCustomEnum({ 
 					Gold: 0,
@@ -545,7 +549,8 @@ export const schema: SchemaType = {
 				stat_upgrade: undefined,
 				market: undefined,
 				equip: undefined,
-				drop: undefined, }),
+				drop: undefined,
+				level_up: undefined, }),
 		},
 		GameEventValue: {
 		details: new CairoCustomEnum({ 
@@ -559,10 +564,14 @@ export const schema: SchemaType = {
 				stat_upgrade: undefined,
 				market: undefined,
 				equip: undefined,
-				drop: undefined, }),
+				drop: undefined,
+				level_up: undefined, }),
 		},
 		ItemEvent: {
 			items: [0],
+		},
+		LevelUpEvent: {
+			level: 0,
 		},
 		MarketEvent: {
 			potions: 0,
@@ -630,6 +639,7 @@ export enum ModelsMapping {
 	GameEventDetails = 'lootsurvivor-GameEventDetails',
 	GameEventValue = 'lootsurvivor-GameEventValue',
 	ItemEvent = 'lootsurvivor-ItemEvent',
+	LevelUpEvent = 'lootsurvivor-LevelUpEvent',
 	MarketEvent = 'lootsurvivor-MarketEvent',
 	ObstacleEvent = 'lootsurvivor-ObstacleEvent',
 	StatUpgradeEvent = 'lootsurvivor-StatUpgradeEvent',

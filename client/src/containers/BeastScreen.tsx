@@ -15,7 +15,7 @@ const fleeMessage = "Attempting to flee";
 
 export default function BeastScreen() {
   const { attack, flee } = useSystemCalls();
-  const { gameId, adventurer, beastSeed, setKeepScreen, battleLog, setBattleLog } = useGameStore();
+  const { gameId, adventurer, exploreLog, setKeepScreen } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(true);
   const [attackInProgress, setAttackInProgress] = useState(false);
@@ -63,6 +63,7 @@ export default function BeastScreen() {
   }, []);
 
   useEffect(() => {
+    console.log("new battleLog updated", battleLog);
     if (battleLog.length > 0) {
       let event = battleLog[0];
 
@@ -78,6 +79,9 @@ export default function BeastScreen() {
         } else {
           setCombatLog(`You failed to flee`);
         }
+        setBattleLog(battleLog!.slice(1));
+      } else if (event.type === "ambush") {
+        setCombatLog(`${beast.name} ambushed your ${event.location} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
       }
     } else {
       setAttackInProgress(false);

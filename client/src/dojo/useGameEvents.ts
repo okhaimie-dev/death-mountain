@@ -22,27 +22,18 @@ const gameEventsQuery = (gameId: number) => {
       `${namespace}-GameEvent`,
       `${namespace}-BattleEvent`,
     ])
-    .withLimit(10000)
 }
 
-const updateGameStore = (entities: any, history: boolean) => {
+const updateGameStore = (entities: any, includeBattleEvents: boolean) => {
   let exploreEvents = formatExploreEvent(entities);
   useGameStore.getState().setExploreLog(exploreEvents);
 
-  if (!history) {
+  if (includeBattleEvents) {
     let battleEvents = formatBattleEvent(entities);
-    useGameStore.getState().setBattleLog(battleEvents);
+    if (battleEvents.length > 0) {
+      useGameStore.getState().setBattleLog(battleEvents);
+    }
   }
-}
-
-export async function fetchPreviousEvents(sdk: any, gameId: number) {
-  console.log('querying previous events', gameEventsQuery(gameId))
-  const entities = await sdk.getEventMessages({
-    query: gameEventsQuery(gameId),
-    historical: false,
-  });
-
-  updateGameStore(entities, true);
 }
 
 export async function setupGameEventsSubscription(sdk: any, gameId: number) {
@@ -52,20 +43,20 @@ export async function setupGameEventsSubscription(sdk: any, gameId: number) {
     eventSubscription = null;
   }
 
-  console.log('subscribing to events', gameEventsQuery(gameId))
   try {
-    const [_, subscription] = await sdk.subscribeEventQuery({
+    const [initialData, subscription] = await sdk.subscribeEventQuery({
       query: gameEventsQuery(gameId),
-      historical: false,
+      historical: true,
       callback: ({ data, error }: { data: any, error: Error | null }) => {
         if (error) {
           console.error('Event subscription error:', error);
         } else if (data) {
-          updateGameStore(data, false);
+          updateGameStore(data, true);
         }
       }
     })
 
+    updateGameStore(initialData, false);
     eventSubscription = subscription;
   } catch (error) {
     console.error('Event subscription error:', error);

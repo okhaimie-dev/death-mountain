@@ -6,7 +6,7 @@ pub mod CombatEnums {
         Strong,
     }
 
-    #[derive(Copy, Drop, PartialEq, Serde)]
+    #[derive(Introspect, Copy, Drop, PartialEq, Serde)]
     pub enum Type {
         None,
         Magic_or_Cloth,
@@ -16,7 +16,7 @@ pub mod CombatEnums {
         Ring,
     }
 
-    #[derive(Copy, Drop, PartialEq, Serde)]
+    #[derive(Introspect, Copy, Drop, PartialEq, Serde)]
     pub enum Tier {
         None,
         T1,

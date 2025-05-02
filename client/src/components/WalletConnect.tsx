@@ -1,15 +1,15 @@
-import { useController } from '@/contexts/controller';
+import { useController } from '@/contexts/Controller';
 import { ellipseAddress } from '@/utils/utils';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { LoadingButton } from '@mui/lab';
+import { Button } from '@mui/material';
 
 function WalletConnect() {
-  const { account, address, connecting, playerName, login, openProfile } = useController()
+  const { account, address, isPending, playerName, login, openProfile } = useController()
 
   return (
     <>
       {account && address
-        ? <LoadingButton
+        ? <Button
           loading={!playerName}
           onClick={() => openProfile()}
           startIcon={<SportsEsportsIcon />}
@@ -19,10 +19,10 @@ function WalletConnect() {
           sx={{ minWidth: '100px' }}
         >
           {playerName ? playerName : ellipseAddress(address, 4, 4)}
-        </LoadingButton>
+        </Button>
 
-        : <LoadingButton
-          loading={connecting}
+        : <Button
+          loading={isPending}
           variant='contained'
           color='secondary'
           onClick={() => login()}
@@ -31,7 +31,7 @@ function WalletConnect() {
           sx={{ minWidth: '100px' }}
         >
           Log In
-        </LoadingButton>
+        </Button>
       }
     </>
   );

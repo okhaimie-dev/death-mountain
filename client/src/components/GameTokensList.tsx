@@ -1,10 +1,9 @@
-import { useController } from '@/contexts/controller';
+import { useController } from '@/contexts/Controller';
 import { fetchGameTokens, populateGameTokens } from '@/dojo/useGameTokens';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoadingButton } from '@mui/lab';
 
 export default function GameTokensList() {
   const { account } = useController();
@@ -33,7 +32,7 @@ export default function GameTokensList() {
   }
 
   if (loading) {
-    return <LoadingButton loading={loading} sx={{ my: 1 }} />
+    return <Button loading={loading} sx={{ my: 1 }} />
   }
 
   return (

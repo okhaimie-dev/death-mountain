@@ -67,7 +67,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
   setMetadata: (data: Metadata | null) => set({ metadata: data }),
-  setExploreLog: (data: ExploreEvent[]) => set((state) => ({ exploreLog: [...state.exploreLog, ...data] })),
+  setExploreLog: (data: ExploreEvent[]) => set((state) => ({ exploreLog: [...data, ...state.exploreLog] })),
   setBattleLog: (data: BattleEvent[]) => set({ battleLog: data }),
   setKeepScreen: (screen: boolean) => set({ keepScreen: screen }),
 }));

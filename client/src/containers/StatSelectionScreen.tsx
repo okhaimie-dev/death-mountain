@@ -48,8 +48,7 @@ export default function StatSelectionScreen() {
 
   const handleSelectStats = async () => {
     setIsSelectingStats(true);
-    await selectStatUpgrades(gameId!, selectedStats);
-    setIsSelectingStats(false);
+    selectStatUpgrades(gameId!, selectedStats);
   };
 
   const totalSelected = Object.values(selectedStats).reduce((a, b) => a + b, 0);

@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x5de23f0f0f3a9e5854ecaae5b07fdc770494952fa3264d368bbef5dc19d2b2f",
-    "seed": "pg_test_ls_1",
+    "address": "0x45c1cf12e06a20e7048f84cb96fea53c228da38bc22deca6355005f24af45a3",
+    "seed": "pg_test_ls_4",
     "name": "Loot Survivor 2",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x695d74dee9d450a8156da76b4869262e540e7dbd5c473e85b4cc8e35e2a9e6b",
-      "class_hash": "0x1b77c1b9404a2e902946487b173bea71fd4b66d857f3ae85ebb5143ef1290e4",
+      "address": "0x668e3b93bc4adb8d0ce9275b7e15d7cc0d875b191c6cf6553225686e123507",
+      "class_hash": "0x4b0420f3eab09c3a62acc8f96640e35daf3dd58503a30c4c15584d0bd7032a5",
       "abi": [
         {
           "type": "impl",
@@ -1487,10 +1487,6 @@
             {
               "name": "equipment",
               "type": "lootsurvivor::models::adventurer::equipment::Equipment"
-            },
-            {
-              "name": "action_count",
-              "type": "core::integer::u16"
             },
             {
               "name": "item_specials_seed",
@@ -2065,7 +2061,7 @@
       ]
     },
     {
-      "address": "0x2e8bfe431854737a32cc4707954f7294a2bf050e384aaddfe7a3984db40fa",
+      "address": "0x2ba9a08121653b749527c874cb862c17047fe3fd2075b4db0f0745f58a24d1b",
       "class_hash": "0x228b76b36a44714ce647edb7c375d84aba252cbed625cf5f4338e1a7af368f9",
       "abi": [
         {
@@ -2488,8 +2484,8 @@
       ]
     },
     {
-      "address": "0x470f53f87cb1660d931f10bfbd43c04a6c14959b36deef668f8fdd7a37cdf6a",
-      "class_hash": "0x40c19b73d81ed62e98c7eb25d3db41f611dcf364bf0c60d75c0abd01e0c6f94",
+      "address": "0x3fd0e40edd903327430e1573476c3fd67a554c916ab6945e295c16febb05b05",
+      "class_hash": "0x3be9c214af642f9b90dbdc31b557e7c1bac6c17fcd47149ef72162f88ac11f8",
       "abi": [
         {
           "type": "impl",
@@ -2877,8 +2873,8 @@
       ]
     },
     {
-      "address": "0x511a58f1ea676a000b484c35ea8185c32dd40f8f6bf4a2793056fb23997e61e",
-      "class_hash": "0x26fc10d119d61fee389950fb5d476bb0155e8a9e3c328a6dff901290d6efd57",
+      "address": "0x25511d73833a1161f7580798bfad2d40b3aa8665e8bf6676f233a1ce95db748",
+      "class_hash": "0x224ba5bbf0e02b803ddc28c9b17e6891247ef3d013abbef108601ef378535d2",
       "abi": [
         {
           "type": "impl",
@@ -3898,7 +3894,7 @@
       ]
     },
     {
-      "address": "0x15b3d6c112f94ba57767f7c37d816676b644be7f9a2b749fb127b6ebd782630",
+      "address": "0x31db2701a83994cade985f0eb71c4dada16f019a7a915405bc801eb5c601bc4",
       "class_hash": "0x55bda7b44bf6f0ab4df0c492b219ecb5bab307b17e06cf7da452fe1c228dd72",
       "abi": [
         {
@@ -4405,8 +4401,8 @@
       ]
     },
     {
-      "address": "0x4be4ab46a13fb42d001a08cac8f1248eccf2878e1821a8383a6f5ed1de6bbf2",
-      "class_hash": "0x57ec147aee5008944d45e256008142e32a7feabef848e861e8b777cded1f284",
+      "address": "0x118b8c0753b001d43b15b4b6d7f0855818203b6d08c16445a1914984fbedbce",
+      "class_hash": "0x28fd7fa6b94ee3eba4d48e64de7a818773f073fca2c8a58899293c92f99bae6",
       "abi": [
         {
           "type": "impl",
@@ -4674,13 +4670,13 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x123e11b5144a6520ef32dc628330ac3c38855e59bf207bea66669e07a89aaeb",
+      "class_hash": "0x102809c2648e758d6f509e24d2a9839bbb53564de84762612fb2577d57ef498",
       "tag": "ls_0_0_1-BattleEvent",
       "selector": "0x306656347092447a679cedf777f8528cdaab5027488575e3e61f2611895fd3c"
     },
     {
       "members": [],
-      "class_hash": "0x5c18a6c256bfb5039197b54fb49ee38a7a1a80469b50b8971a8bc2da566dfdd",
+      "class_hash": "0x76bd6909c2c57b59eea1a33137d0d12873b37beb7698e5512eec579109a74e4",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }

@@ -7,7 +7,7 @@ import { SnackbarProvider } from 'notistack';
 
 import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
-import { ControllerProvider } from './contexts/controller';
+import { ControllerProvider } from './contexts/Controller';
 import Header from './components/Header';
 
 function App() {

@@ -1,7 +1,7 @@
 import diceIcon from '@/assets/images/dice.png';
 import logo from '@/assets/images/logo.png';
 import GameTokensList from '@/components/GameTokensList';
-import { useController } from '@/contexts/controller';
+import { useController } from '@/contexts/Controller';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';

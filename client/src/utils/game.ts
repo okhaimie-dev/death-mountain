@@ -109,7 +109,7 @@ export const simulateBattle = (adventurer: Adventurer, beast: Beast, iterations:
     for (let i = 0; i < iterations; i++) {
         let adventurerHealth = adventurer.health;
         let beastHealth = adventurer.beast_health;
-        let battleActions = adventurer.action_count || 0;
+        let battleActions =  0;
 
         // Generate a single random seed for this iteration
         const iterationSeed = BigInt(Math.floor(Math.random() * 2 ** 32));
@@ -154,7 +154,7 @@ export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: n
     let successCount = 0;
     for (let i = 0; i < iterations; i++) {
         let adventurerHealth = adventurer.health;
-        let battleActions = adventurer.action_count || 0;
+        let battleActions = 0;
 
         // Generate a single random seed for this iteration
         const iterationSeed = BigInt(Math.floor(Math.random() * 2 ** 32));

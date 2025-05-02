@@ -39,7 +39,11 @@ const cartridge = new ControllerConnector({
     },
     {
       target: game_systems,
-      method: "level_up",
+      method: "buy_items",
+    },
+    {
+      target: game_systems,
+      method: "select_stat_upgrades",
     },
     {
       target: import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS,

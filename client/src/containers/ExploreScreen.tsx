@@ -1,7 +1,9 @@
 import AdventurerInfo from '@/components/AdventurerInfo';
+import { BEAST_NAMES } from '@/constants/beast';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { ExploreEvent } from '@/utils/events';
+import { OBSTACLE_NAMES } from '@/utils/obstacleNames';
 import { Box, Button, FormControlLabel, Switch, Typography, keyframes } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
@@ -12,9 +14,7 @@ export default function ExploreScreen() {
   const [untilBeast, setUntilBeast] = useState(false);
   const [isExploring, setIsExploring] = useState(false);
   const [eventHistory, setEventHistory] = useState<ExploreEvent[]>(exploreLog);
-  const [previousLogLength, setPreviousLogLength] = useState(exploreLog.length);
   const listRef = useRef<HTMLDivElement>(null);
-  console.log(exploreLog);
 
   // Function to scroll to top
   const scrollToTop = () => {
@@ -25,9 +25,10 @@ export default function ExploreScreen() {
 
   // Handle new events when exploreLog updates
   useEffect(() => {
-    if (eventHistory.length > previousLogLength) {
+    if (eventHistory.length < exploreLog.length) {
       // Get the new events that were added
-      const newEvents = exploreLog.slice(previousLogLength);
+      let count = exploreLog.length - eventHistory.length;
+      const newEvents = exploreLog.slice(0, count);
 
       // Add each new event one by one with a delay
       newEvents.forEach((event, index) => {
@@ -36,16 +37,16 @@ export default function ExploreScreen() {
           scrollToTop();
         }, index * 1000); // 1 second delay between each event
       });
+    }
+  }, [exploreLog]);
 
-      setPreviousLogLength(exploreLog.length);
-    } else {
-      setKeepScreen(false);
+  useEffect(() => {
+    if (isExploring && eventHistory.length === exploreLog.length) {
       setIsExploring(false);
     }
-  }, [exploreLog, previousLogLength]);
+  }, [eventHistory, exploreLog]);
 
   const handleExplore = async () => {
-    setKeepScreen(true);
     setIsExploring(true);
     explore(gameId!, untilBeast);
   };
@@ -70,6 +71,8 @@ export default function ExploreScreen() {
         return '⚔️';
       case 'drop':
         return '🎁';
+      case 'beast':
+        return '👹';
       default:
         return '❓';
     }
@@ -86,7 +89,12 @@ export default function ExploreScreen() {
         }
         return 'Discovered Unknown';
       case 'obstacle':
-        return event.damage === 0 ? 'Avoided Obstacle' : 'Hit by Obstacle';
+        const location = event.location || 'None';
+        const obstacleName = OBSTACLE_NAMES[event.obstacle_id!] || 'Unknown Obstacle';
+        if (event.damage === 0) {
+          return `Avoided ${obstacleName}`;
+        }
+        return `${obstacleName} hit your ${location}`;
       case 'defeated_beast':
         return 'Defeated Beast';
       case 'fled_beast':
@@ -101,6 +109,8 @@ export default function ExploreScreen() {
         return 'Equipped Items';
       case 'drop':
         return 'Items Dropped';
+      case 'beast':
+        return `Encountered a ${BEAST_NAMES[event.beast_id!]}`;
       default:
         return 'Unknown Event';
     }
@@ -123,7 +133,7 @@ export default function ExploreScreen() {
           <Box sx={styles.encountersList} ref={listRef}>
             {eventHistory.map((event, index) => (
               <Box
-                key={`${event.number}-${index}`}
+                key={`${index}`}
                 sx={{
                   ...styles.encounter,
                   animation: `${fadeIn} 0.5s ease-in-out`,
@@ -138,7 +148,7 @@ export default function ExploreScreen() {
                     )}
                     {event.type === 'obstacle' && typeof event.damage === 'number' && (
                       <Typography sx={styles.encounterXP}>
-                        {event.damage === 0 ? 'Avoided' : `-${event.damage} Health`}
+                        {event.damage === 0 ? 'Avoided' : `-${event.damage} Health ${event.critical ? 'CRIT' : ''}`}
                       </Typography>
                     )}
                     {typeof event.gold_reward === 'number' && event.gold_reward > 0 && (
@@ -191,6 +201,11 @@ export default function ExploreScreen() {
                     {event.type === 'drop' && event.items && event.items.length > 0 && (
                       <Typography sx={styles.encounterXP}>
                         Dropped {event.items.length} items
+                      </Typography>
+                    )}
+                    {event.type === 'beast' && (
+                      <Typography sx={styles.encounterXP}>
+                        Level {event.beast_level} Power {event.beast_tier! * event.beast_level!}
                       </Typography>
                     )}
                   </Box>

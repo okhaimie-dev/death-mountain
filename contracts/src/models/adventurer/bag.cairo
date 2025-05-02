@@ -7,7 +7,7 @@ use lootsurvivor::models::loot::ImplLoot;
 
 // Bag is used for storing gear not equipped to the adventurer
 // Bag is a fixed at 15 items to fit in a felt252
-#[derive(Drop, Copy, Serde)]
+#[derive(Introspect, Drop, Copy, Serde)]
 pub struct Bag { // 240 bits
     pub item_1: Item, // 16 bits each
     pub item_2: Item,

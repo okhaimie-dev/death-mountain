@@ -9,5 +9,5 @@ historical = [
 
 [indexing]
 contracts = [
-    "erc721:0x511a58f1ea676a000b484c35ea8185c32dd40f8f6bf4a2793056fb23997e61e"
+    "erc721:0x9599e4c32dc582321b67d44b74271e5d51b495e54c9a84d7e57e343a814397"
 ]

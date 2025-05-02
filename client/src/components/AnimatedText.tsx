@@ -15,7 +15,7 @@ export default function AnimatedText({ text }: AnimatedTextProps) {
   return (
     <Typography
       key={key}
-      variant="h5"
+      variant="h6"
       sx={{
         ...styles.combatLogText,
         animation: `${combatTextAnimation} 0.15s ease-out forwards`,
@@ -41,7 +41,7 @@ const styles = {
   combatLogText: {
     color: '#80FF00',
     fontFamily: 'VT323, monospace',
-    fontSize: '1.2rem',
+    fontSize: '1.0rem',
     textShadow: '0 0 10px rgba(128, 255, 0, 0.3)',
     textAlign: 'center',
     opacity: 0,

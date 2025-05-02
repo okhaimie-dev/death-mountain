@@ -31,7 +31,6 @@ export interface Adventurer {
     neck: Item;
     ring: Item;
   };
-  action_count: number;
   item_specials_seed: number;
 }
 
