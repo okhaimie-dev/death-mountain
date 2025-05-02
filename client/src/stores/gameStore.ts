@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { Adventurer, GameEvent, Item, Metadata } from '../types/game';
+import { Adventurer, Item, Metadata } from '../types/game';
+import { BattleEvent, ExploreEvent } from '../utils/events';
 
 interface GameState {
   gameId: number | null;
@@ -9,7 +10,8 @@ interface GameState {
   beastSeed: bigint | null;
   marketSeed: bigint | null;
   metadata: Metadata | null;
-  gameEvents: GameEvent[] | null;
+  exploreLog: ExploreEvent[];
+  battleLog: BattleEvent[];
   keepScreen: boolean;
 
   setGameId: (gameId: number) => void;
@@ -20,7 +22,8 @@ interface GameState {
   setBag: (data: Item[] | null) => void;
   setEntropy: (data: any) => void;
   setMetadata: (data: Metadata | null) => void;
-  setGameEvents: (data: GameEvent[] | null) => void;
+  setExploreLog: (data: ExploreEvent[]) => void;
+  setBattleLog: (data: BattleEvent[]) => void;
   setKeepScreen: (screen: boolean) => void;
 }
 
@@ -32,8 +35,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   bag: null,
   beastSeed: null,
   marketSeed: null,
-  gameEvents: null,
   keepScreen: false,
+  exploreLog: [],
+  battleLog: [],
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -48,8 +52,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       beastSeed: null,
       marketSeed: null,
       metadata: null,
-      gameEvents: null,
       keepScreen: false,
+      exploreLog: [],
+      battleLog: [],
     });
   },
 
@@ -62,6 +67,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
   setMetadata: (data: Metadata | null) => set({ metadata: data }),
-  setGameEvents: (data: GameEvent[] | null) => set({ gameEvents: data }),
+  setExploreLog: (data: ExploreEvent[]) => set((state) => ({ exploreLog: [...state.exploreLog, ...data] })),
+  setBattleLog: (data: BattleEvent[]) => set({ battleLog: data }),
   setKeepScreen: (screen: boolean) => set({ keepScreen: screen }),
 }));

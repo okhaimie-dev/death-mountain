@@ -15,7 +15,7 @@ const STAT_DESCRIPTIONS = {
 
 export default function StatSelectionScreen() {
   const { gameId, adventurer } = useGameStore();
-  const { levelUp } = useSystemCalls();
+  const { selectStatUpgrades } = useSystemCalls();
 
   const [isSelectingStats, setIsSelectingStats] = useState(false);
   const [selectedStats, setSelectedStats] = useState<Stats>({
@@ -48,7 +48,7 @@ export default function StatSelectionScreen() {
 
   const handleSelectStats = async () => {
     setIsSelectingStats(true);
-    await levelUp(gameId!, 0, selectedStats, []);
+    await selectStatUpgrades(gameId!, selectedStats);
     setIsSelectingStats(false);
   };
 

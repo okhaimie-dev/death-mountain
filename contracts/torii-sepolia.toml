@@ -1,3 +1,12 @@
+[events]
+raw = true
+
+[sql]
+historical = [
+  "ls_0_0_1-GameEvent",
+  "ls_0_0_1-BattleEvent",
+]
+
 [indexing]
 contracts = [
     "erc721:0x511a58f1ea676a000b484c35ea8185c32dd40f8f6bf4a2793056fb23997e61e"

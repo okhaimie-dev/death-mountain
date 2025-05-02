@@ -155,43 +155,44 @@ export interface Stats {
 	luck: BigNumberish;
 }
 
-// Type definition for `lootsurvivor::models::game::AttackDetails` struct
-export interface AttackDetails {
+// Type definition for `lootsurvivor::models::game::AttackEvent` struct
+export interface AttackEvent {
 	damage: BigNumberish;
 	location: SlotEnum;
 	critical_hit: boolean;
 }
 
-// Type definition for `lootsurvivor::models::game::DropEvent` struct
-export interface DropEvent {
-	items: Array<BigNumberish>;
+// Type definition for `lootsurvivor::models::game::BattleEvent` struct
+export interface BattleEvent {
+	adventurer_id: BigNumberish;
+	action_count: BigNumberish;
+	adventurer_xp: BigNumberish;
+	details: BattleEventDetailsEnum;
 }
 
-// Type definition for `lootsurvivor::models::game::EquipEvent` struct
-export interface EquipEvent {
-	items: Array<BigNumberish>;
-	beast_attack: AttackDetails;
+// Type definition for `lootsurvivor::models::game::BattleEventValue` struct
+export interface BattleEventValue {
+	adventurer_xp: BigNumberish;
+	details: BattleEventDetailsEnum;
 }
 
-// Type definition for `lootsurvivor::models::game::ExploreBeastEvent` struct
-export interface ExploreBeastEvent {
-	beast_seed: BigNumberish;
-	ambush: AttackDetails;
+// Type definition for `lootsurvivor::models::game::DefeatedBeastEvent` struct
+export interface DefeatedBeastEvent {
+	beast_id: BigNumberish;
+	gold_reward: BigNumberish;
+	xp_reward: BigNumberish;
 }
 
-// Type definition for `lootsurvivor::models::game::ExploreObstacleEvent` struct
-export interface ExploreObstacleEvent {
-	obstacle_id: BigNumberish;
-	dodged: boolean;
-	damage: BigNumberish;
-	location: SlotEnum;
-	critical_hit: boolean;
+// Type definition for `lootsurvivor::models::game::DiscoveryEvent` struct
+export interface DiscoveryEvent {
+	discovery_type: DiscoveryTypeEnum;
+	xp_reward: BigNumberish;
 }
 
-// Type definition for `lootsurvivor::models::game::FleeEvent` struct
-export interface FleeEvent {
-	success: boolean;
-	beast_attack: AttackDetails;
+// Type definition for `lootsurvivor::models::game::FledBeastEvent` struct
+export interface FledBeastEvent {
+	beast_id: BigNumberish;
+	xp_reward: BigNumberish;
 }
 
 // Type definition for `lootsurvivor::models::game::GameEvent` struct
@@ -206,12 +207,30 @@ export interface GameEventValue {
 	details: GameEventDetailsEnum;
 }
 
-// Type definition for `lootsurvivor::models::game::LevelUpEvent` struct
-export interface LevelUpEvent {
-	market_seed: BigNumberish;
+// Type definition for `lootsurvivor::models::game::ItemEvent` struct
+export interface ItemEvent {
+	items: Array<BigNumberish>;
+}
+
+// Type definition for `lootsurvivor::models::game::MarketEvent` struct
+export interface MarketEvent {
 	potions: BigNumberish;
-	attributes: Stats;
-	items: Array<ItemPurchase>;
+	items_purchased: Array<ItemPurchase>;
+}
+
+// Type definition for `lootsurvivor::models::game::ObstacleEvent` struct
+export interface ObstacleEvent {
+	obstacle_id: BigNumberish;
+	dodged: boolean;
+	damage: BigNumberish;
+	location: SlotEnum;
+	critical_hit: boolean;
+	xp_reward: BigNumberish;
+}
+
+// Type definition for `lootsurvivor::models::game::StatUpgradeEvent` struct
+export interface StatUpgradeEvent {
+	stats: Stats;
 }
 
 // Type definition for `lootsurvivor::models::market::ItemPurchase` struct
@@ -244,35 +263,47 @@ export const discoveryType = [
 export type DiscoveryType = { [key in typeof discoveryType[number]]: string };
 export type DiscoveryTypeEnum = CairoCustomEnum;
 
-// Type definition for `lootsurvivor::models::game::ExploreEvent` enum
-export const exploreEvent = [
-	'Beast',
-	'Obstacle',
-	'Discovery',
+// Type definition for `lootsurvivor::models::game::BattleEventDetails` enum
+export const battleEventDetails = [
+	'ambush',
+	'flee',
+	'attack',
+	'beast_attack',
+	'equip',
+	'fled_beast',
+	'defeated_beast',
 ] as const;
-export type ExploreEvent = { 
-	Beast: ExploreBeastEvent,
-	Obstacle: ExploreObstacleEvent,
-	Discovery: DiscoveryTypeEnum,
+export type BattleEventDetails = { 
+	ambush: AttackEvent,
+	flee: boolean,
+	attack: AttackEvent,
+	beast_attack: AttackEvent,
+	equip: ItemEvent,
+	fled_beast: FledBeastEvent,
+	defeated_beast: DefeatedBeastEvent,
 };
-export type ExploreEventEnum = CairoCustomEnum;
+export type BattleEventDetailsEnum = CairoCustomEnum;
 
 // Type definition for `lootsurvivor::models::game::GameEventDetails` enum
 export const gameEventDetails = [
-	'explore',
-	'attack',
-	'flee',
+	'discovery',
+	'obstacle',
+	'defeated_beast',
+	'fled_beast',
+	'stat_upgrade',
+	'market',
 	'equip',
 	'drop',
-	'level_up',
 ] as const;
 export type GameEventDetails = { 
-	explore: Array<ExploreEventEnum>,
-	attack: Array<AttackDetails>,
-	flee: Array<FleeEvent>,
-	equip: EquipEvent,
-	drop: DropEvent,
-	level_up: LevelUpEvent,
+	discovery: DiscoveryEvent,
+	obstacle: ObstacleEvent,
+	defeated_beast: DefeatedBeastEvent,
+	fled_beast: FledBeastEvent,
+	stat_upgrade: StatUpgradeEvent,
+	market: MarketEvent,
+	equip: ItemEvent,
+	drop: ItemEvent,
 };
 export type GameEventDetailsEnum = CairoCustomEnum;
 
@@ -302,15 +333,18 @@ export interface SchemaType extends ISchemaType {
 		TokenMetadataValue: TokenMetadataValue,
 		Lifecycle: Lifecycle,
 		Stats: Stats,
-		AttackDetails: AttackDetails,
-		DropEvent: DropEvent,
-		EquipEvent: EquipEvent,
-		ExploreBeastEvent: ExploreBeastEvent,
-		ExploreObstacleEvent: ExploreObstacleEvent,
-		FleeEvent: FleeEvent,
+		AttackEvent: AttackEvent,
+		BattleEvent: BattleEvent,
+		BattleEventValue: BattleEventValue,
+		DefeatedBeastEvent: DefeatedBeastEvent,
+		DiscoveryEvent: DiscoveryEvent,
+		FledBeastEvent: FledBeastEvent,
 		GameEvent: GameEvent,
 		GameEventValue: GameEventValue,
-		LevelUpEvent: LevelUpEvent,
+		ItemEvent: ItemEvent,
+		MarketEvent: MarketEvent,
+		ObstacleEvent: ObstacleEvent,
+		StatUpgradeEvent: StatUpgradeEvent,
 		ItemPurchase: ItemPurchase,
 	},
 }
@@ -425,7 +459,7 @@ export const schema: SchemaType = {
 			charisma: 0,
 			luck: 0,
 		},
-		AttackDetails: {
+		AttackEvent: {
 			damage: 0,
 		location: new CairoCustomEnum({ 
 					None: "",
@@ -439,12 +473,12 @@ export const schema: SchemaType = {
 				Ring: undefined, }),
 			critical_hit: false,
 		},
-		DropEvent: {
-			items: [0],
-		},
-		EquipEvent: {
-			items: [0],
-		beast_attack: { damage: 0, location: new CairoCustomEnum({ 
+		BattleEvent: {
+			adventurer_id: 0,
+			action_count: 0,
+			adventurer_xp: 0,
+		details: new CairoCustomEnum({ 
+				ambush: { damage: 0, location: new CairoCustomEnum({ 
 					None: "",
 				Weapon: undefined,
 				Chest: undefined,
@@ -454,10 +488,17 @@ export const schema: SchemaType = {
 				Hand: undefined,
 				Neck: undefined,
 				Ring: undefined, }), critical_hit: false, },
+				flee: undefined,
+				attack: undefined,
+				beast_attack: undefined,
+				equip: undefined,
+				fled_beast: undefined,
+				defeated_beast: undefined, }),
 		},
-		ExploreBeastEvent: {
-			beast_seed: 0,
-		ambush: { damage: 0, location: new CairoCustomEnum({ 
+		BattleEventValue: {
+			adventurer_xp: 0,
+		details: new CairoCustomEnum({ 
+				ambush: { damage: 0, location: new CairoCustomEnum({ 
 					None: "",
 				Weapon: undefined,
 				Chest: undefined,
@@ -467,8 +508,67 @@ export const schema: SchemaType = {
 				Hand: undefined,
 				Neck: undefined,
 				Ring: undefined, }), critical_hit: false, },
+				flee: undefined,
+				attack: undefined,
+				beast_attack: undefined,
+				equip: undefined,
+				fled_beast: undefined,
+				defeated_beast: undefined, }),
 		},
-		ExploreObstacleEvent: {
+		DefeatedBeastEvent: {
+			beast_id: 0,
+			gold_reward: 0,
+			xp_reward: 0,
+		},
+		DiscoveryEvent: {
+		discovery_type: new CairoCustomEnum({ 
+					Gold: 0,
+				Health: undefined,
+				Loot: undefined, }),
+			xp_reward: 0,
+		},
+		FledBeastEvent: {
+			beast_id: 0,
+			xp_reward: 0,
+		},
+		GameEvent: {
+			adventurer_id: 0,
+			action_count: 0,
+		details: new CairoCustomEnum({ 
+				discovery: { discovery_type: new CairoCustomEnum({ 
+					Gold: 0,
+				Health: undefined,
+				Loot: undefined, }), xp_reward: 0, },
+				obstacle: undefined,
+				defeated_beast: undefined,
+				fled_beast: undefined,
+				stat_upgrade: undefined,
+				market: undefined,
+				equip: undefined,
+				drop: undefined, }),
+		},
+		GameEventValue: {
+		details: new CairoCustomEnum({ 
+				discovery: { discovery_type: new CairoCustomEnum({ 
+					Gold: 0,
+				Health: undefined,
+				Loot: undefined, }), xp_reward: 0, },
+				obstacle: undefined,
+				defeated_beast: undefined,
+				fled_beast: undefined,
+				stat_upgrade: undefined,
+				market: undefined,
+				equip: undefined,
+				drop: undefined, }),
+		},
+		ItemEvent: {
+			items: [0],
+		},
+		MarketEvent: {
+			potions: 0,
+			items_purchased: [{ item_id: 0, equip: false, }],
+		},
+		ObstacleEvent: {
 			obstacle_id: 0,
 			dodged: false,
 			damage: 0,
@@ -483,69 +583,10 @@ export const schema: SchemaType = {
 				Neck: undefined,
 				Ring: undefined, }),
 			critical_hit: false,
+			xp_reward: 0,
 		},
-		FleeEvent: {
-			success: false,
-		beast_attack: { damage: 0, location: new CairoCustomEnum({ 
-					None: "",
-				Weapon: undefined,
-				Chest: undefined,
-				Head: undefined,
-				Waist: undefined,
-				Foot: undefined,
-				Hand: undefined,
-				Neck: undefined,
-				Ring: undefined, }), critical_hit: false, },
-		},
-		GameEvent: {
-			adventurer_id: 0,
-			action_count: 0,
-		details: new CairoCustomEnum({ 
-					explore: [new CairoCustomEnum({ 
-				Beast: { beast_seed: 0, ambush: { damage: 0, location: new CairoCustomEnum({ 
-					None: "",
-				Weapon: undefined,
-				Chest: undefined,
-				Head: undefined,
-				Waist: undefined,
-				Foot: undefined,
-				Hand: undefined,
-				Neck: undefined,
-				Ring: undefined, }), critical_hit: false, }, },
-				Obstacle: undefined,
-				Discovery: undefined, })],
-				attack: undefined,
-				flee: undefined,
-				equip: undefined,
-				drop: undefined,
-				level_up: undefined, }),
-		},
-		GameEventValue: {
-		details: new CairoCustomEnum({ 
-					explore: [new CairoCustomEnum({ 
-				Beast: { beast_seed: 0, ambush: { damage: 0, location: new CairoCustomEnum({ 
-					None: "",
-				Weapon: undefined,
-				Chest: undefined,
-				Head: undefined,
-				Waist: undefined,
-				Foot: undefined,
-				Hand: undefined,
-				Neck: undefined,
-				Ring: undefined, }), critical_hit: false, }, },
-				Obstacle: undefined,
-				Discovery: undefined, })],
-				attack: undefined,
-				flee: undefined,
-				equip: undefined,
-				drop: undefined,
-				level_up: undefined, }),
-		},
-		LevelUpEvent: {
-			market_seed: 0,
-			potions: 0,
-		attributes: { strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0, },
-			items: [{ item_id: 0, equip: false, }],
+		StatUpgradeEvent: {
+		stats: { strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0, },
 		},
 		ItemPurchase: {
 			item_id: 0,
@@ -578,16 +619,19 @@ export enum ModelsMapping {
 	Slot = 'lootsurvivor-Slot',
 	DiscoveryType = 'lootsurvivor-DiscoveryType',
 	Stats = 'lootsurvivor-Stats',
-	AttackDetails = 'lootsurvivor-AttackDetails',
-	DropEvent = 'lootsurvivor-DropEvent',
-	EquipEvent = 'lootsurvivor-EquipEvent',
-	ExploreBeastEvent = 'lootsurvivor-ExploreBeastEvent',
-	ExploreEvent = 'lootsurvivor-ExploreEvent',
-	ExploreObstacleEvent = 'lootsurvivor-ExploreObstacleEvent',
-	FleeEvent = 'lootsurvivor-FleeEvent',
+	AttackEvent = 'lootsurvivor-AttackEvent',
+	BattleEvent = 'lootsurvivor-BattleEvent',
+	BattleEventDetails = 'lootsurvivor-BattleEventDetails',
+	BattleEventValue = 'lootsurvivor-BattleEventValue',
+	DefeatedBeastEvent = 'lootsurvivor-DefeatedBeastEvent',
+	DiscoveryEvent = 'lootsurvivor-DiscoveryEvent',
+	FledBeastEvent = 'lootsurvivor-FledBeastEvent',
 	GameEvent = 'lootsurvivor-GameEvent',
 	GameEventDetails = 'lootsurvivor-GameEventDetails',
 	GameEventValue = 'lootsurvivor-GameEventValue',
-	LevelUpEvent = 'lootsurvivor-LevelUpEvent',
+	ItemEvent = 'lootsurvivor-ItemEvent',
+	MarketEvent = 'lootsurvivor-MarketEvent',
+	ObstacleEvent = 'lootsurvivor-ObstacleEvent',
+	StatUpgradeEvent = 'lootsurvivor-StatUpgradeEvent',
 	ItemPurchase = 'lootsurvivor-ItemPurchase',
 }

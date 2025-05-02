@@ -1,27 +1,90 @@
+import { useLottie } from 'lottie-react';
 import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { Beast } from '@/types/game';
 import { getBeast, getBeastImage, getTierGlowColor, getTypeStrength, getTypeWeakness } from '@/utils/beast';
-import { calculateAttackDamage, simulateBattle, simulateFlee } from '@/utils/game';
+import { calculateAttackDamage, flee_percentage, simulateBattle, simulateFlee } from '@/utils/game';
 import { Box, Button, Checkbox, LinearProgress, Tooltip, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import strikeAnim from "@/assets/animations/strike.json";
+import AnimatedText from '@/components/AnimatedText';
+
+const attackMessage = "Attacking";
+const fleeMessage = "Attempting to flee";
 
 export default function BeastScreen() {
   const { attack, flee } = useSystemCalls();
-  const { gameId, adventurer, beastSeed, setKeepScreen, gameEvents } = useGameStore();
+  const { gameId, adventurer, beastSeed, setKeepScreen, battleLog, setBattleLog } = useGameStore();
+
   const [untilDeath, setUntilDeath] = useState(true);
+  const [attackInProgress, setAttackInProgress] = useState(false);
+  const [fleeInProgress, setFleeInProgress] = useState(false);
 
   const [beast] = useState<Beast>(
-    getBeast(BigInt(beastSeed!), adventurer!.xp, adventurer!.equipment.weapon)
+    getBeast(BigInt(beastSeed ?? 0), adventurer!.xp, adventurer!.equipment.weapon)
   );
   const [combatLog, setCombatLog] = useState("");
+  const [health, setHealth] = useState(adventurer!.health);
+  const [beastHealth, setBeastHealth] = useState(adventurer!.beast_health);
+
+  const strike = useLottie({
+    animationData: strikeAnim,
+    loop: false,
+    autoplay: false,
+    style: { position: 'absolute', width: '60%', height: '60%', top: '20%', right: '20%' },
+    onComplete: () => {
+      strike.stop();
+      setBeastHealth(prev => Math.max(0, prev - battleLog![0].damage!));
+      setTimeout(() => {
+        setBattleLog(battleLog!.slice(1));
+      }, 500);
+    }
+  });
+
+  const beastStrike = useLottie({
+    animationData: strikeAnim,
+    loop: false,
+    autoplay: false,
+    style: { position: 'absolute', width: '60%', height: '60%', top: '30%', right: '20%' },
+    onComplete: () => {
+      beastStrike.stop();
+      setHealth(prev => Math.max(0, prev - battleLog![0].damage!));
+      setTimeout(() => {
+        setBattleLog(battleLog!.slice(1));
+      }, 500);
+    }
+  });
 
   useEffect(() => {
     if (adventurer?.xp === 0) {
       setCombatLog(beast.name + " ambushed you for 10 damage!");
     }
-  }, [gameEvents]);
+  }, []);
+
+  useEffect(() => {
+    if (battleLog.length > 0) {
+      let event = battleLog[0];
+
+      if (event.type === "attack") {
+        strike.play();
+        setCombatLog(`You attacked ${beast.name} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
+      } else if (event.type === "beast_attack") {
+        beastStrike.play();
+        setCombatLog(`${beast.name} attacked your ${event.location} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
+      } else if (event.type === "flee") {
+        if (event.success) {
+          setCombatLog(`You successfully fled`);
+        } else {
+          setCombatLog(`You failed to flee`);
+        }
+      }
+    } else {
+      setAttackInProgress(false);
+      setFleeInProgress(false);
+      setKeepScreen(false);
+    }
+  }, [battleLog]);
 
   // Calculate probabilities only if both combatants are alive
   const { killChance, fleeChance } = useMemo(() => {
@@ -33,18 +96,21 @@ export default function BeastScreen() {
       fleeChance: simulateFlee(adventurer!, beast, 1000)
     };
   }, [adventurer, beast]);
+  let fleePercentage = flee_percentage(adventurer!.xp, adventurer!.stats.dexterity);
 
   const handleAttack = () => {
+    setKeepScreen(true);
+    setAttackInProgress(true);
+    setCombatLog(attackMessage);
     attack(gameId!, untilDeath);
-    setCombatLog(`You attacked ${beast.name} for ${beastPower} damage`);
   };
 
   const handleFlee = () => {
+    setKeepScreen(true);
+    setFleeInProgress(true);
+    setCombatLog(fleeMessage);
     flee(gameId!, untilDeath);
-    setCombatLog(`You attempted to flee from ${beast.name}`);
   };
-
-  console.log('gameEvents', gameEvents);
 
   const beastName = Number(beast.level) >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK && (beast.specialPrefix || beast.specialSuffix)
     ? `"${[beast.specialPrefix, beast.specialSuffix].filter(Boolean).join(' ')}" ${beast.name}`
@@ -98,12 +164,12 @@ export default function BeastScreen() {
               <Box sx={styles.healthRow}>
                 <Typography sx={styles.healthLabel}>Health</Typography>
                 <Typography sx={styles.healthValue}>
-                  {adventurer?.beast_health || 0}/{beast.health}
+                  {beastHealth}/{beast.health}
                 </Typography>
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={(adventurer!.beast_health / beast.health) * 100}
+                value={(beastHealth / beast.health) * 100}
                 sx={styles.healthBar}
               />
             </Box>
@@ -117,15 +183,15 @@ export default function BeastScreen() {
                 filter: `drop-shadow(0 0 10px ${getTierGlowColor(beast.tier)})`
               }}
             />
+            {strike.View}
           </Box>
         </Box>
 
         {/* Middle Section - Combat Log */}
         <Box sx={styles.middleSection}>
           <Box sx={styles.combatLogContainer}>
-            <Typography sx={styles.combatLogEntry}>
-              {combatLog}
-            </Typography>
+            <AnimatedText text={combatLog} />
+            {(combatLog === fleeMessage || combatLog === attackMessage) && <div className='dotLoader green' style={{ marginTop: '6px' }} />}
           </Box>
         </Box>
 
@@ -137,23 +203,23 @@ export default function BeastScreen() {
               alt="Adventurer"
               style={styles.adventurerImage}
             />
+            {beastStrike.View}
           </Box>
 
           <Box sx={styles.adventurerInfo}>
             <Box sx={styles.adventurerHeader}>
-
               <Box sx={styles.healthContainer}>
                 <Box sx={styles.statsRow}>
                 </Box>
                 <Box sx={styles.healthRow}>
                   <Typography sx={styles.healthLabel}>Health</Typography>
                   <Typography sx={styles.healthValue}>
-                    {adventurer!.health}/{maxHealth}
+                    {health}/{maxHealth}
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={(adventurer!.health / maxHealth) * 100}
+                  value={(health / maxHealth) * 100}
                   sx={styles.healthBar}
                 />
               </Box>
@@ -165,6 +231,7 @@ export default function BeastScreen() {
                   size="small"
                   onClick={handleAttack}
                   sx={styles.attackButton}
+                  disabled={attackInProgress || fleeInProgress}
                 >
                   ATTACK
                 </Button>
@@ -178,12 +245,12 @@ export default function BeastScreen() {
                   size="small"
                   onClick={handleFlee}
                   sx={styles.fleeButton}
-                  disabled={adventurer!.stats.dexterity === 0}
+                  disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
                 >
                   FLEE
                 </Button>
                 <Typography sx={styles.probabilityText}>
-                  {fleeChance}% chance
+                  {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : untilDeath ? `${fleeChance}% chance` : `${fleePercentage}% chance`}
                 </Typography>
               </Box>
               <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>
@@ -201,7 +268,7 @@ export default function BeastScreen() {
           </Box>
         </Box>
       </Box>
-    </Box>
+    </Box >
   );
 }
 
@@ -363,6 +430,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   beastImage: {
     maxWidth: '100%',
@@ -381,17 +449,10 @@ const styles = {
   },
   combatLogContainer: {
     width: '100%',
-    minHeight: '40px',
+    minHeight: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  combatLogEntry: {
-    color: 'rgba(128, 255, 0, 0.8)',
-    fontFamily: 'VT323, monospace',
-    fontSize: '1.1rem',
-    lineHeight: '1.2',
-    textAlign: 'center',
   },
   actionsContainer: {
     display: 'flex',
@@ -414,9 +475,6 @@ const styles = {
     background: 'linear-gradient(45deg, #80FF00 30%, #9dff33 90%)',
     borderRadius: '12px',
     color: '#111111',
-    '&:hover': {
-      background: 'linear-gradient(45deg, #9dff33 30%, #80FF00 90%)',
-    },
   },
   fleeButton: {
     width: '100%',
@@ -425,9 +483,6 @@ const styles = {
     background: 'linear-gradient(45deg, #EDCF33 30%, #f5e066 90%)',
     borderRadius: '12px',
     color: '#111111',
-    '&:hover': {
-      background: 'linear-gradient(45deg, #f5e066 30%, #EDCF33 90%)',
-    },
   },
   deathCheckboxContainer: {
     display: 'flex',
@@ -498,6 +553,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   adventurerImage: {
     maxWidth: '100%',

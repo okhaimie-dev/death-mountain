@@ -144,13 +144,14 @@ export const simulateBattle = (adventurer: Adventurer, beast: Beast, iterations:
         }
     }
 
-    return Math.round((successCount / iterations) * 100);
+    return Math.floor((successCount / iterations) * 100);
 };
 
 export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: number) => {
     if (!adventurer.stats.dexterity) return 0;
-    let successCount = 0;
 
+    let adventurer_level = calculateLevel(adventurer.xp);
+    let successCount = 0;
     for (let i = 0; i < iterations; i++) {
         let adventurerHealth = adventurer.health;
         let battleActions = adventurer.action_count || 0;
@@ -167,8 +168,7 @@ export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: n
             );
 
             // Try to flee using entropy
-            const scaledChance = (adventurer.stats.dexterity * 255) / 100;
-            if (rnd1_u8 <= scaledChance) {
+            if (ability_based_avoid_threat(adventurer_level, adventurer.stats.dexterity, rnd1_u8)) {
                 successCount++;
                 break;
             }
@@ -186,8 +186,27 @@ export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: n
         }
     }
 
-    return Math.round((successCount / iterations) * 100);
+    return Math.floor((successCount / iterations) * 100);
 };
+
+export const flee_percentage = (adventurer_xp: number, dexterity: number) => {
+    let adventurer_level = calculateLevel(adventurer_xp);
+
+    if (dexterity >= adventurer_level) {
+        return 100;
+    } else {
+        return Math.floor((dexterity / adventurer_level) * 100);
+    }
+}
+
+const ability_based_avoid_threat = (adventurer_level: number, relevant_stat: number, rnd: number) => {
+    if (relevant_stat >= adventurer_level) {
+        return true;
+    } else {
+        let scaled_chance = (adventurer_level * rnd) / 255;
+        return relevant_stat > scaled_chance;
+    }
+}
 
 const calculateBeastDamage = (beast: Beast, adventurer: Adventurer, attackLocation: string, entropy: number) => {
     const baseAttack = beast.level * (6 - Number(beast.tier));

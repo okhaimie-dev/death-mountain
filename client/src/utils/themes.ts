@@ -72,7 +72,6 @@ export const mainTheme = createTheme({
           '&:disabled': {
             opacity: 0.5,
             color: 'rgba(1, 1, 1, 0.8)',
-            border: '1px solid rgba(1, 1, 1, 1)'
           }
         }
       }

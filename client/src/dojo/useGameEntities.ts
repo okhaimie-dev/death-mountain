@@ -28,7 +28,7 @@ const gameQuery = (gameId: number) => {
 }
 
 const updateGameStore = (entities: any) => {
-  entities.forEach((entity: any) => {0
+  entities.forEach((entity: any) => {
     if (Boolean(getEntityModel(entity, "AdventurerPacked"))) {
       useGameStore.getState().setAdventurer(
         unpackAdventurer(BigInt(getEntityModel(entity, "AdventurerPacked").packed))

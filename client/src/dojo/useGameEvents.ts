@@ -1,4 +1,5 @@
 import { GameQueryBuilder } from "@/types/game";
+import { formatBattleEvent, formatExploreEvent } from "@/utils/events";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { addAddressPadding } from "starknet";
 import { useGameStore } from '../stores/gameStore';
@@ -11,25 +12,37 @@ const gameEventsQuery = (gameId: number) => {
     .withClause(
       new ClauseBuilder().keys(
         [
-          `${namespace}-GameEvent`
+          `${namespace}-GameEvent`,
+          `${namespace}-BattleEvent`,
         ],
         [addAddressPadding(gameId)]
       ).build()
     )
     .withEntityModels([
       `${namespace}-GameEvent`,
+      `${namespace}-BattleEvent`,
     ])
-    .includeHashedKeys()
-    .withOrderBy(
-      [
-        {
-          model: `${namespace}-GameEvent`,
-          member: "action_count",
-          direction: "Desc"
-        }
-      ]
-    )
-    .withLimit(1)
+    .withLimit(10000)
+}
+
+const updateGameStore = (entities: any, history: boolean) => {
+  let exploreEvents = formatExploreEvent(entities);
+  useGameStore.getState().setExploreLog(exploreEvents);
+
+  if (!history) {
+    let battleEvents = formatBattleEvent(entities);
+    useGameStore.getState().setBattleLog(battleEvents);
+  }
+}
+
+export async function fetchPreviousEvents(sdk: any, gameId: number) {
+  console.log('querying previous events', gameEventsQuery(gameId))
+  const entities = await sdk.getEventMessages({
+    query: gameEventsQuery(gameId),
+    historical: false,
+  });
+
+  updateGameStore(entities, true);
 }
 
 export async function setupGameEventsSubscription(sdk: any, gameId: number) {
@@ -39,25 +52,23 @@ export async function setupGameEventsSubscription(sdk: any, gameId: number) {
     eventSubscription = null;
   }
 
+  console.log('subscribing to events', gameEventsQuery(gameId))
   try {
-    const [initialData, subscription] = await sdk.subscribeEventQuery({
+    const [_, subscription] = await sdk.subscribeEventQuery({
       query: gameEventsQuery(gameId),
       historical: false,
       callback: ({ data, error }: { data: any, error: Error | null }) => {
         if (error) {
-          console.error('Subscription error:', error);
+          console.error('Event subscription error:', error);
         } else if (data) {
-          console.log("Game Event Data:", data);
-          // useGameStore.getState().setGameEvent(data);
+          updateGameStore(data, false);
         }
       }
     })
 
-    console.log('initialData gameEvent', initialData);
-    useGameStore.getState().setGameEvents(initialData.map((event: any) => event.models[`${namespace}`]));
     eventSubscription = subscription;
   } catch (error) {
-    console.error('Subscription error:', error);
+    console.error('Event subscription error:', error);
     return () => { };
   }
 }

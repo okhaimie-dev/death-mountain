@@ -174,17 +174,17 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_adventurer_systems_getMarket_calldata = (seed: BigNumberish, statUpgradesAvailable: BigNumberish): DojoCall => {
+	const build_adventurer_systems_getMarket_calldata = (seed: BigNumberish): DojoCall => {
 		return {
 			contractName: "adventurer_systems",
 			entrypoint: "get_market",
-			calldata: [seed, statUpgradesAvailable],
+			calldata: [seed],
 		};
 	};
 
-	const adventurer_systems_getMarket = async (seed: BigNumberish, statUpgradesAvailable: BigNumberish) => {
+	const adventurer_systems_getMarket = async (seed: BigNumberish) => {
 		try {
-			return await provider.call("ls_0_0_1", build_adventurer_systems_getMarket_calldata(seed, statUpgradesAvailable));
+			return await provider.call("ls_0_0_1", build_adventurer_systems_getMarket_calldata(seed));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -293,17 +293,17 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_adventurer_systems_removeStatBoosts_calldata = (adventurer: models.Adventurer): DojoCall => {
+	const build_adventurer_systems_removeStatBoosts_calldata = (adventurer: models.Adventurer, bag: models.Bag): DojoCall => {
 		return {
 			contractName: "adventurer_systems",
 			entrypoint: "remove_stat_boosts",
-			calldata: [adventurer],
+			calldata: [adventurer, bag],
 		};
 	};
 
-	const adventurer_systems_removeStatBoosts = async (adventurer: models.Adventurer) => {
+	const adventurer_systems_removeStatBoosts = async (adventurer: models.Adventurer, bag: models.Bag) => {
 		try {
-			return await provider.call("ls_0_0_1", build_adventurer_systems_removeStatBoosts_calldata(adventurer));
+			return await provider.call("ls_0_0_1", build_adventurer_systems_removeStatBoosts_calldata(adventurer, bag));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -399,6 +399,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_game_systems_buyItems_calldata = (adventurerId: BigNumberish, potions: BigNumberish, items: Array<ItemPurchase>): DojoCall => {
+		return {
+			contractName: "game_systems",
+			entrypoint: "buy_items",
+			calldata: [adventurerId, potions, items],
+		};
+	};
+
+	const game_systems_buyItems = async (snAccount: Account | AccountInterface, adventurerId: BigNumberish, potions: BigNumberish, items: Array<ItemPurchase>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_systems_buyItems_calldata(adventurerId, potions, items),
+				"ls_0_0_1",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_game_systems_drop_calldata = (adventurerId: BigNumberish, items: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "game_systems",
@@ -483,19 +504,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_systems_levelUp_calldata = (adventurerId: BigNumberish, potions: BigNumberish, statUpgrades: models.Stats, items: Array<ItemPurchase>): DojoCall => {
+	const build_game_systems_selectStatUpgrades_calldata = (adventurerId: BigNumberish, statUpgrades: models.Stats): DojoCall => {
 		return {
 			contractName: "game_systems",
-			entrypoint: "level_up",
-			calldata: [adventurerId, potions, statUpgrades, items],
+			entrypoint: "select_stat_upgrades",
+			calldata: [adventurerId, statUpgrades],
 		};
 	};
 
-	const game_systems_levelUp = async (snAccount: Account | AccountInterface, adventurerId: BigNumberish, potions: BigNumberish, statUpgrades: models.Stats, items: Array<ItemPurchase>) => {
+	const game_systems_selectStatUpgrades = async (snAccount: Account | AccountInterface, adventurerId: BigNumberish, statUpgrades: models.Stats) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_game_systems_levelUp_calldata(adventurerId, potions, statUpgrades, items),
+				build_game_systems_selectStatUpgrades_calldata(adventurerId, statUpgrades),
 				"ls_0_0_1",
 			);
 		} catch (error) {
@@ -1147,6 +1168,8 @@ export function setupWorld(provider: DojoProvider) {
 		game_systems: {
 			attack: game_systems_attack,
 			buildAttackCalldata: build_game_systems_attack_calldata,
+			buyItems: game_systems_buyItems,
+			buildBuyItemsCalldata: build_game_systems_buyItems_calldata,
 			drop: game_systems_drop,
 			buildDropCalldata: build_game_systems_drop_calldata,
 			equip: game_systems_equip,
@@ -1155,8 +1178,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildExploreCalldata: build_game_systems_explore_calldata,
 			flee: game_systems_flee,
 			buildFleeCalldata: build_game_systems_flee_calldata,
-			levelUp: game_systems_levelUp,
-			buildLevelUpCalldata: build_game_systems_levelUp_calldata,
+			selectStatUpgrades: game_systems_selectStatUpgrades,
+			buildSelectStatUpgradesCalldata: build_game_systems_selectStatUpgrades_calldata,
 			startGame: game_systems_startGame,
 			buildStartGameCalldata: build_game_systems_startGame_calldata,
 		},

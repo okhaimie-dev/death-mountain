@@ -7,7 +7,7 @@ import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import { useController } from '@/contexts/controller';
 import { setupGameSubscription } from '@/dojo/useGameEntities';
-import { setupGameEventsSubscription } from '@/dojo/useGameEvents';
+import { fetchPreviousEvents, setupGameEventsSubscription } from '@/dojo/useGameEvents';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -21,7 +21,7 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame, startGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed, keepScreen, setKeepScreen, newGame } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, marketSeed, beastSeed, keepScreen, newGame, exploreLog } = useGameStore();
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
   const [screen, setScreen] = useState('loading');
@@ -52,6 +52,7 @@ export default function GamePage() {
       setGameId(game_id);
       setupGameSubscription(sdk, game_id);
       setupGameEventsSubscription(sdk, game_id);
+      fetchPreviousEvents(sdk, game_id);
       fetchMetadata(sdk, game_id);
     } else if (game_id === 0) {
       mint();
@@ -69,15 +70,14 @@ export default function GamePage() {
       if (!gameId || !adventurer) {
         setScreen('loading');
       } else if (adventurer && adventurer.beast_health > 0 && beastSeed) {
-        // setKeepScreen(true);
         setScreen('beast');
       } else if (adventurer && adventurer.stat_upgrades_available > 0) {
         setScreen('statSelection');
-      } else {
+      } else if (exploreLog.length > 0) {
         setScreen('explore');
       }
     }
-  }, [keepScreen, gameId, adventurer, beastSeed, marketSeed]);
+  }, [keepScreen, gameId, adventurer, beastSeed, marketSeed, exploreLog]);
 
   return (
     <Box className="container" sx={styles.container}>

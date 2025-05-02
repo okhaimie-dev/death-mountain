@@ -2489,7 +2489,7 @@
     },
     {
       "address": "0x470f53f87cb1660d931f10bfbd43c04a6c14959b36deef668f8fdd7a37cdf6a",
-      "class_hash": "0x65d1c682ca23270488da944e7f0e9835bbf59e7b16b97b3506a4989aeac39d0",
+      "class_hash": "0x40c19b73d81ed62e98c7eb25d3db41f611dcf364bf0c60d75c0abd01e0c6f94",
       "abi": [
         {
           "type": "impl",
@@ -4680,7 +4680,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x238786b831a19d457823415bf77af3753a5f567e2fc1961963e0174c38abd3c",
+      "class_hash": "0x5c18a6c256bfb5039197b54fb49ee38a7a1a80469b50b8971a8bc2da566dfdd",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }

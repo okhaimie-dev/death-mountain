@@ -35,22 +35,18 @@ pub struct AdventurerEntropy {
 // ------------ Events ---------------------- //
 // ------------------------------------------ //
 #[derive(Introspect, Copy, Drop, Serde)]
-#[dojo::event]
+#[dojo::event(historical:true)]
 pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,
-    #[key]
-    pub action_count: u16,
     pub details: GameEventDetails,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
-#[dojo::event]
+#[dojo::event(historical:true)]
 pub struct BattleEvent {
     #[key]
     pub adventurer_id: u64,
-    #[key]
-    pub action_count: u16,
     pub adventurer_xp: u16,
     pub details: BattleEventDetails,
 }
@@ -65,6 +61,7 @@ pub enum GameEventDetails {
     market: MarketEvent,
     equip: ItemEvent,
     drop: ItemEvent,
+    level_up: LevelUpEvent,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]
@@ -99,6 +96,11 @@ pub struct FledBeastEvent {
 #[derive(Introspect, Copy, Drop, Serde)]
 pub struct StatUpgradeEvent {
     pub stats: Stats,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+pub struct LevelUpEvent {
+    pub level: u8,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]

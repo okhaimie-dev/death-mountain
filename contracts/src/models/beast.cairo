@@ -255,9 +255,9 @@ mod tests {
         CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH,
     };
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
+    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
     use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
 
     #[test]
     #[available_gas(70000)]
@@ -486,7 +486,9 @@ mod tests {
         let adventurer_level = 2;
 
         let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-            ImplAdventurer::get_randomness(xp, seed);
+            ImplAdventurer::get_randomness(
+            xp, seed,
+        );
 
         // get beast based on entropy seeds
         let beast = ImplBeast::get_beast(
