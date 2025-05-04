@@ -52,4 +52,8 @@ export function generateMarketItems(seed: bigint, charisma: number): MarketItem[
   }
 
   return items;
-} 
+}
+
+export function potionPrice(level: number, charisma: number): number {
+  return Math.max(1, level - (charisma * 2));
+}

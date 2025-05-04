@@ -1,7 +1,9 @@
-import { useSystemCalls } from '@/dojo/useSystemCalls';
+import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { Stats } from '@/types/game';
+import { screenVariants } from '@/utils/animations';
 import { Box, Button, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 const STAT_DESCRIPTIONS = {
@@ -15,7 +17,7 @@ const STAT_DESCRIPTIONS = {
 
 export default function StatSelectionScreen() {
   const { gameId, adventurer } = useGameStore();
-  const { selectStatUpgrades } = useSystemCalls();
+  const { executeGameAction } = useGameDirector();
 
   const [isSelectingStats, setIsSelectingStats] = useState(false);
   const [selectedStats, setSelectedStats] = useState<Stats>({
@@ -48,14 +50,20 @@ export default function StatSelectionScreen() {
 
   const handleSelectStats = async () => {
     setIsSelectingStats(true);
-    selectStatUpgrades(gameId!, selectedStats);
+    executeGameAction({ type: 'select_stat_upgrades', statUpgrades: selectedStats });
   };
 
   const totalSelected = Object.values(selectedStats).reduce((a, b) => a + b, 0);
   const pointsRemaining = adventurer!.stat_upgrades_available - totalSelected;
 
   return (
-    <Box sx={styles.container}>
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={screenVariants}
+      style={styles.container}
+    >
       <Box sx={styles.content}>
         <Typography variant="h4" sx={styles.title}>
           Select Stat Upgrades
@@ -125,7 +133,7 @@ export default function StatSelectionScreen() {
           }
         </Button>
       </Box>
-    </Box>
+    </motion.div>
   );
 }
 
@@ -134,8 +142,8 @@ const styles = {
     width: '100%',
     height: '100vh',
     display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
+    flexDirection: 'column' as const,
+    overflowY: 'auto' as const,
   },
   content: {
     display: 'flex',

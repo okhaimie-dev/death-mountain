@@ -63,4 +63,35 @@ export const eventStatsTransition = (index: number) => ({
   stiffness: 500,
   damping: 30,
   delay: 0.4
-}); 
+});
+
+export const screenVariants: Variants = {
+  initial: { 
+    opacity: 0,
+    y: 20,
+    scale: 0.98
+  },
+  animate: { 
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 25,
+      mass: 1,
+      delay: 0.2
+    }
+  },
+  exit: { 
+    opacity: 0,
+    y: -20,
+    scale: 0.98,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 25,
+      mass: 1
+    }
+  }
+}; 

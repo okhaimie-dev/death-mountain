@@ -1,19 +1,17 @@
 import AdventurerInfo from '@/components/AdventurerInfo';
-import { BEAST_NAMES } from '@/constants/beast';
-import { useSystemCalls } from '@/dojo/useSystemCalls';
+import { OBSTACLE_NAMES } from '@/constants/obstacle';
+import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { ExploreEvent } from '@/utils/events';
-import { OBSTACLE_NAMES } from '@/utils/obstacleNames';
+import { GameEvent } from '@/utils/events';
 import { Box, Button, FormControlLabel, Switch, Typography, keyframes } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 export default function ExploreScreen() {
-  const { explore } = useSystemCalls();
-  const { exploreLog, gameId, setKeepScreen } = useGameStore();
+  const { executeGameAction } = useGameDirector();
+  const { exploreLog, gameId } = useGameStore();
 
   const [untilBeast, setUntilBeast] = useState(false);
   const [isExploring, setIsExploring] = useState(false);
-  const [eventHistory, setEventHistory] = useState<ExploreEvent[]>(exploreLog);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to top
@@ -23,40 +21,22 @@ export default function ExploreScreen() {
     }
   };
 
-  // Handle new events when exploreLog updates
   useEffect(() => {
-    if (eventHistory.length < exploreLog.length) {
-      // Get the new events that were added
-      let count = exploreLog.length - eventHistory.length;
-      const newEvents = exploreLog.slice(0, count);
-
-      // Add each new event one by one with a delay
-      newEvents.forEach((event, index) => {
-        setTimeout(() => {
-          setEventHistory(prev => [event, ...prev]);
-          scrollToTop();
-        }, index * 1000); // 1 second delay between each event
-      });
-    }
+    scrollToTop();
+    setIsExploring(false);
   }, [exploreLog]);
-
-  useEffect(() => {
-    if (isExploring && eventHistory.length === exploreLog.length) {
-      setIsExploring(false);
-    }
-  }, [eventHistory, exploreLog]);
 
   const handleExplore = async () => {
     setIsExploring(true);
-    explore(gameId!, untilBeast);
+    executeGameAction({ type: 'explore', untilBeast });
   };
 
-  const getEventIcon = (event: ExploreEvent) => {
+  const getEventIcon = (event: GameEvent) => {
     switch (event.type) {
       case 'discovery':
         return '🌟';
       case 'obstacle':
-        return event.dodged ? '🕳️' : '⚔️';
+        return '🕳️';
       case 'defeated_beast':
         return '👹';
       case 'fled_beast':
@@ -65,12 +45,8 @@ export default function ExploreScreen() {
         return '📈';
       case 'level_up':
         return '🔝';
-      case 'market':
+      case 'buy_items':
         return '🏪';
-      case 'equip':
-        return '⚔️';
-      case 'drop':
-        return '🎁';
       case 'beast':
         return '👹';
       default:
@@ -78,20 +54,19 @@ export default function ExploreScreen() {
     }
   };
 
-  const getEventTitle = (event: ExploreEvent) => {
+  const getEventTitle = (event: GameEvent) => {
     switch (event.type) {
+      case 'beast':
+        return `Encountered beast`;
       case 'discovery':
-        if (event.discovery_type?.variant) {
-          const variant = event.discovery_type.variant;
-          if (variant.Gold !== undefined) return 'Discovered Gold';
-          if (variant.Health !== undefined) return 'Discovered Health';
-          if (variant.Loot !== undefined) return 'Discovered Loot';
-        }
+        if (event.discovery?.type === 'Gold') return 'Discovered Gold';
+        if (event.discovery?.type === 'Health') return 'Discovered Health';
+        if (event.discovery?.type === 'Loot') return 'Discovered Loot';
         return 'Discovered Unknown';
       case 'obstacle':
-        const location = event.location || 'None';
-        const obstacleName = OBSTACLE_NAMES[event.obstacle_id!] || 'Unknown Obstacle';
-        if (event.damage === 0) {
+        const location = event.obstacle?.location || 'None';
+        const obstacleName = OBSTACLE_NAMES[event.obstacle?.id!] || 'Unknown Obstacle';
+        if (event.obstacle?.damage === 0) {
           return `Avoided ${obstacleName}`;
         }
         return `${obstacleName} hit your ${location}`;
@@ -103,14 +78,8 @@ export default function ExploreScreen() {
         return 'Level Up';
       case 'stat_upgrade':
         return 'Stats Upgraded';
-      case 'market':
+      case 'buy_items':
         return 'Visited Market';
-      case 'equip':
-        return 'Equipped Items';
-      case 'drop':
-        return 'Items Dropped';
-      case 'beast':
-        return `Encountered a ${BEAST_NAMES[event.beast_id!]}`;
       default:
         return 'Unknown Event';
     }
@@ -130,51 +99,58 @@ export default function ExploreScreen() {
           <Box sx={styles.sectionHeader}>
             <Typography sx={styles.sectionTitle}>Explorer Log</Typography>
           </Box>
+
           <Box sx={styles.encountersList} ref={listRef}>
-            {eventHistory.map((event, index) => (
+            {exploreLog.map((event, index) => (
               <Box
-                key={`${index}`}
+                key={`${exploreLog.length - index}`}
                 sx={{
                   ...styles.encounter,
                   animation: `${fadeIn} 0.5s ease-in-out`,
                 }}
               >
                 <Box sx={styles.encounterIcon}>{getEventIcon(event)}</Box>
+
                 <Box sx={styles.encounterDetails}>
                   <Typography sx={styles.encounterTitle}>{getEventTitle(event)}</Typography>
+
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     {typeof event.xp_reward === 'number' && event.xp_reward > 0 && (
                       <Typography sx={styles.encounterXP}>+{event.xp_reward} XP</Typography>
                     )}
-                    {event.type === 'obstacle' && typeof event.damage === 'number' && (
+
+                    {event.type === 'obstacle' && (
                       <Typography sx={styles.encounterXP}>
-                        {event.damage === 0 ? 'Avoided' : `-${event.damage} Health ${event.critical ? 'CRIT' : ''}`}
+                        {event.obstacle?.damage === 0 ? 'Avoided' : `-${event.obstacle?.damage} Health ${event.obstacle?.critical_hit ? 'critical hit!' : ''}`}
                       </Typography>
                     )}
+
                     {typeof event.gold_reward === 'number' && event.gold_reward > 0 && (
                       <Typography sx={styles.encounterXP}>
                         +{event.gold_reward} Gold
                       </Typography>
                     )}
-                    {event.type === 'discovery' && event.discovery_type?.variant && (
+
+                    {event.type === 'discovery' && event.discovery?.type && (
                       <>
-                        {event.discovery_type.variant.Gold !== undefined && (
+                        {event.discovery.type === 'Gold' && (
                           <Typography sx={styles.encounterXP}>
-                            +{event.discovery_type.variant.Gold} Gold
+                            +{event.discovery.amount} Gold
                           </Typography>
                         )}
-                        {event.discovery_type.variant.Health !== undefined && (
+                        {event.discovery.type === 'Health' && (
                           <Typography sx={styles.encounterXP}>
-                            +{event.discovery_type.variant.Health} Health
+                            +{event.discovery.amount} Health
                           </Typography>
                         )}
-                        {event.discovery_type.variant.Loot !== undefined && (
+                        {event.discovery.type === 'Loot' && (
                           <Typography sx={styles.encounterXP}>
-                            +{event.discovery_type.variant.Loot} Loot
+                            +{event.discovery.amount} Loot
                           </Typography>
                         )}
                       </>
                     )}
+
                     {event.type === 'stat_upgrade' && event.stats && (
                       <Typography sx={styles.encounterXP}>
                         {Object.entries(event.stats)
@@ -183,29 +159,28 @@ export default function ExploreScreen() {
                           .join(', ')}
                       </Typography>
                     )}
+
                     {event.type === 'level_up' && event.level && (
                       <Typography sx={styles.encounterXP}>
                         Reached Level {event.level}
                       </Typography>
                     )}
-                    {event.type === 'market' && typeof event.potions === 'number' && (
+
+                    {event.type === 'buy_items' && typeof event.potions === 'number' && (
                       <Typography sx={styles.encounterXP}>
                         {event.potions > 0 ? `+${event.potions} Potions` : 'No Potions'}
                       </Typography>
                     )}
-                    {event.type === 'equip' && event.items && event.items.length > 0 && (
+
+                    {event.items && event.items.length > 0 && (
                       <Typography sx={styles.encounterXP}>
                         Equipped {event.items.length} items
                       </Typography>
                     )}
-                    {event.type === 'drop' && event.items && event.items.length > 0 && (
-                      <Typography sx={styles.encounterXP}>
-                        Dropped {event.items.length} items
-                      </Typography>
-                    )}
+
                     {event.type === 'beast' && (
                       <Typography sx={styles.encounterXP}>
-                        Level {event.beast_level} Power {event.beast_tier! * event.beast_level!}
+                        Level {event.beast?.level} Power {event.beast?.tier! * event.beast?.level!}
                       </Typography>
                     )}
                   </Box>

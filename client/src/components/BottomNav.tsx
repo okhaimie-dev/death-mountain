@@ -3,20 +3,22 @@ import { useState } from 'react';
 import adventurerImg from '../assets/images/adventurer.png';
 import marketImg from '../assets/images/market.png';
 import playImg from '../assets/images/play.png';
+import { Adventurer } from '../types/game';
+import { useGameStore } from '@/stores/gameStore';
 
 interface BottomNavProps {
   activeNavItem: 'GAME' | 'CHARACTER' | 'MARKET';
   setActiveNavItem: (item: 'GAME' | 'CHARACTER' | 'MARKET') => void;
-  currentScreen: string;
+  adventurer: Adventurer;
 }
 
-export default function BottomNav({ activeNavItem, setActiveNavItem, currentScreen }: BottomNavProps) {
-  const [hasNewMarketItems, setHasNewMarketItems] = useState(false);
+export default function BottomNav({ activeNavItem, setActiveNavItem, adventurer }: BottomNavProps) {
+  const { newMarket, setNewMarket } = useGameStore();
 
-  const isMarketAvailable = currentScreen !== 'beast' && currentScreen !== 'statSelection';
-  const marketTooltipText = currentScreen === 'beast'
+  const isMarketAvailable = adventurer.beast_health === 0 && adventurer.stat_upgrades_available === 0;
+  const marketTooltipText = adventurer.beast_health > 0
     ? 'Not available during battle'
-    : currentScreen === 'statSelection'
+    : adventurer.stat_upgrades_available > 0
       ? 'Not available during stat selection'
       : '';
 
@@ -36,9 +38,9 @@ export default function BottomNav({ activeNavItem, setActiveNavItem, currentScre
     {
       key: 'MARKET',
       icon: <img src={marketImg} alt="Market" style={{ height: 32 }} />,
-      onClick: () => { setActiveNavItem('MARKET'); setHasNewMarketItems(false); },
+      onClick: () => { setActiveNavItem('MARKET'); setNewMarket(false); },
       active: activeNavItem === 'MARKET',
-      hasNew: hasNewMarketItems,
+      hasNew: newMarket,
       disabled: !isMarketAvailable,
       tooltip: marketTooltipText
     }

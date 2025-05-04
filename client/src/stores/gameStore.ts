@@ -1,73 +1,105 @@
 import { create } from 'zustand';
-import { Adventurer, Item, Metadata } from '../types/game';
-import { BattleEvent, ExploreEvent } from '../utils/events';
+import { Adventurer, Beast, Item, Metadata } from '../types/game';
+import { GameEvent } from '@/utils/events';
+import { ItemUtils } from '@/utils/loot';
 
 interface GameState {
   gameId: number | null;
-  newGame: boolean;
   adventurer: Adventurer | null;
-  bag: Item[] | null;
-  beastSeed: bigint | null;
+  bag: Item[];
+  beast: Beast | null;
   marketSeed: bigint | null;
+  newMarket: boolean;
   metadata: Metadata | null;
-  exploreLog: ExploreEvent[];
-  battleLog: BattleEvent[];
-  keepScreen: boolean;
+  exploreLog: GameEvent[];
+  battleEvent: GameEvent | null;
+  equipItems: Item[];
+  dropItems: Item[];
 
   setGameId: (gameId: number) => void;
-  setNewGame: (newGame: boolean) => void;
   exitGame: () => void;
-
   setAdventurer: (data: Adventurer | null) => void;
-  setBag: (data: Item[] | null) => void;
-  setEntropy: (data: any) => void;
+  setBag: (data: Item[]) => void;
+  setBeast: (data: Beast | null) => void;
+  setMarketSeed: (data: bigint | null) => void;
+  setNewMarket: (data: boolean) => void;
   setMetadata: (data: Metadata | null) => void;
-  setExploreLog: (data: ExploreEvent[]) => void;
-  setBattleLog: (data: BattleEvent[]) => void;
-  setKeepScreen: (screen: boolean) => void;
+  setExploreLog: (data: GameEvent) => void;
+  setBattleEvent: (data: GameEvent | null) => void;
+  equipItem: (data: Item) => void;
+  dropItem: (data: Item) => void;
+  undoDropItem: (data: Item) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
   gameId: null,
-  newGame: false,
   metadata: null,
   adventurer: null,
-  bag: null,
-  beastSeed: null,
+  bag: [],
+  beast: null,
   marketSeed: null,
-  keepScreen: false,
+  newMarket: false,
   exploreLog: [],
-  battleLog: [],
+  battleEvent: null,
+  equipItems: [],
+  dropItems: [],
 
   setGameId: (gameId: number) => {
     set({ gameId });
   },
-  setNewGame: (newGame: boolean) => set({ newGame }),
   exitGame: () => {
     set({
       gameId: null,
-      newGame: false,
       adventurer: null,
-      bag: null,
-      beastSeed: null,
+      bag: [],
+      beast: null,
       marketSeed: null,
+      newMarket: false,
       metadata: null,
-      keepScreen: false,
       exploreLog: [],
-      battleLog: [],
+      battleEvent: null,
+      equipItems: [],
+      dropItems: [],
     });
   },
 
   setAdventurer: (data: Adventurer | null) => set({ adventurer: data }),
-  setBag: (data: Item[] | null) => set({ bag: data }),
-  setEntropy: (data: any) => {
-    set({
-      beastSeed: data.beast_seed,
-      marketSeed: data.market_seed,
+  setBag: (data: Item[]) => set({ bag: data }),
+  setBeast: (data: Beast | null) => set({ beast: data }),
+  setMarketSeed: (data: bigint | null) => set({ marketSeed: data }),
+  setNewMarket: (data: boolean) => set({ newMarket: data }),
+  setMetadata: (data: Metadata | null) => set({ metadata: data }),
+  setExploreLog: (data: GameEvent) => set((state) => ({ exploreLog: [data, ...state.exploreLog] })),
+  setBattleEvent: (data: GameEvent | null) => set({ battleEvent: data }),
+
+  equipItem: (data: Item) => {
+    let itemSlot = ItemUtils.getItemSlot(data.id);
+    set((state) => {
+      if (!state.adventurer) {
+        return state;
+      }
+      return {
+        adventurer: {
+          ...state.adventurer,
+          equipment: {
+            ...state.adventurer.equipment,
+            [itemSlot]: data
+          }
+        },
+        equipItems: [data, ...state.equipItems.filter(item => ItemUtils.getItemSlot(item.id) !== itemSlot)]
+      };
     });
   },
-  setMetadata: (data: Metadata | null) => set({ metadata: data }),
-  setExploreLog: (data: ExploreEvent[]) => set((state) => ({ exploreLog: [...data, ...state.exploreLog] })),
-  setBattleLog: (data: BattleEvent[]) => set({ battleLog: data }),
-  setKeepScreen: (screen: boolean) => set({ keepScreen: screen }),
+
+  dropItem: (data: Item) => {
+    set((state) => ({
+      dropItems: [data, ...state.dropItems.filter(item => item.id !== data.id)]
+    }));
+  },
+
+  undoDropItem: (data: Item) => {
+    set((state) => ({
+      dropItems: state.dropItems.filter(item => item.id !== data.id)
+    }));
+  },
 }));

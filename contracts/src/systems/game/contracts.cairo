@@ -87,6 +87,21 @@ mod game_systems {
             // spoof a beast ambush by deducting health from the adventurer
             adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
 
+            let beast = game_libs.beast.get_starter_beast(game_libs.loot.get_type(weapon));
+            _emit_game_event(
+                ref world,
+                adventurer_id,
+                GameEventDetails::beast(
+                    BeastEvent {
+                        id: beast.id,
+                        seed: adventurer_id,
+                        health: beast.starting_health,
+                        level: beast.combat_spec.level,
+                        specials: beast.combat_spec.specials,
+                    },
+                ),
+            );
+
             _save_beast_seed(ref world, adventurer_id, adventurer_id);
             _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
         }
@@ -125,9 +140,6 @@ mod game_systems {
             // go explore
             _explore(ref world, ref adventurer, ref bag, adventurer_id, explore_seed, till_beast, game_libs);
 
-            // save state
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             if bag.mutated {
                 _save_bag(ref world, adventurer_id, bag, game_libs);
             }
@@ -141,6 +153,9 @@ mod game_systems {
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
                 );
             }
+
+            // save state
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Attack Function
@@ -227,9 +242,6 @@ mod game_systems {
                 game_libs,
             );
 
-            // save state
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             // emit events
             let mut event_count = 0;
             while (game_events.len() > 0) {
@@ -258,6 +270,9 @@ mod game_systems {
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
                 );
             }
+
+            // save state
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Flee Function
@@ -328,9 +343,6 @@ mod game_systems {
                 game_libs,
             );
 
-            // save state
-            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-
             // emit events
             while (game_events.len() > 0) {
                 let event = game_events.pop_front().unwrap();
@@ -357,6 +369,9 @@ mod game_systems {
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
                 );
             }
+
+            // save state
+            _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
         /// @title Equip Function

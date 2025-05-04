@@ -1,29 +1,26 @@
-import { useLottie } from 'lottie-react';
-import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
-import { useSystemCalls } from '@/dojo/useSystemCalls';
-import { useGameStore } from '@/stores/gameStore';
-import { Beast } from '@/types/game';
-import { getBeast, getBeastImage, getTierGlowColor, getTypeStrength, getTypeWeakness } from '@/utils/beast';
-import { calculateAttackDamage, flee_percentage, simulateBattle, simulateFlee } from '@/utils/game';
-import { Box, Button, Checkbox, LinearProgress, Tooltip, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
 import strikeAnim from "@/assets/animations/strike.json";
 import AnimatedText from '@/components/AnimatedText';
+import { useGameDirector } from '@/contexts/GameDirector';
+import { useGameStore } from '@/stores/gameStore';
+import { screenVariants } from '@/utils/animations';
+import { getBeastImage, getTypeStrength, getTypeWeakness } from '@/utils/beast';
+import { calculateAttackDamage, flee_percentage, simulateBattle, simulateFlee } from '@/utils/game';
+import { Box, Button, Checkbox, LinearProgress, Tooltip, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
+import { useLottie } from 'lottie-react';
+import { useEffect, useMemo, useState } from 'react';
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
 
 export default function BeastScreen() {
-  const { attack, flee } = useSystemCalls();
-  const { gameId, adventurer, exploreLog, setKeepScreen } = useGameStore();
+  const { executeGameAction } = useGameDirector();
+  const { gameId, adventurer, beast, battleEvent } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(true);
   const [attackInProgress, setAttackInProgress] = useState(false);
   const [fleeInProgress, setFleeInProgress] = useState(false);
 
-  const [beast] = useState<Beast>(
-    getBeast(BigInt(beastSeed ?? 0), adventurer!.xp, adventurer!.equipment.weapon)
-  );
   const [combatLog, setCombatLog] = useState("");
   const [health, setHealth] = useState(adventurer!.health);
   const [beastHealth, setBeastHealth] = useState(adventurer!.beast_health);
@@ -34,11 +31,8 @@ export default function BeastScreen() {
     autoplay: false,
     style: { position: 'absolute', width: '60%', height: '60%', top: '20%', right: '20%' },
     onComplete: () => {
+      setBeastHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
       strike.stop();
-      setBeastHealth(prev => Math.max(0, prev - battleLog![0].damage!));
-      setTimeout(() => {
-        setBattleLog(battleLog!.slice(1));
-      }, 500);
     }
   });
 
@@ -48,93 +42,87 @@ export default function BeastScreen() {
     autoplay: false,
     style: { position: 'absolute', width: '60%', height: '60%', top: '30%', right: '20%' },
     onComplete: () => {
+      setHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
       beastStrike.stop();
-      setHealth(prev => Math.max(0, prev - battleLog![0].damage!));
-      setTimeout(() => {
-        setBattleLog(battleLog!.slice(1));
-      }, 500);
     }
   });
 
   useEffect(() => {
     if (adventurer?.xp === 0) {
-      setCombatLog(beast.name + " ambushed you for 10 damage!");
+      setCombatLog(beast!.name + " ambushed you for 10 damage!");
     }
   }, []);
 
   useEffect(() => {
-    console.log("new battleLog updated", battleLog);
-    if (battleLog.length > 0) {
-      let event = battleLog[0];
-
-      if (event.type === "attack") {
+    if (battleEvent) {
+      if (battleEvent.type === "attack") {
         strike.play();
-        setCombatLog(`You attacked ${beast.name} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
-      } else if (event.type === "beast_attack") {
+        setCombatLog(`You attacked ${beast!.name} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+
+      else if (battleEvent.type === "beast_attack") {
         beastStrike.play();
-        setCombatLog(`${beast.name} attacked your ${event.location} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
-      } else if (event.type === "flee") {
-        if (event.success) {
+        setCombatLog(`${beast!.name} attacked your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+
+      else if (battleEvent.type === "flee") {
+        if (battleEvent.success) {
           setCombatLog(`You successfully fled`);
         } else {
           setCombatLog(`You failed to flee`);
         }
-        setBattleLog(battleLog!.slice(1));
-      } else if (event.type === "ambush") {
-        setCombatLog(`${beast.name} ambushed your ${event.location} for ${event.damage} damage ${event.critical ? 'CRITICAL HIT!' : ''}`);
       }
-    } else {
-      setAttackInProgress(false);
-      setFleeInProgress(false);
-      setKeepScreen(false);
-    }
-  }, [battleLog]);
 
-  // Calculate probabilities only if both combatants are alive
+      else if (battleEvent.type === "ambush") {
+        setCombatLog(`${beast!.name} ambushed your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+    }
+  }, [battleEvent]);
+
+  const handleAttack = () => {
+    setAttackInProgress(true);
+    setCombatLog(attackMessage);
+    executeGameAction({ type: 'attack', untilDeath });
+  };
+
+  const handleFlee = () => {
+    setFleeInProgress(true);
+    setCombatLog(fleeMessage);
+    executeGameAction({ type: 'flee', untilDeath });
+  };
+
   const { killChance, fleeChance } = useMemo(() => {
     if (adventurer!.health === 0 || adventurer!.beast_health === 0) {
       return { killChance: 0, fleeChance: 0 };
     }
     return {
-      killChance: simulateBattle(adventurer!, beast, 1000),
-      fleeChance: simulateFlee(adventurer!, beast, 1000)
+      killChance: simulateBattle(adventurer!, beast!, 1000),
+      fleeChance: simulateFlee(adventurer!, beast!, 1000)
     };
   }, [adventurer, beast]);
-  let fleePercentage = flee_percentage(adventurer!.xp, adventurer!.stats.dexterity);
 
-  const handleAttack = () => {
-    setKeepScreen(true);
-    setAttackInProgress(true);
-    setCombatLog(attackMessage);
-    attack(gameId!, untilDeath);
-  };
-
-  const handleFlee = () => {
-    setKeepScreen(true);
-    setFleeInProgress(true);
-    setCombatLog(fleeMessage);
-    flee(gameId!, untilDeath);
-  };
-
-  const beastName = Number(beast.level) >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK && (beast.specialPrefix || beast.specialSuffix)
-    ? `"${[beast.specialPrefix, beast.specialSuffix].filter(Boolean).join(' ')}" ${beast.name}`
-    : beast.name;
-
-  const beastPower = Number(beast.level) * (6 - Number(beast.tier));
+  const fleePercentage = flee_percentage(adventurer!.xp, adventurer!.stats.dexterity);
+  const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
   const maxHealth = 100 + (adventurer!.stats.vitality * 15);
 
   return (
-    <Box sx={styles.container}>
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={screenVariants}
+      style={styles.container}
+    >
       <Box sx={styles.battleContainer}>
         {/* Top Section - Beast */}
         <Box sx={styles.topSection}>
           <Box sx={styles.beastInfo}>
             <Box sx={styles.beastHeader}>
               <Typography
-                variant={beastName.length > 30 ? "h5" : "h4"}
+                variant={beast!.name.length > 30 ? "h5" : "h4"}
                 sx={styles.beastName}
               >
-                {beastName}
+                {beast!.name}
               </Typography>
               <Box sx={styles.beastType}>
                 <Box sx={styles.statBox}>
@@ -143,15 +131,15 @@ export default function BeastScreen() {
                     title={
                       <Box>
                         <Typography>
-                          Strong against {getTypeStrength(beast.type).toLowerCase()} armor
+                          Strong against {getTypeStrength(beast!.type).toLowerCase()} armor
                         </Typography>
                         <Typography>
-                          Weak against {getTypeWeakness(beast.type).toLowerCase()} weapons
+                          Weak against {getTypeWeakness(beast!.type).toLowerCase()} weapons
                         </Typography>
                       </Box>
                     }
                   >
-                    <Typography sx={styles.statValue}>{beast.type}</Typography>
+                    <Typography sx={styles.statValue}>{beast!.type}</Typography>
                   </Tooltip>
                 </Box>
                 <Box sx={styles.statBox}>
@@ -160,7 +148,7 @@ export default function BeastScreen() {
                 </Box>
                 <Box sx={styles.levelBox}>
                   <Typography sx={styles.levelLabel}>Level</Typography>
-                  <Typography sx={styles.levelValue}>{beast.level}</Typography>
+                  <Typography sx={styles.levelValue}>{beast!.level}</Typography>
                 </Box>
               </Box>
             </Box>
@@ -168,23 +156,22 @@ export default function BeastScreen() {
               <Box sx={styles.healthRow}>
                 <Typography sx={styles.healthLabel}>Health</Typography>
                 <Typography sx={styles.healthValue}>
-                  {beastHealth}/{beast.health}
+                  {beastHealth}/{beast!.health}
                 </Typography>
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={(beastHealth / beast.health) * 100}
+                value={(beastHealth / beast!.health) * 100}
                 sx={styles.healthBar}
               />
             </Box>
           </Box>
           <Box sx={styles.beastImageContainer}>
             <img
-              src={getBeastImage(beast.name)}
-              alt={beast.name}
+              src={getBeastImage(beast!.name)}
+              alt={beast!.name}
               style={{
                 ...styles.beastImage,
-                filter: `drop-shadow(0 0 10px ${getTierGlowColor(beast.tier)})`
               }}
             />
             {strike.View}
@@ -240,7 +227,7 @@ export default function BeastScreen() {
                   ATTACK
                 </Button>
                 <Typography sx={styles.probabilityText}>
-                  {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast, 0)} damage`}
+                  {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
                 </Typography>
               </Box>
               <Box sx={styles.actionButtonContainer}>
@@ -272,7 +259,7 @@ export default function BeastScreen() {
           </Box>
         </Box>
       </Box>
-    </Box >
+    </motion.div>
   );
 }
 
@@ -281,7 +268,7 @@ const styles = {
     width: '100%',
     height: '100vh',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
   },
   battleContainer: {
     height: '100%',

@@ -9,6 +9,7 @@ import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
 import { ControllerProvider } from './contexts/Controller';
 import Header from './components/Header';
+import { GameDirector } from './contexts/GameDirector';
 
 function App() {
   return (
@@ -18,9 +19,9 @@ function App() {
           <ThemeProvider theme={mainTheme}>
             <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
               <ControllerProvider>
+                <GameDirector>
 
-                <Box className='main'>
-                  <AnimatePresence mode="wait">
+                  <Box className='main'>
                     <Header />
 
                     <Routes>
@@ -28,10 +29,9 @@ function App() {
                         return <Route key={index} path={route.path} element={route.content} />
                       })}
                     </Routes>
+                  </Box>
 
-                  </AnimatePresence>
-                </Box>
-
+                </GameDirector>
               </ControllerProvider>
             </SnackbarProvider>
           </ThemeProvider>

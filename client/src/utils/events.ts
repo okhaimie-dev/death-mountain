@@ -1,192 +1,211 @@
-import { getEntityModel } from "@/types/game";
+import { Adventurer, Attack, Bag, Beast, Item, ItemPurchase, Obstacle, Stats, getEntityModel } from "@/types/game";
 import { getBeastName, getBeastTier, getBeastType } from "./beast";
 
-export interface BattleEvent {
-  type: string;
-  damage?: number;
-  location?: string;
-  critical?: boolean;
-  success?: boolean;
-}
+export interface GameEvent {
+  type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' | 'buy_items' | 'equip' | 'drop' | 'level_up' | 'ambush' | 'attack' | 'beast_attack' | 'flee' | 'unknown';
+  adventurer?: Adventurer;
+  bag?: Item[];
+  beast?: Beast;
+  discovery?: {
+    type: 'Gold' | 'Health' | 'Loot';
+    amount: number;
+  }
+  obstacle?: Obstacle;
+  stats?: Stats;
+  attack?: Attack;
 
-export interface ExploreEvent {
-  type: string;
-  damage?: number;
-  location?: string;
-  critical?: boolean;
   xp_reward?: number;
-  obstacle_id?: number;
-  discovery_type?: {
-    variant: {
-      Gold?: number;
-      Health?: number;
-      Loot?: number;
-    };
-  };
-  dodged?: boolean;
   gold_reward?: number;
-  stats?: any;
-  potions?: number;
-  items_purchased?: any[];
-  items?: any[];
-  level?: number;
+
   beast_id?: number;
-  beast_seed?: number;
-  beast_health?: number;
-  beast_level?: number;
-  beast_type?: string;
-  beast_tier?: string;
+  potions?: number;
+  items_purchased?: ItemPurchase[];
+  items?: Item[];
+  market_seed?: bigint;
+  level?: number;
+  success?: boolean;
+
 }
 
-export const formatBattleEvent = (entities: any): BattleEvent[] => {
-  entities = entities.filter((entity: any) => Boolean(getEntityModel(entity, "BattleEvent")));
+export const formatGameEvent = (entity: any): GameEvent => {
+  let event = getEntityModel(entity, "GameEvent")
+  const { details } = event;
 
-  let battleEvents: BattleEvent[] = entities.map((entity: any) => {
-    let event = getEntityModel(entity, "BattleEvent")
-    const { details } = event;
+  if ('adventurer' in details.variant) {
+    return {
+      type: 'adventurer',
+      adventurer: details.variant.adventurer
+    };
+  }
 
-    if (details.variant.attack) {
-      const attack = details.variant.attack;
-      return {
-        type: 'attack',
-        damage: attack.damage,
-        location: 'None',
-        critical: attack.critical_hit
-      };
-    }
+  else if ('bag' in details.variant) {
+    return {
+      type: 'bag',
+      bag: Object.values(details.variant.bag)
+    };
+  }
 
-    if (details.variant.beast_attack) {
-      const beastAttack = details.variant.beast_attack;
-      return {
-        type: 'beast_attack',
-        damage: beastAttack.damage,
-        location: beastAttack.location,
-        critical: beastAttack.critical_hit
-      };
-    }
+  else if ('beast' in details.variant) {
+    const beast = details.variant.beast;
+    return {
+      type: 'beast',
+      beast: {
+        id: beast.id,
+        name: getBeastName(beast.id, beast.level, beast.specials.special2, beast.specials.special3),
+        health: beast.health,
+        level: beast.level,
+        type: getBeastType(beast.id),
+        tier: getBeastTier(beast.id)
+      }
+    };
+  }
 
-    if ('flee' in details.variant) {
-      return {
-        type: 'flee',
-        success: details.variant.flee
-      };
-    }
+  else if ('discovery' in details.variant) {
+    const discovery = details.variant.discovery;
+    return {
+      type: 'discovery',
+      discovery: {
+        type: Object.keys(discovery.discovery_type.variant)[0] as 'Gold' | 'Health' | 'Loot',
+        amount: Object.values(discovery.discovery_type.variant)[0] as number,
+      },
+      xp_reward: discovery.xp_reward
+    };
+  }
 
-    if (details.variant.ambush) {
-      const ambush = details.variant.ambush;
-      return {
-        type: 'ambush',
-        damage: ambush.damage,
-        location: ambush.location,
-        critical: ambush.critical_hit,
-      };
-    }
-  });
-
-  return battleEvents
-};
-
-export const formatExploreEvent = (entities: any): ExploreEvent[] => {
-  entities = entities.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
-
-  let exploreEvents: ExploreEvent[] = entities.map((entity: any) => {
-    let event = getEntityModel(entity, "GameEvent")
-    const { details } = event;
-
-    if (details.variant.beast) {
-      const beast = details.variant.beast;
-      return {
-        type: 'beast',
-        beast_id: beast.id,
-        beast_name: getBeastName(beast.id, beast.level, beast.specials.special2, beast.specials.special3),
-        beast_seed: beast.seed,
-        beast_health: beast.health,
-        beast_level: beast.level,
-        beast_type: getBeastType(beast.id),
-        beast_tier: getBeastTier(beast.id)
-      };
-    }
-
-    if (details.variant.discovery) {
-      const discovery = details.variant.discovery;
-      return {
-        type: 'discovery',
-        xp_reward: discovery.xp_reward,
-        discovery_type: discovery.discovery_type
-      };
-    }
-
-    if (details.variant.obstacle) {
-      const obstacle = details.variant.obstacle;
-      return {
-        type: 'obstacle',
-        obstacle_id: obstacle.obstacle_id,
+  else if ('obstacle' in details.variant) {
+    const obstacle = details.variant.obstacle;
+    return {
+      type: 'obstacle',
+      xp_reward: obstacle.xp_reward,
+      obstacle: {
+        id: obstacle.obstacle_id,
         damage: obstacle.damage,
         location: obstacle.location,
-        critical: obstacle.critical_hit,
-        xp_reward: obstacle.xp_reward,
+        critical_hit: obstacle.critical_hit,
         dodged: obstacle.dodged
-      };
-    }
+      }
+    };
+  }
 
-    if (details.variant.defeated_beast) {
-      const beast = details.variant.defeated_beast;
-      return {
-        type: 'defeated_beast',
-        gold_reward: beast.gold_reward,
-        xp_reward: beast.xp_reward
-      };
-    }
+  else if ('defeated_beast' in details.variant) {
+    const beast = details.variant.defeated_beast;
+    return {
+      type: 'defeated_beast',
+      beast_id: beast.beast_id,
+      gold_reward: beast.gold_reward,
+      xp_reward: beast.xp_reward
+    };
+  }
 
-    if (details.variant.fled_beast) {
-      const beast = details.variant.fled_beast;
-      return {
-        type: 'fled_beast',
-        xp_reward: beast.xp_reward
-      };
-    }
+  else if ('fled_beast' in details.variant) {
+    const beast = details.variant.fled_beast;
+    return {
+      type: 'fled_beast',
+      xp_reward: beast.xp_reward
+    };
+  }
 
-    if (details.variant.stat_upgrade) {
-      const upgrade = details.variant.stat_upgrade;
-      return {
-        type: 'stat_upgrade',
-        stats: upgrade.stats
-      };
-    }
+  else if ('stat_upgrade' in details.variant) {
+    const upgrade = details.variant.stat_upgrade;
+    return {
+      type: 'stat_upgrade',
+      stats: upgrade.stats
+    };
+  }
 
-    if (details.variant.market) {
-      const market = details.variant.market;
-      return {
-        type: 'market',
-        potions: market.potions,
-        items_purchased: market.items_purchased
-      };
-    }
+  else if ('buy_items' in details.variant) {
+    const buy_items = details.variant.buy_items;
+    return {
+      type: 'buy_items',
+      potions: buy_items.potions,
+      items_purchased: buy_items.items_purchased
+    };
+  }
 
-    if (details.variant.equip) {
-      const equip = details.variant.equip;
-      return {
-        type: 'equip',
-        items: equip.items
-      };
-    }
+  else if ('equip' in details.variant) {
+    const equip = details.variant.equip;
+    return {
+      type: 'equip',
+      items: equip.items
+    };
+  }
 
-    if (details.variant.drop) {
-      const drop = details.variant.drop;
-      return {
-        type: 'drop',
-        items: drop.items
-      };
-    }
+  else if ('drop' in details.variant) {
+    const drop = details.variant.drop;
+    return {
+      type: 'drop',
+      items: drop.items
+    };
+  }
 
-    if (details.variant.level_up) {
-      const levelUp = details.variant.level_up;
-      return {
-        type: 'level_up',
-        level: levelUp.level
-      };
-    }
-  });
+  else if ('level_up' in details.variant) {
+    const levelUp = details.variant.level_up;
+    return {
+      type: 'level_up',
+      level: levelUp.level,
+      market_seed: levelUp.market_seed
+    };
+  }
 
-  return exploreEvents
+  else if ('attack' in details.variant) {
+    const attack = details.variant.attack;
+    return {
+      type: 'attack',
+      attack: {
+        damage: attack.damage,
+        location: 'None',
+        critical_hit: attack.critical_hit
+      }
+    };
+  }
+
+  else if ('beast_attack' in details.variant) {
+    const beastAttack = details.variant.beast_attack;
+    return {
+      type: 'beast_attack',
+      attack: {
+        damage: beastAttack.damage,
+        location: beastAttack.location,
+        critical_hit: beastAttack.critical_hit
+      }
+    };
+  }
+
+  else if ('flee' in details.variant) {
+    return {
+      type: 'flee',
+      success: details.variant.flee
+    };
+  }
+
+  else if ('ambush' in details.variant) {
+    const ambush = details.variant.ambush;
+    return {
+      type: 'ambush',
+      attack: {
+        damage: ambush.damage,
+        location: ambush.location,
+        critical_hit: ambush.critical_hit,
+      }
+    };
+  }
+
+  return { type: 'unknown' };
 };
+
+export const ExplorerLogEvents = [
+  'discovery',
+  'obstacle',
+  'defeated_beast',
+  'fled_beast',
+  'stat_upgrade',
+  'buy_items',
+  'level_up',
+]
+
+export const BattleEvents = [
+  'attack',
+  'beast_attack',
+  'flee',
+  'ambush'
+]

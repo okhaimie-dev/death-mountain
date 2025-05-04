@@ -34,17 +34,31 @@ export interface Adventurer {
   item_specials_seed: number;
 }
 
+export interface Bag {
+  item_1: Item;
+  item_2: Item;
+  item_3: Item;
+  item_4: Item;
+  item_5: Item;
+  item_6: Item;
+  item_7: Item;
+  item_8: Item;
+  item_9: Item;
+  item_10: Item;
+  item_11: Item;
+  item_12: Item;
+  item_13: Item;
+  item_14: Item;
+  item_15: Item;
+}
+
 export interface Beast {
   id: number;
   name: string;
   health: number;
   level: number;
   type: string;
-  tier: string;
-  specialPrefix?: string;
-  specialSuffix?: string;
-  goldReward?: number;
-  xpReward?: number;
+  tier: number;
 }
 
 export interface Stats {
@@ -62,16 +76,27 @@ export interface ItemPurchase {
   equip: boolean;
 }
 
-export interface AdventurerEntropy {
-  id: string;
-  market_seed: bigint;
-  beast_seed: bigint;
+export interface Obstacle {
+  id: number;
+  dodged: boolean;
+  damage: number;
+  location: string;
+  critical_hit: boolean;
 }
 
-export interface GameEvent {
-  adventurer_id: string;
-  event_type: string;
-  event_data: string;
+export interface Attack {
+  damage: number;
+  location: string;
+  critical_hit: boolean;
+}
+
+export interface GameAction {
+  type: string;
+  statUpgrades?: Stats;
+  items?: number[];
+  potions?: number;
+  untilBeast?: boolean;
+  untilDeath?: boolean;
 }
 
 export interface Metadata {

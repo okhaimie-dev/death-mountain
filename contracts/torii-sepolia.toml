@@ -2,12 +2,9 @@
 raw = true
 
 [sql]
-historical = [
-  "ls_0_0_1-GameEvent",
-  "ls_0_0_1-BattleEvent",
-]
+historical = ["ls_0_0_1-GameEvent"]
 
 [indexing]
 contracts = [
-    "erc721:0x9599e4c32dc582321b67d44b74271e5d51b495e54c9a84d7e57e343a814397"
+    "erc721:0x7c082a6b9dd57be27352370c8abcd97db23df5dae14f39571ef9c2a7d97e646"
 ]

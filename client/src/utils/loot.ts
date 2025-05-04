@@ -45,15 +45,21 @@ export interface Loot {
 
 // Port of ItemUtils from loot.cairo
 export const ItemUtils = {
-  isNecklace: (id: number): boolean => id < 4,
-  isRing: (id: number): boolean => id > 3 && id < 9,
+  isNecklace: (id: number): boolean => id <= 3,
+  isRing: (id: number): boolean => id >= 4 && id <= 8,
   isWeapon: (id: number): boolean =>
-    (id > 8 && id < 17) ||
-    (id > 41 && id < 47) ||
-    (id > 71 && id < 77),
-  isMagicOrCloth: (id: number): boolean => id > 8 && id < 42,
-  isBladeOrHide: (id: number): boolean => id > 41 && id < 72,
-  isBludgeonOrMetal: (id: number): boolean => id > 71,
+    (id >= 9 && id <= 16) ||
+    (id >= 42 && id <= 46) ||
+    (id >= 72 && id <= 76),
+  isChest: (id: number): boolean => (id >= 17 && id <= 21) || (id >= 47 && id <= 51) || (id >= 77 && id <= 81),
+  isHead: (id: number): boolean => (id >= 22 && id <= 26) || (id >= 52 && id <= 56) || (id >= 82 && id <= 86),
+  isWaist: (id: number): boolean => (id >= 27 && id <= 31) || (id >= 57 && id <= 61) || (id >= 87 && id <= 91),
+  isFoot: (id: number): boolean => (id >= 32 && id <= 36) || (id >= 62 && id <= 66) || (id >= 92 && id <= 96),
+  isHand: (id: number): boolean => (id >= 37 && id <= 41) || (id >= 67 && id <= 71) || (id >= 97 && id <= 101),
+
+  isMagicOrCloth: (id: number): boolean => id >= 9 && id <= 41,
+  isBladeOrHide: (id: number): boolean => id >= 42 && id <= 71,
+  isBludgeonOrMetal: (id: number): boolean => id >= 72,
 
   getItemType: (id: number): ItemType => {
     if (ItemUtils.isNecklace(id)) return ItemType.Necklace;
@@ -62,6 +68,18 @@ export const ItemUtils = {
     if (ItemUtils.isBladeOrHide(id)) return ItemUtils.isWeapon(id) ? ItemType.Blade : ItemType.Hide;
     if (ItemUtils.isBludgeonOrMetal(id)) return ItemUtils.isWeapon(id) ? ItemType.Bludgeon : ItemType.Metal;
     return ItemType.None;
+  },
+
+  getItemSlot: (id: number): string => {
+    if (ItemUtils.isNecklace(id)) return "Neck";
+    if (ItemUtils.isRing(id)) return "Ring";
+    if (ItemUtils.isWeapon(id)) return "Weapon";
+    if (ItemUtils.isChest(id)) return "Chest";
+    if (ItemUtils.isHead(id)) return "Head";
+    if (ItemUtils.isWaist(id)) return "Waist";
+    if (ItemUtils.isFoot(id)) return "Foot";
+    if (ItemUtils.isHand(id)) return "Hand";
+    return "None";
   },
 
   getItemTier: (id: number): Tier => {
@@ -188,11 +206,11 @@ export const ItemUtils = {
 
   getTierColor: (tier: Tier): string => {
     switch (tier) {
-      case Tier.T1: return '#FF0000'; // Red for T1
-      case Tier.T2: return '#FFA500'; // Orange for T2
-      case Tier.T3: return '#FFFF00'; // Yellow for T3
-      case Tier.T4: return '#00FF00'; // Green for T4
-      case Tier.T5: return '#0000FF'; // Blue for T5
+      case Tier.T1: return '#FFD700'; // Gold for T1 (Best)
+      case Tier.T2: return '#9370DB'; // Purple for T2
+      case Tier.T3: return '#4169E1'; // Royal Blue for T3
+      case Tier.T4: return '#32CD32'; // Lime Green for T4
+      case Tier.T5: return '#A9A9A9'; // Dark Gray for T5
       default: return '#808080'; // Default gray
     }
   },

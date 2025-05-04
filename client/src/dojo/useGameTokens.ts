@@ -1,20 +1,20 @@
-import { AndComposeClause, ClauseBuilder, KeysClause, MemberClause, ToriiQueryBuilder } from "@dojoengine/sdk";
+import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { hexToAscii } from "@dojoengine/utils";
 
-import { unpackAdventurer } from "@/utils/unpack";
+import { useGameStore } from "@/stores/gameStore";
+import { getEntityModel } from "@/types/game";
 import { getShortNamespace } from "@/utils/utils";
 import { getContractByName } from "@dojoengine/core";
 import { gql, request } from 'graphql-request';
 import { addAddressPadding } from "starknet";
 import { dojoConfig } from "../../dojoConfig";
-import { useGameStore } from "@/stores/gameStore";
-import { getEntityModel } from "@/types/game";
+import { unpackAdventurer } from "@/utils/unpack";
 
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
 const NS_SHORT = getShortNamespace(namespace)
 
-export const fetchGameTokens = async (address: string) => {
+export const fetchGameTokenIds = async (address: string) => {
   let url = `${dojoConfig.toriiUrl}/sql?query=
     SELECT token_id FROM token_balances
     WHERE account_address = "${address.replace(/^0x0+/, "0x")}" AND contract_address = "${GAME_TOKEN_ADDRESS}"
@@ -59,7 +59,7 @@ export async function fetchMetadata(sdk: any, tokenId: number) {
   })
 }
 
-export const populateGameTokens = async (tokenIds: string[]) => {
+export const fetchGameTokensData = async (tokenIds: string[]) => {
   tokenIds = tokenIds.map(tokenId => `"${tokenId.toString()}"`);
 
   const document = gql`
@@ -104,67 +104,27 @@ export const populateGameTokens = async (tokenIds: string[]) => {
 
     let games = tokenMetadata.map((metaData: any) => {
       let adventurerPacked = adventurerData.find((adventurer: any) => adventurer.adventurer_id === metaData.token_id)
-      let adventurer = adventurerPacked ? unpackAdventurer(BigInt(adventurerPacked.packed)) : { health: 0 }
+      let adventurer = adventurerPacked ? unpackAdventurer(BigInt(adventurerPacked.packed)) : { health: 0, xp: 0, gold: 0 }
 
       let tokenId = parseInt(metaData.token_id, 16)
       let expires_at = parseInt(metaData.lifecycle.end.Some || 0, 16) * 1000
       let available_at = parseInt(metaData.lifecycle.start.Some || 0, 16) * 1000
 
       return {
-        ...(adventurer ?? {}),
+        ...adventurer,
         adventurer_id: tokenId,
         player_name: hexToAscii(metaData.player_name),
         settings_id: parseInt(metaData.settings_id, 16),
         minted_by: metaData.minted_by,
         expires_at,
         available_at,
-        active: adventurer.health !== 0 && (expires_at === 0 || expires_at > Date.now()),
+        expired: expires_at !== 0 && expires_at < Date.now(),
+        dead: adventurer.xp !== 0 && adventurer.health === 0,
       }
     })
 
     return games
   } catch (ex) {
     return []
-  }
-}
-
-let tokenMintedSubscription: any = null;
-export async function setupTokenMintSubscription(sdk: any, mintedBy: string) {
-  // Cancel existing subscription if any
-  if (tokenMintedSubscription) {
-    tokenMintedSubscription.cancel();
-    tokenMintedSubscription = null;
-  }
-
-  try {
-    const [_, subscription] = await sdk.subscribeEntityQuery({
-      query: new ToriiQueryBuilder()
-        .withClause(
-          AndComposeClause([
-            KeysClause(
-              [`${namespace}-TokenMetadata`],
-              []
-            ),
-            MemberClause(`${namespace}-TokenMetadata`, "minted_by", "Eq", addAddressPadding(mintedBy)),
-          ]).build()
-        )
-        .withEntityModels([
-          `${namespace}-TokenMetadata`,
-        ])
-        .includeHashedKeys(),
-
-      callback: ({ data, error }: { data: any, error: Error | null }) => {
-        if (error) {
-          console.error('Subscription error:', error);
-        } else if (data) {
-          console.log("Subscription Data:", data);
-        }
-      }
-    })
-
-    tokenMintedSubscription = subscription;
-  } catch (error) {
-    console.error('Subscription error:', error);
-    return () => { };
   }
 }

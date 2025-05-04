@@ -5,7 +5,6 @@ import {
   BEAST_NAME_SUFFIXES
 } from "../constants/beast";
 
-
 /**
  * Determines the beast type based on its ID
  * @param id Beast ID

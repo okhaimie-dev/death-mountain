@@ -1,5 +1,5 @@
 import { useController } from '@/contexts/Controller';
-import { fetchGameTokens, populateGameTokens } from '@/dojo/useGameTokens';
+import { fetchGameTokenIds, fetchGameTokensData } from '@/dojo/useGameTokens';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -11,12 +11,18 @@ export default function GameTokensList() {
 
   const [gameTokens, setGameTokens] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [includeDead, setIncludeDead] = useState(false);
 
   useEffect(() => {
     async function fetchGames() {
       setLoading(true)
-      const gameTokenIds = await fetchGameTokens(account.address)
-      let games = await populateGameTokens(gameTokenIds)
+
+      const gameTokenIds = await fetchGameTokenIds(account.address)
+      let games = await fetchGameTokensData(gameTokenIds)
+
+      if (!includeDead) {
+        games = games.filter((game: any) => !game.dead && !game.expired)
+      }
 
       setGameTokens(games.sort((a: any, b: any) => b.adventurer_id - a.adventurer_id))
       setLoading(false)
