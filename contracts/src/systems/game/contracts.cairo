@@ -45,7 +45,7 @@ mod game_systems {
     use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked};
     use lootsurvivor::models::game::{
         AttackEvent, BeastEvent, BuyItemsEvent, DefeatedBeastEvent, DiscoveryEvent, FledBeastEvent, GameEvent,
-        GameEventDetails, ItemEvent, LevelUpEvent, ObstacleEvent, StatUpgradeEvent,
+        GameEventDetails, ItemEvent, LevelUpEvent, MarketItemsEvent, ObstacleEvent, StatUpgradeEvent,
     };
     use lootsurvivor::models::market::{ImplMarket, ItemPurchase};
     use lootsurvivor::models::obstacle::{IObstacle, ImplObstacle};
@@ -150,7 +150,14 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
-                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
+                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
+                );
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::market_items(
+                        MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
+                    ),
                 );
             }
 
@@ -267,7 +274,14 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
-                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
+                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
+                );
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::market_items(
+                        MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
+                    ),
                 );
             }
 
@@ -366,7 +380,14 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
-                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level(), market_seed }),
+                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
+                );
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::market_items(
+                        MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
+                    ),
                 );
             }
 

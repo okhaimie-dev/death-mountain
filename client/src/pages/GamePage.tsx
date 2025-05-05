@@ -54,6 +54,10 @@ export default function GamePage() {
     }
   }, [game_id, address, isPending, sdk]);
 
+  useEffect(() => {
+    setActiveNavItem('GAME');
+  }, [adventurer?.stat_upgrades_available, adventurer?.beast_health]);
+
   const isLoading = reconnecting || !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;
 
@@ -76,7 +80,6 @@ export default function GamePage() {
         <BottomNav
           activeNavItem={activeNavItem}
           setActiveNavItem={setActiveNavItem}
-          adventurer={adventurer}
         />
       )}
     </Box>

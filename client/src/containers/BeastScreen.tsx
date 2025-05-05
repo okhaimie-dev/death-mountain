@@ -55,6 +55,7 @@ export default function BeastScreen() {
 
   useEffect(() => {
     if (battleEvent) {
+      console.log('battleEvent', battleEvent);
       if (battleEvent.type === "attack") {
         strike.play();
         setCombatLog(`You attacked ${beast!.name} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);

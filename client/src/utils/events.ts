@@ -2,7 +2,8 @@ import { Adventurer, Attack, Bag, Beast, Item, ItemPurchase, Obstacle, Stats, ge
 import { getBeastName, getBeastTier, getBeastType } from "./beast";
 
 export interface GameEvent {
-  type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' | 'buy_items' | 'equip' | 'drop' | 'level_up' | 'ambush' | 'attack' | 'beast_attack' | 'flee' | 'unknown';
+  type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
+  'buy_items' | 'equip' | 'drop' | 'level_up' | 'market_items' | 'ambush' | 'attack' | 'beast_attack' | 'flee' | 'unknown';
   adventurer?: Adventurer;
   bag?: Item[];
   beast?: Beast;
@@ -20,7 +21,7 @@ export interface GameEvent {
   beast_id?: number;
   potions?: number;
   items_purchased?: ItemPurchase[];
-  items?: Item[];
+  items?: number[];
   market_seed?: bigint;
   level?: number;
   success?: boolean;
@@ -144,6 +145,14 @@ export const formatGameEvent = (entity: any): GameEvent => {
       type: 'level_up',
       level: levelUp.level,
       market_seed: levelUp.market_seed
+    };
+  }
+
+  else if ('market_items' in details.variant) {
+    const marketItems = details.variant.market_items;
+    return {
+      type: 'market_items',
+      items: marketItems.items
     };
   }
 

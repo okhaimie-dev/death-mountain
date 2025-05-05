@@ -1,108 +1,170 @@
+import chestIcon from '@/assets/types/chest.svg';
+import clothIcon from '@/assets/types/cloth.svg';
+import footIcon from '@/assets/types/foot.svg';
+import handIcon from '@/assets/types/hand.svg';
+import headIcon from '@/assets/types/head.svg';
+import hideIcon from '@/assets/types/hide.svg';
+import metalIcon from '@/assets/types/metal.svg';
+import neckIcon from '@/assets/types/neck.svg';
+import ringIcon from '@/assets/types/ring.svg';
+import waistIcon from '@/assets/types/waist.svg';
+import weaponIcon from '@/assets/types/weapon.svg';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
+import { useMarketStore } from '@/stores/marketStore';
 import { calculateLevel } from '@/utils/game';
 import { ItemUtils } from '@/utils/loot';
 import { MarketItem, generateMarketItems, potionPrice } from '@/utils/market';
-import { Box, Button, Modal, Paper, Slider, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { useEffect, useState } from 'react';
-import {
-  SportsMma as WeaponIcon,
-  Checkroom as ChestIcon,
-  MilitaryTech as HeadIcon,
-  Cable as WaistIcon,
-  Hiking as FootIcon,
-  BackHand as HandIcon,
-  Diamond as RingIcon,
-  Psychology as MagicIcon,
-  Shield as MetalIcon,
-  Checkroom as ClothIcon,
-  Pets as HideIcon,
-} from '@mui/icons-material';
+import { Box, Button, Modal, Paper, Slider, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { useCallback, useMemo, useState } from 'react';
+
+const slotIcons = {
+  Weapon: weaponIcon,
+  Head: headIcon,
+  Chest: chestIcon,
+  Waist: waistIcon,
+  Hand: handIcon,
+  Foot: footIcon,
+  Ring: ringIcon,
+  Neck: neckIcon,
+};
+
+const typeIcons = {
+  Cloth: clothIcon,
+  Hide: hideIcon,
+  Metal: metalIcon,
+  Magic: weaponIcon,
+  Bludgeon: weaponIcon,
+  Blade: weaponIcon,
+  Ring: ringIcon,
+  Necklace: neckIcon,
+};
+
+const renderSlotToggleButton = (slot: keyof typeof slotIcons) => (
+  <ToggleButton value={slot} aria-label={slot}>
+    <Box
+      component="img"
+      src={slotIcons[slot]}
+      alt={slot}
+      sx={{
+        width: 24,
+        height: 24,
+        filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(1.1)',
+        opacity: 0.9,
+      }}
+    />
+  </ToggleButton>
+);
+
+const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
+  <ToggleButton value={type} aria-label={type}>
+    <Box
+      component="img"
+      src={typeIcons[type]}
+      alt={type}
+      sx={{
+        width: 24,
+        height: 24,
+        filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(1.1)',
+        opacity: 0.9,
+      }}
+    />
+  </ToggleButton>
+);
 
 export default function MarketScreen() {
-  const { adventurer, marketSeed } = useGameStore();
+  const { adventurer, bag, marketItemIds } = useGameStore();
   const { executeGameAction } = useGameDirector();
+  const {
+    cart,
+    slotFilter,
+    typeFilter,
+    setSlotFilter,
+    setTypeFilter,
+    addToCart,
+    removeFromCart,
+    setPotions,
+  } = useMarketStore();
 
-  const [inProgress, setInProgress] = useState(false);
-  const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
   const [showCart, setShowCart] = useState(false);
-  const [cart, setCart] = useState<{ potions: number; items: MarketItem[] }>({ potions: 0, items: [] });
-  const [slotFilter, setSlotFilter] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [inProgress, setInProgress] = useState(false);
 
-  useEffect(() => {
-    if (marketSeed) {
-      const items = generateMarketItems(BigInt(marketSeed), adventurer?.stats?.charisma || 0);
-      // Sort items by price, with unaffordable items at the bottom
-      const sortedItems = items.sort((a, b) => {
-        const canAffordA = (adventurer?.gold || 0) >= a.price;
-        const canAffordB = (adventurer?.gold || 0) >= b.price;
+  // Function to check if an item is already owned (in equipment or bag)
+  const isItemOwned = useCallback((itemId: number) => {
+    if (!adventurer) return false;
 
-        if (canAffordA && canAffordB) {
-          return b.price - a.price; // Both affordable, sort by price
-        } else if (canAffordA) {
-          return -1; // A is affordable, B is not, A comes first
-        } else if (canAffordB) {
-          return 1; // B is affordable, A is not, B comes first
-        } else {
-          return b.price - a.price; // Both unaffordable, sort by price
-        }
-      });
+    // Check equipment
+    const equipmentItems = Object.values(adventurer.equipment);
+    const equipped = equipmentItems.find(item => item.id === itemId);
 
-      setMarketItems(sortedItems);
-      setInProgress(false);
-    }
+    // Check bag
+    const inBag = bag.find(item => item.id === itemId);
 
-    setCart({ potions: 0, items: [] });
-  }, [marketSeed, adventurer?.gold]);
+    return Boolean(inBag || equipped);
+  }, [adventurer?.equipment, bag]);
 
-  useEffect(() => {
+  // Memoize market items to prevent unnecessary recalculations
+  const marketItems = useMemo(() => {
+    if (!marketItemIds) return [];
+    console.log('marketItemIds', marketItemIds);
+    setShowCart(false);
+    setInProgress(false);
+    const items = generateMarketItems(marketItemIds, adventurer?.stats?.charisma || 0);
 
-  }, [marketSeed]);
+    // Sort items by price and ownership status
+    return items.sort((a, b) => {
+      const isOwnedA = isItemOwned(a.id);
+      const isOwnedB = isItemOwned(b.id);
+      const canAffordA = (adventurer?.gold || 0) >= a.price;
+      const canAffordB = (adventurer?.gold || 0) >= b.price;
+
+      // First sort by ownership (owned items go to the end)
+      if (isOwnedA && !isOwnedB) return 1;
+      if (!isOwnedA && isOwnedB) return -1;
+
+      // Then sort by affordability
+      if (canAffordA && canAffordB) {
+        return b.price - a.price; // Both affordable, sort by price
+      } else if (canAffordA) {
+        return -1; // A is affordable, B is not, A comes first
+      } else if (canAffordB) {
+        return 1; // B is affordable, A is not, B comes first
+      } else {
+        return b.price - a.price; // Both unaffordable, sort by price
+      }
+    });
+  }, [marketItemIds, adventurer?.gold, bag]);
 
   const handleBuyItem = (item: MarketItem) => {
-    setCart(prev => ({
-      ...prev,
-      items: [...prev.items, item]
-    }));
+    addToCart(item);
   };
 
   const handleBuyPotion = (value: number) => {
-    setCart(prev => ({
-      ...prev,
-      potions: value
-    }));
+    setPotions(value);
   };
 
   const handleCheckout = () => {
     setInProgress(true);
 
+    let itemPurchases = cart.items.map(item => ({
+      item_id: item.id,
+      equip: adventurer?.equipment[ItemUtils.getItemSlot(item.id).toLowerCase() as keyof typeof adventurer.equipment]?.id === 0 ? true : false,
+    }));
+
     executeGameAction({
       type: 'buy_items',
       potions: cart.potions,
-      items: cart.items.map(item => item.id),
+      itemPurchases,
     });
   };
 
   const handleRemoveItem = (itemToRemove: MarketItem) => {
-    setCart(prev => ({
-      ...prev,
-      items: prev.items.filter(item => item.id !== itemToRemove.id)
-    }));
+    removeFromCart(itemToRemove);
   };
 
   const handleRemovePotion = () => {
-    setCart(prev => ({
-      ...prev,
-      potions: 0
-    }));
+    setPotions(0);
   };
-
-  const potionCost = potionPrice(calculateLevel(adventurer?.xp || 0), adventurer?.stats?.charisma || 0);
-  const totalCost = cart.items.reduce((sum, item) => sum + item.price, 0) + (cart.potions * potionCost);
-  const remainingGold = (adventurer?.gold || 0) - totalCost;
-  const maxHealth = 100 + (adventurer?.stats?.vitality || 0) * 15;
-  const maxPotions = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
 
   const handleSlotFilter = (_: React.MouseEvent<HTMLElement>, newSlot: string | null) => {
     setSlotFilter(newSlot);
@@ -112,12 +174,15 @@ export default function MarketScreen() {
     setTypeFilter(newType);
   };
 
-  const filteredItems = marketItems.filter(item => {
-    const itemSlot = ItemUtils.getItemSlot(item.id);
-    const itemType = ItemUtils.getItemType(item.id);
+  const potionCost = potionPrice(calculateLevel(adventurer?.xp || 0), adventurer?.stats?.charisma || 0);
+  const totalCost = cart.items.reduce((sum, item) => sum + item.price, 0) + (cart.potions * potionCost);
+  const remainingGold = (adventurer?.gold || 0) - totalCost;
+  const maxHealth = 100 + (adventurer?.stats?.vitality || 0) * 15;
+  const maxPotions = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
 
-    if (slotFilter && itemSlot !== slotFilter) return false;
-    if (typeFilter && itemType !== typeFilter) return false;
+  const filteredItems = marketItems.filter(item => {
+    if (slotFilter && item.slot !== slotFilter) return false;
+    if (typeFilter && item.type !== typeFilter) return false;
     return true;
   });
 
@@ -133,7 +198,7 @@ export default function MarketScreen() {
         </Box>
         <Box sx={styles.goldDisplay}>
           <Typography sx={styles.goldLabel}>Gold</Typography>
-          <Typography sx={styles.goldValue}>{adventurer?.gold || 0}</Typography>
+          <Typography sx={styles.goldValue}>{remainingGold}</Typography>
         </Box>
         <Button
           variant="contained"
@@ -224,12 +289,12 @@ export default function MarketScreen() {
             >
               {inProgress
                 ? <Box display={'flex'} alignItems={'baseline'}>
-                  <Typography>
+                  <Typography variant='h5'>
                     Processing
                   </Typography>
                   <div className='dotLoader green' />
                 </Box>
-                : <Typography>
+                : <Typography variant='h5'>
                   Checkout
                 </Typography>
               }
@@ -274,27 +339,7 @@ export default function MarketScreen() {
               aria-label="item slot"
               sx={styles.filterButtons}
             >
-              <ToggleButton value="weapon" aria-label="weapon">
-                <WeaponIcon />
-              </ToggleButton>
-              <ToggleButton value="chest" aria-label="chest">
-                <ChestIcon />
-              </ToggleButton>
-              <ToggleButton value="head" aria-label="head">
-                <HeadIcon />
-              </ToggleButton>
-              <ToggleButton value="waist" aria-label="waist">
-                <WaistIcon />
-              </ToggleButton>
-              <ToggleButton value="foot" aria-label="foot">
-                <FootIcon />
-              </ToggleButton>
-              <ToggleButton value="hand" aria-label="hand">
-                <HandIcon />
-              </ToggleButton>
-              <ToggleButton value="ring" aria-label="ring">
-                <RingIcon />
-              </ToggleButton>
+              {Object.keys(slotIcons).map((slot) => renderSlotToggleButton(slot as keyof typeof slotIcons))}
             </ToggleButtonGroup>
           </Box>
 
@@ -306,18 +351,7 @@ export default function MarketScreen() {
               aria-label="item type"
               sx={styles.filterButtons}
             >
-              <ToggleButton value="metal" aria-label="metal">
-                <MetalIcon />
-              </ToggleButton>
-              <ToggleButton value="cloth" aria-label="cloth">
-                <ClothIcon />
-              </ToggleButton>
-              <ToggleButton value="hide" aria-label="hide">
-                <HideIcon />
-              </ToggleButton>
-              <ToggleButton value="magic" aria-label="magic">
-                <MagicIcon />
-              </ToggleButton>
+              {Object.keys(typeIcons).filter(type => ['Cloth', 'Hide', 'Metal'].includes(type)).map((type) => renderTypeToggleButton(type as keyof typeof typeIcons))}
             </ToggleButtonGroup>
           </Box>
         </Box>
@@ -348,9 +382,24 @@ export default function MarketScreen() {
                 <Box sx={styles.itemInfo}>
                   <Box sx={styles.itemHeader}>
                     <Typography sx={styles.itemName}>{item.name}</Typography>
-                    <Typography sx={styles.itemType}>
-                      {ItemUtils.getItemTypeIcon(item.type)} {item.type}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {item.type in typeIcons && (
+                        <Box
+                          component="img"
+                          src={typeIcons[item.type as keyof typeof typeIcons]}
+                          alt={item.type}
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(0.8)',
+                            opacity: 0.9,
+                          }}
+                        />
+                      )}
+                      <Typography sx={styles.itemType}>
+                        {item.type}
+                      </Typography>
+                    </Box>
                   </Box>
 
                   <Box sx={styles.itemFooter}>
@@ -360,11 +409,11 @@ export default function MarketScreen() {
                     <Button
                       variant="contained"
                       onClick={() => handleBuyItem(item)}
-                      disabled={remainingGold < item.price || cart.items.some(cartItem => cartItem.id === item.id)}
+                      disabled={remainingGold < item.price || cart.items.some(cartItem => cartItem.id === item.id) || isItemOwned(item.id)}
                       sx={styles.buyButton}
                       size="small"
                     >
-                      {cart.items.some(cartItem => cartItem.id === item.id) ? 'In Cart' : 'Buy'}
+                      {cart.items.some(cartItem => cartItem.id === item.id) ? 'In Cart' : isItemOwned(item.id) ? 'Owned' : 'Buy'}
                     </Button>
                   </Box>
                 </Box>
@@ -511,6 +560,9 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '8px',
+    alignContent: 'start',
+    minHeight: 0,
+    overflowY: 'auto',
   },
   itemCard: {
     background: 'rgba(128, 255, 0, 0.05)',
@@ -521,6 +573,7 @@ const styles = {
     flexDirection: 'column',
     gap: '8px',
     transition: 'transform 0.2s, box-shadow 0.2s',
+    height: 'fit-content',
     '&:hover': {
       transform: 'translateY(-1px)',
       boxShadow: '0 1px 3px rgba(128, 255, 0, 0.1)',
@@ -628,13 +681,13 @@ const styles = {
   },
   cartItemName: {
     color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: '0.9rem',
+    fontSize: '1rem',
     fontFamily: 'VT323, monospace',
     flex: 1,
   },
   cartItemPrice: {
     color: '#EDCF33',
-    fontSize: '0.9rem',
+    fontSize: '1rem',
     fontFamily: 'VT323, monospace',
     fontWeight: 'bold',
     minWidth: '80px',
@@ -660,7 +713,7 @@ const styles = {
     marginBottom: '16px',
   },
   totalLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: '1rem',
     fontFamily: 'VT323, monospace',
   },
@@ -691,10 +744,10 @@ const styles = {
   },
   checkoutButton: {
     flex: 1,
-    fontSize: '0.9rem',
+    fontSize: '1rem',
     py: '8px',
     fontWeight: 'bold',
-    background: 'rgba(128, 255, 0, 0.2)',
+    background: 'rgba(128, 255, 0, 0.3)',
     color: '#111111',
     fontFamily: 'VT323, monospace',
     '&:disabled': {
@@ -731,13 +784,7 @@ const styles = {
       minWidth: '32px',
       '&.Mui-selected': {
         color: '#111111',
-        backgroundColor: 'rgba(128, 255, 0, 0.8)',
-        '&:hover': {
-          backgroundColor: 'rgba(128, 255, 0, 0.9)',
-        },
-      },
-      '&:hover': {
-        backgroundColor: 'rgba(128, 255, 0, 0.1)',
+        backgroundColor: 'rgba(128, 255, 0, 0.3)',
       },
     },
   },

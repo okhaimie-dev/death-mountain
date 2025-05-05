@@ -32,8 +32,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, setAdventurer, setBag, setBeast, setExploreLog,
-    setBattleEvent, equipItems, dropItems, setMarketSeed, setNewMarket } = useGameStore();
+  const { gameId, adventurer, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent,
+    equipItems, dropItems, setMarketItemIds, setNewMarket, setDropItems, setEquipItems } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
@@ -105,15 +105,15 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (event.type === 'bag') {
-      setBag(event.bag!);
+      setBag(event.bag!.filter((item: any) => typeof item === 'object' && item.id !== 0));
     }
 
     if (event.type === 'beast') {
       setBeast(event.beast!);
     }
 
-    if (event.type === 'level_up') {
-      setMarketSeed(event.market_seed!);
+    if (event.type === 'market_items') {
+      setMarketItemIds(event.items!);
       setNewMarket(true);
     }
 
@@ -143,10 +143,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       }
 
       txs.push(equip(gameId!, equipItems.map(item => item.id)));
-    }
-
-    if (dropItems.length > 0) {
-      txs.push(drop(gameId!, dropItems.map(item => item.id)));
+      setEquipItems([]);
     }
 
     if (VRF_ENABLED && ['explore', 'attack', 'flee'].includes(action.type)) {
@@ -160,9 +157,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     } else if (action.type === 'flee') {
       txs.push(flee(gameId!, action.untilDeath!));
     } else if (action.type === 'buy_items') {
-      txs.push(buyItems(gameId!, action.potions!, action.items!));
+      txs.push(buyItems(gameId!, action.potions!, action.itemPurchases!));
     } else if (action.type === 'select_stat_upgrades') {
       txs.push(selectStatUpgrades(gameId!, action.statUpgrades!));
+    } else if (action.type === 'drop') {
+      txs.push(drop(gameId!, dropItems.map(item => item.id)));
+      setDropItems([]);
     }
 
     executeAction(txs);

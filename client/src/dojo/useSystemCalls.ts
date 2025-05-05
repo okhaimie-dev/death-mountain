@@ -2,7 +2,7 @@ import { getContractByName } from "@dojoengine/core";
 import { useAccount } from "@starknet-react/core";
 import { CallData } from 'starknet';
 import { dojoConfig } from "../../dojoConfig";
-
+import { ItemPurchase, Stats } from "../types/game";
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 const VRF_PROVIDER_ADDRESS = import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS;
 const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
@@ -32,8 +32,11 @@ export const useSystemCalls = () => {
    * @returns {Promise<any>} The result of the execution
    */
   const executeAction = async (calls: any[]) => {
+    console.log(calls);
     try {
-      await account!.execute(calls, { version: 3 });
+      let tx = await account!.execute(calls, { version: 3 });
+      const receipt = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 500 })
+      console.log(receipt);
     } catch (error) {
       console.error("Error executing action:", error);
       throw error;
@@ -93,7 +96,7 @@ export const useSystemCalls = () => {
   /**
    * Requests randomness from the VRF provider.
    */
-  const requestRandom = async () => {
+  const requestRandom = () => {
     return {
       contractAddress: VRF_PROVIDER_ADDRESS,
       entrypoint: 'request_random',
@@ -109,7 +112,7 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game
    * @param tillBeast Whether to explore until encountering a beast
    */
-  const explore = async (gameId: number, tillBeast: boolean) => {
+  const explore = (gameId: number, tillBeast: boolean) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'explore',
@@ -122,7 +125,7 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game
    * @param toTheDeath Whether to fight until death
    */
-  const attack = async (gameId: number, toTheDeath: boolean) => {
+  const attack = (gameId: number, toTheDeath: boolean) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'attack',
@@ -135,7 +138,7 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game
    * @param toTheDeath Whether to flee until death
    */
-  const flee = async (gameId: number, toTheDeath: boolean) => {
+  const flee = (gameId: number, toTheDeath: boolean) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'flee',
@@ -148,7 +151,7 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game
    * @param items Array of item IDs to equip
    */
-  const equip = async (gameId: number, items: number[]) => {
+  const equip = (gameId: number, items: number[]) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'equip',
@@ -161,7 +164,7 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game
    * @param items Array of item IDs to drop
    */
-  const drop = async (gameId: number, items: number[]) => {
+  const drop = (gameId: number, items: number[]) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'drop',
@@ -176,7 +179,7 @@ export const useSystemCalls = () => {
    * @param statUpgrades Object containing stat upgrades
    * @param items Array of items to purchase
    */
-  const buyItems = async (gameId: number, potions: number, items: any[]) => {
+  const buyItems = (gameId: number, potions: number, items: ItemPurchase[]) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'buy_items',
@@ -184,7 +187,7 @@ export const useSystemCalls = () => {
     }
   };
 
-  const selectStatUpgrades = async (gameId: number, statUpgrades: any) => {
+  const selectStatUpgrades = (gameId: number, statUpgrades: Stats) => {
     return {
       contractAddress: GAME_ADDRESS,
       entrypoint: 'select_stat_upgrades',

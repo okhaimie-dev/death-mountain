@@ -59,6 +59,7 @@ pub enum GameEventDetails {
     equip: ItemEvent,
     drop: ItemEvent,
     level_up: LevelUpEvent,
+    market_items: MarketItemsEvent,
     ambush: AttackEvent,
     attack: AttackEvent,
     beast_attack: AttackEvent,
@@ -111,7 +112,11 @@ pub struct StatUpgradeEvent {
 #[derive(Introspect, Copy, Drop, Serde)]
 pub struct LevelUpEvent {
     pub level: u8,
-    pub market_seed: u64,
+}
+
+#[derive(Introspect, Copy, Drop, Serde)]
+pub struct MarketItemsEvent {
+    pub items: Span<u8>,
 }
 
 #[derive(Introspect, Copy, Drop, Serde)]

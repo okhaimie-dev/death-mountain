@@ -1,24 +1,30 @@
 import { Box, Modal, Tooltip } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import adventurerImg from '../assets/images/adventurer.png';
 import marketImg from '../assets/images/market.png';
 import playImg from '../assets/images/play.png';
 import { Adventurer } from '../types/game';
 import { useGameStore } from '@/stores/gameStore';
+import { useMarketStore } from '@/stores/marketStore';
 
 interface BottomNavProps {
   activeNavItem: 'GAME' | 'CHARACTER' | 'MARKET';
   setActiveNavItem: (item: 'GAME' | 'CHARACTER' | 'MARKET') => void;
-  adventurer: Adventurer;
 }
 
-export default function BottomNav({ activeNavItem, setActiveNavItem, adventurer }: BottomNavProps) {
-  const { newMarket, setNewMarket } = useGameStore();
+export default function BottomNav({ activeNavItem, setActiveNavItem }: BottomNavProps) {
+  const { adventurer, marketSeed, newMarket, setNewMarket } = useGameStore();
 
-  const isMarketAvailable = adventurer.beast_health === 0 && adventurer.stat_upgrades_available === 0;
-  const marketTooltipText = adventurer.beast_health > 0
+  const { clearCart } = useMarketStore();
+
+  useEffect(() => {
+    clearCart();
+  }, [marketSeed, adventurer?.gold, adventurer?.stats?.charisma]);
+
+  const isMarketAvailable = adventurer?.beast_health === 0 && adventurer?.stat_upgrades_available === 0;
+  const marketTooltipText = adventurer?.beast_health! > 0
     ? 'Not available during battle'
-    : adventurer.stat_upgrades_available > 0
+    : adventurer?.stat_upgrades_available! > 0
       ? 'Not available during stat selection'
       : '';
 

@@ -6,19 +6,9 @@ export interface MarketItem {
   name: string;
   tier: Tier;
   type: string;
+  slot: string;
   imageUrl: string;
   price: number;
-}
-
-function getMarketSeedAndOffset(seed: bigint): [bigint, number] {
-  const divisor = BigInt(NUM_ITEMS_NZ_MINUS_ONE);
-  const newSeed = seed / divisor;
-  const offset = Number(seed % divisor) + 1;
-  return [newSeed, offset];
-}
-
-function getId(seed: bigint): number {
-  return Number(seed % BigInt(NUM_ITEMS)) + 1;
 }
 
 function createMarketItem(id: number, charisma: number): MarketItem {
@@ -26,6 +16,7 @@ function createMarketItem(id: number, charisma: number): MarketItem {
   const price = ItemUtils.getItemPrice(tier, charisma);
   const name = ItemUtils.getItemName(id);
   const type = ItemUtils.getItemType(id);
+  const slot = ItemUtils.getItemSlot(id);
   const imageUrl = ItemUtils.getItemImage(name);
 
   return {
@@ -33,24 +24,14 @@ function createMarketItem(id: number, charisma: number): MarketItem {
     name,
     tier,
     type,
+    slot,
     imageUrl,
     price
   };
 }
 
-export function generateMarketItems(seed: bigint, charisma: number): MarketItem[] {
-  const marketSize = NUMBER_OF_ITEMS_PER_LEVEL;
-
-  // Generate items based on seed
-  const [marketSeed, offset] = getMarketSeedAndOffset(seed);
-  const items: MarketItem[] = [];
-
-  for (let i = 0; i < marketSize; i++) {
-    const itemSeed = marketSeed + BigInt(offset * i);
-    const itemId = getId(itemSeed);
-    items.push(createMarketItem(itemId, charisma));
-  }
-
+export function generateMarketItems(marketItemIds: number[], charisma: number): MarketItem[] {
+  const items = marketItemIds.map(id => createMarketItem(id, charisma))
   return items;
 }
 

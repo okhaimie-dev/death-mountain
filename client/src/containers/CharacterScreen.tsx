@@ -3,32 +3,67 @@ import ItemTooltip from '@/components/ItemTooltip';
 import { useGameStore } from '@/stores/gameStore';
 import { Item } from '@/types/game';
 import { ItemUtils } from '@/utils/loot';
-import { Box, Typography } from '@mui/material';
+import { calculateLevel } from '@/utils/game';
+import { Box, Typography, Tooltip, Button } from '@mui/material';
 import { useEffect, useState } from 'react';
+import chestIcon from '@/assets/types/chest.svg';
+import clothIcon from '@/assets/types/cloth.svg';
+import footIcon from '@/assets/types/foot.svg';
+import handIcon from '@/assets/types/hand.svg';
+import headIcon from '@/assets/types/head.svg';
+import hideIcon from '@/assets/types/hide.svg';
+import metalIcon from '@/assets/types/metal.svg';
+import neckIcon from '@/assets/types/neck.svg';
+import ringIcon from '@/assets/types/ring.svg';
+import waistIcon from '@/assets/types/waist.svg';
+import weaponIcon from '@/assets/types/weapon.svg';
+
+type EquipmentSlot = 'weapon' | 'chest' | 'head' | 'waist' | 'foot' | 'hand' | 'neck' | 'ring';
+
+const typeIcons = {
+  Cloth: clothIcon,
+  Hide: hideIcon,
+  Metal: metalIcon,
+  Magic: weaponIcon,
+  Bludgeon: weaponIcon,
+  Blade: weaponIcon,
+  Ring: ringIcon,
+  Necklace: neckIcon,
+};
 
 export default function CharacterScreen() {
-  const { adventurer, bag } = useGameStore();
-  const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-
-  const [equippedItems, setEquippedItems] = useState<Record<string, Item> | null>(null);
-  const [bagItems, setBagItems] = useState<Item[] | null>([]);
-
-  useEffect(() => {
-    setEquippedItems(adventurer!.equipment);
-    setBagItems(bag);
-  }, [adventurer, bag]);
+  const equipItem = useGameStore(state => state.equipItem);
+  const adventurer = useGameStore(state => state.adventurer);
+  const bag = useGameStore(state => state.bag);
+  const [isDropMode, setIsDropMode] = useState(false);
+  const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
 
   // Define fixed order for equipment slots
-  const equipmentOrder = ['Head', 'Chest', 'Hand', 'Waist', 'Foot', 'Weapon', 'Ring', 'Neck'] as const;
+  const equipmentOrder: EquipmentSlot[] = ['head', 'chest', 'hand', 'waist', 'foot', 'weapon', 'ring', 'neck'];
 
-  const handleItemHover = (item: Item, event: React.MouseEvent) => {
-    setHoveredItem(item);
-    setTooltipPosition({ x: event.clientX, y: event.clientY });
+  const handleItemClick = (item: Item, bag: boolean = false) => {
+    if (isDropMode) {
+      const newItemsToDrop = new Set(itemsToDrop);
+      if (newItemsToDrop.has(item.id)) {
+        newItemsToDrop.delete(item.id);
+      } else {
+        newItemsToDrop.add(item.id);
+      }
+      setItemsToDrop(newItemsToDrop);
+    } else if (bag) {
+      equipItem(item);
+    }
   };
 
-  const handleItemLeave = () => {
-    setHoveredItem(null);
+  const handleConfirmDrop = () => {
+    // TODO: Implement drop items logic
+    setIsDropMode(false);
+    setItemsToDrop(new Set());
+  };
+
+  const handleCancelDrop = () => {
+    setIsDropMode(false);
+    setItemsToDrop(new Set());
   };
 
   return (
@@ -73,39 +108,76 @@ export default function CharacterScreen() {
           {/* Equipment Section */}
           <Box sx={styles.section}>
             <Box sx={styles.sectionHeader}>
-              <Typography variant="h6" sx={styles.sectionTitle}>Equipment ({equippedItems ? Object.values(equippedItems).filter(item => item.id !== 0).length : 0}/8)</Typography>
+              <Typography variant="h6" sx={styles.sectionTitle}>Equipment ({Object.values(adventurer?.equipment || {}).filter(item => item.id !== 0).length || 0}/8)</Typography>
             </Box>
 
             <Box sx={styles.itemGrid}>
-              {equippedItems && equipmentOrder.map((slot) => {
-                const item = equippedItems[slot.toLowerCase() as keyof typeof equippedItems];
-                const metadata = ItemUtils.getMetadata(item.id);
+              {equipmentOrder.map((slot) => {
+                const item = adventurer?.equipment[slot];
+                const metadata = item ? ItemUtils.getMetadata(item.id) : null;
+                const tier = item ? ItemUtils.getItemTier(item.id) : null;
+                const level = item ? calculateLevel(item.xp) : null;
+                const isSelected = item?.id ? itemsToDrop.has(item.id) : false;
 
                 return (
-                  <Box
+                  <Tooltip
                     key={slot}
-                    sx={styles.item}
-                    onMouseEnter={(e) => item.id && handleItemHover(item, e)}
-                    onMouseLeave={handleItemLeave}
+                    title={item?.id ? <ItemTooltip item={item} /> : null}
+                    placement="top"
+                    slotProps={{
+                      tooltip: {
+                        sx: {
+                          bgcolor: 'transparent',
+                          border: 'none',
+                        },
+                      },
+                    }}
                   >
-                    {item.id ? (
-                      <>
-                        <img
-                          src={metadata.imageUrl}
-                          alt={metadata.name}
-                          style={styles.itemImage}
-                        />
-                        <Typography variant="body2" sx={styles.itemName}>
-                          {slot}
-                        </Typography>
-                      </>
-                    ) : (
-                      <>
-                        <img src="/src/assets/images/empty_slot.png" alt={`Empty ${slot}`} style={{ ...styles.itemImage, opacity: 0.5 }} />
-                        <Typography variant="body2" sx={styles.itemName}>{slot}</Typography>
-                      </>
-                    )}
-                  </Box>
+                    <Box sx={[styles.item, isSelected && styles.selectedItem]}
+                      onClick={() => item?.id && handleItemClick(item)}
+                    >
+                      {item?.id && metadata ? (
+                        <>
+                          <Box sx={styles.itemLevelBadge}>
+                            <Typography sx={styles.itemLevelText}>{level}</Typography>
+                          </Box>
+                          <Box sx={styles.itemTierBadge} style={{ backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'transparent' }}>
+                            <Typography sx={styles.itemTierText}>{tier ? `T${tier}` : ''}</Typography>
+                          </Box>
+                          <Box sx={styles.itemImageContainer}>
+                            <img
+                              src={metadata.imageUrl}
+                              alt={metadata.name}
+                              style={styles.itemImage}
+                            />
+                          </Box>
+                          <Box sx={styles.itemTypeContainer}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                              {ItemUtils.getItemType(item.id) in typeIcons && (
+                                <Box
+                                  component="img"
+                                  src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
+                                  alt={ItemUtils.getItemType(item.id)}
+                                  sx={{
+                                    width: 12,
+                                    height: 12,
+                                    filter: 'invert(1)',
+                                    opacity: 0.9,
+                                  }}
+                                />
+                              )}
+                              <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
+                            </Box>
+                          </Box>
+                        </>
+                      ) : (
+                        <Box sx={styles.itemImageContainer}>
+                          <img src="/src/assets/images/empty_slot.png" alt={`Empty ${slot}`} style={{ ...styles.itemImage, opacity: 0.5 }} />
+                          <Typography variant="body2" sx={styles.itemName}>{slot.charAt(0).toUpperCase() + slot.slice(1)}</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Tooltip>
                 );
               })}
             </Box>
@@ -114,49 +186,108 @@ export default function CharacterScreen() {
           {/* Bag Section */}
           <Box sx={styles.section}>
             <Box sx={styles.sectionHeader}>
-              <Typography variant="h6" sx={styles.sectionTitle}>Bag ({bagItems?.length || 0}/15)</Typography>
+              <Typography variant="h6" sx={styles.sectionTitle}>Bag ({bag?.length || 0}/15)</Typography>
             </Box>
             <Box sx={styles.itemGrid}>
-              {bagItems?.map((item) => {
+              {bag?.map((item) => {
                 const itemDetails = ItemUtils.getMetadata(item.id);
+                const tier = ItemUtils.getItemTier(item.id);
+                const level = calculateLevel(item.xp);
+                const isSelected = itemsToDrop.has(item.id);
+
                 return (
-                  <Box
+                  <Tooltip
                     key={item.id}
-                    sx={styles.item}
-                    onMouseEnter={(e) => handleItemHover(item, e)}
-                    onMouseLeave={handleItemLeave}
+                    title={<ItemTooltip item={item} />}
+                    placement="top"
+                    slotProps={{
+                      tooltip: {
+                        sx: {
+                          bgcolor: 'transparent',
+                          border: 'none',
+                        },
+                      },
+                    }}
                   >
-                    <img
-                      src={itemDetails.imageUrl}
-                      alt={itemDetails.name}
-                      style={styles.itemImage}
-                    />
-                    <Typography variant="body2" sx={styles.itemName}>
-                      {itemDetails.name}
-                    </Typography>
-                  </Box>
+                    <Box sx={[styles.item, isSelected && styles.selectedItem]}
+                      onClick={() => handleItemClick(item, true)}
+                    >
+                      <Box sx={styles.itemLevelBadge}>
+                        <Typography sx={styles.itemLevelText}>{level}</Typography>
+                      </Box>
+                      <Box sx={styles.itemTierBadge} style={{ backgroundColor: ItemUtils.getTierColor(tier) }}>
+                        <Typography sx={styles.itemTierText}>T{tier}</Typography>
+                      </Box>
+                      <Box sx={styles.itemImageContainer}>
+                        <img
+                          src={itemDetails.imageUrl}
+                          alt={itemDetails.name}
+                          style={styles.itemImage}
+                        />
+                      </Box>
+                      <Box sx={styles.itemTypeContainer}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {ItemUtils.getItemType(item.id) in typeIcons && (
+                            <Box
+                              component="img"
+                              src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
+                              alt={ItemUtils.getItemType(item.id)}
+                              sx={{
+                                width: 12,
+                                height: 12,
+                                filter: 'invert(1)',
+                                opacity: 0.9,
+                              }}
+                            />
+                          )}
+                          <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Tooltip>
                 );
               })}
-              {Array(15 - (bagItems?.length || 0)).fill(null).map((_, index) => (
+              {Array(15 - (bag?.length || 0)).fill(null).map((_, index) => (
                 <Box key={`empty-${index}`} sx={[styles.item, { opacity: 0.5 }]}>
-                  <img src="/src/assets/images/empty_slot.png" alt="Empty slot" style={styles.itemImage} />
-                  <Typography variant="body2" sx={styles.itemName}>Empty</Typography>
+                  <Box sx={styles.itemImageContainer}>
+                    <img src="/src/assets/images/empty_slot.png" alt="Empty slot" style={styles.itemImage} />
+                    <Typography variant="body2" sx={styles.itemName}>Empty</Typography>
+                  </Box>
                 </Box>
               ))}
             </Box>
           </Box>
+
+          {/* Drop Mode Controls */}
+          {!isDropMode ? (
+            <Button
+              variant="contained"
+              onClick={() => setIsDropMode(true)}
+              sx={styles.dropButton}
+            >
+              Drop Items
+            </Button>
+          ) : (
+            <Box sx={styles.dropControls}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleCancelDrop}
+                sx={styles.dropControlButton}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleConfirmDrop}
+                sx={styles.dropControlButton}
+              >
+                Confirm
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
-      {hoveredItem && (
-        <ItemTooltip
-          item={hoveredItem}
-          style={{
-            position: 'fixed',
-            left: tooltipPosition.x + 10,
-            top: tooltipPosition.y + 10
-          }}
-        />
-      )}
     </Box>
   );
 }
@@ -273,7 +404,6 @@ const styles = {
     border: '1px solid rgba(128, 255, 0, 0.2)',
   },
   section: {
-    marginBottom: '4px',
     padding: 1,
     background: 'rgba(128, 255, 0, 0.05)',
     borderRadius: '6px',
@@ -317,9 +447,8 @@ const styles = {
     height: '100%',
   },
   itemImage: {
-    width: '30px',
-    height: '30px',
-    objectFit: 'contain' as const,
+    width: '40px',
+    height: '40px',
   },
   itemName: {
     color: 'rgba(128, 255, 0, 0.7)',
@@ -332,11 +461,16 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4px',
-    padding: '8px',
+    py: 0.5,
     background: 'rgba(128, 255, 0, 0.1)',
     borderRadius: '6px',
     border: '1px solid rgba(128, 255, 0, 0.2)',
+    position: 'relative',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      background: 'rgba(128, 255, 0, 0.15)',
+    },
   },
   bagGrid: {
     display: 'grid',
@@ -362,5 +496,70 @@ const styles = {
   headerStats: {
     display: 'flex',
     gap: '8px',
+  },
+  itemImageContainer: {
+    position: 'relative',
+  },
+  itemTierBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: '0 2px',
+    borderRadius: '4px',
+  },
+  itemTierText: {
+    color: 'rgba(0, 0, 0, 0.8)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+  },
+  itemLevelBadge: {
+    position: 'absolute',
+    top: 0,
+    left: 5,
+    zIndex: 1,
+  },
+  itemLevelText: {
+    color: '#EDCF33',
+    fontSize: '0.9rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    letterSpacing: '1px',
+  },
+  itemTypeContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    borderRadius: '0 0 6px 6px',
+    background: 'rgba(0, 0, 0, 0.5)',
+  },
+  itemTypeText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+  },
+  dropButton: {
+    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+    border: '1px solid rgba(255, 0, 0, 0.3)',
+    color: '#FF0000',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    },
+  },
+  dropControls: {
+    display: 'flex',
+    gap: 1,
+  },
+  dropControlButton: {
+    flex: 1,
+  },
+  selectedItem: {
+    border: '2px solid #FF0000',
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    },
   },
 };

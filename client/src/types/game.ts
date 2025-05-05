@@ -94,6 +94,7 @@ export interface GameAction {
   type: string;
   statUpgrades?: Stats;
   items?: number[];
+  itemPurchases?: ItemPurchase[];
   potions?: number;
   untilBeast?: boolean;
   untilDeath?: boolean;
