@@ -68,7 +68,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
     const [initialData, sub] = await sdk.subscribeEventQuery({
       query: gameEventsQuery(gameId),
-      historical: true,
       callback: ({ data, error }: { data?: any[]; error?: Error }) => {
         if (data && data.length > 0) {
           let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
@@ -77,10 +76,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       }
     });
 
-    if (initialData && initialData.length === 0) {
+    console.log('initialData', initialData);
+    if (initialData?.getItems() && initialData.getItems().length === 0) {
       startGame(gameId);
     } else {
-      reconnectGameEvents(initialData.reverse());
+      reconnectGameEvents(initialData.getItems());
     }
 
     setSubscription(sub);
@@ -120,7 +120,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (ExplorerLogEvents.includes(event.type)) {
-      if (event.type === 'discovery') {
+      if (!reconnecting && event.type === 'discovery') {
         if (event.discovery?.type === 'Loot') {
           setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
         }
@@ -133,7 +133,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         });
       }
 
-      if (event.type === 'obstacle') {
+      if (!reconnecting && event.type === 'obstacle') {
         setAdventurer({
           ...adventurer!,
           health: event.obstacle!.dodged ? adventurer!.health : adventurer!.health - event.obstacle!.damage!,

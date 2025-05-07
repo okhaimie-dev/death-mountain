@@ -1,4 +1,4 @@
-import { ClauseBuilder, ParsedEntity, ToriiQueryBuilder, UnionOfModelData } from '@dojoengine/sdk';
+import { ClauseBuilder, ParsedEntity, UnionOfModelData, HistoricalToriiQueryBuilder } from '@dojoengine/sdk';
 import { SchemaType } from '../generated/models.gen.ts';
 
 export interface Item {
@@ -119,7 +119,7 @@ export type GameComponentModelNames = keyof GameComponentModels;
 export type GameModelType = UnionOfModelData<GameSchemaType>;
 export type GameEntity = ParsedEntity<GameSchemaType>;
 
-export class GameQueryBuilder extends ToriiQueryBuilder<GameSchemaType> { }
+export class GameQueryBuilder extends HistoricalToriiQueryBuilder<GameSchemaType> { }
 export class GameClauseBuilder extends ClauseBuilder<GameSchemaType> { }
 
 export const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames | GameComponentModelNames): M => (

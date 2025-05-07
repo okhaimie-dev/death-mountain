@@ -18,4 +18,5 @@ export const gameEventsQuery = (gameId: number) => {
     .withEntityModels([
       `${namespace}-GameEvent`,
     ])
+    .withLimit(10000)
 }
