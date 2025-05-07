@@ -57,10 +57,10 @@ pub impl ImplAdventurer of IAdventurer {
     /// @return The new Adventurer struct.
     fn new(starting_item: u8) -> Adventurer {
         Adventurer {
-            health: MAX_ADVENTURER_HEALTH,
+            health: STARTING_HEALTH.into(),
             xp: 0,
             stats: ImplStats::new(),
-            gold: MAX_GOLD,
+            gold: STARTING_GOLD.into(),
             equipment: Equipment {
                 weapon: Item { id: starting_item, xp: 0 },
                 chest: Item { id: 0, xp: 0 },

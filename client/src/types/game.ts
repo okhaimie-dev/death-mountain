@@ -54,6 +54,7 @@ export interface Bag {
 
 export interface Beast {
   id: number;
+  baseName: string;
   name: string;
   health: number;
   level: number;

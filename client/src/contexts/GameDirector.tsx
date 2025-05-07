@@ -9,7 +9,6 @@ import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 const GameDirectorContext = createContext({
-  reconnecting: false,
   executeGameAction: (action: GameAction) => { },
 });
 
@@ -38,7 +37,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const [spectating, setSpectating] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
-  const [reconnecting, setReconnecting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<any[]>([]);
 
   useEffect(() => {
@@ -49,19 +48,23 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   }, [gameId]);
 
   useEffect(() => {
-    if (eventQueue.length > 0) {
-      const event = eventQueue[0];
-      processEvent(event);
-    }
-  }, [eventQueue]);
+    const processNextEvent = async () => {
+      if (eventQueue.length > 0 && !isProcessing) {
+        setIsProcessing(true);
+        const event = eventQueue[0];
+        await processEvent(event, false);
+        setEventQueue(prev => prev.slice(1));
+        setIsProcessing(false);
+      }
+    };
+
+    processNextEvent();
+  }, [eventQueue, isProcessing]);
 
   const subscribeEvents = async (gameId: number) => {
-    console.log('subscribing to events', gameId);
     if (subscription) {
       subscription.cancel();
     }
-
-    setReconnecting(true);
 
     const [initialData, sub] = await sdk.subscribeEventQuery({
       query: gameEventsQuery(gameId),
@@ -69,7 +72,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       callback: ({ data, error }: { data?: any[]; error?: Error }) => {
         if (data && data.length > 0) {
           let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
-          console.log('new events', events);
           setEventQueue(prev => [...prev, ...events]);
         }
       }
@@ -77,7 +79,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
     if (initialData && initialData.length === 0) {
       startGame(gameId);
-      setReconnecting(false);
     } else {
       reconnectGameEvents(initialData.reverse());
     }
@@ -89,13 +90,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     let events = entities.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
 
     events.forEach(entity => {
-      processEvent(entity);
+      processEvent(entity, true);
     });
-
-    setReconnecting(false);
   }
 
-  const processEvent = async (entity: any) => {
+  const processEvent = async (entity: any, reconnecting: boolean) => {
     let event = formatGameEvent(entity);
 
     if (event.type === 'adventurer') {
@@ -150,11 +149,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!reconnecting && delayTimes[event.type]) {
-      console.log('delaying', event.type, delayTimes[event.type]);
       await delay(delayTimes[event.type]);
     }
-
-    setEventQueue(prev => prev.slice(1));
   }
 
   const executeGameAction = (action: GameAction) => {
@@ -195,7 +191,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   return (
     <GameDirectorContext.Provider value={{
-      reconnecting,
       executeGameAction,
     }}>
       {children}

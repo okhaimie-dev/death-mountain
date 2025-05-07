@@ -1,3 +1,4 @@
+import { STARTING_HEALTH } from '@/constants/game';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { useMarketStore } from '@/stores/marketStore';
@@ -8,7 +9,7 @@ import { Box, Button, Modal, Paper, Slider, ToggleButton, ToggleButtonGroup, Typ
 import { useCallback, useMemo, useState } from 'react';
 
 const renderSlotToggleButton = (slot: keyof typeof slotIcons) => (
-  <ToggleButton value={slot} aria-label={slot}>
+  <ToggleButton key={slot} value={slot} aria-label={slot}>
     <Box
       component="img"
       src={slotIcons[slot]}
@@ -24,7 +25,7 @@ const renderSlotToggleButton = (slot: keyof typeof slotIcons) => (
 );
 
 const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
-  <ToggleButton value={type} aria-label={type}>
+  <ToggleButton key={type} value={type} aria-label={type}>
     <Box
       component="img"
       src={typeIcons[type]}
@@ -143,7 +144,7 @@ export default function MarketScreen() {
   const potionCost = potionPrice(calculateLevel(adventurer?.xp || 0), adventurer?.stats?.charisma || 0);
   const totalCost = cart.items.reduce((sum, item) => sum + item.price, 0) + (cart.potions * potionCost);
   const remainingGold = (adventurer?.gold || 0) - totalCost;
-  const maxHealth = 100 + (adventurer?.stats?.vitality || 0) * 15;
+  const maxHealth = STARTING_HEALTH + (adventurer?.stats?.vitality || 0) * 15;
   const maxPotionsByHealth = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
   const maxPotionsByGold = Math.floor((adventurer?.gold || 0) / potionCost);
   const maxPotions = Math.min(maxPotionsByHealth, maxPotionsByGold);

@@ -1,6 +1,7 @@
 import strikeAnim from "@/assets/animations/strike.json";
 import AnimatedText from '@/components/AnimatedText';
 import BeastTooltip from '@/components/BeastTooltip';
+import { STARTING_HEALTH } from "@/constants/game";
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
@@ -60,21 +61,20 @@ export default function BeastScreen() {
 
   useEffect(() => {
     if (adventurer?.xp === 0) {
-      setCombatLog(beast!.name + " ambushed you for 10 damage!");
+      setCombatLog(beast!.baseName + " ambushed you for 10 damage!");
     }
   }, []);
 
   useEffect(() => {
     if (battleEvent) {
-      console.log('battleEvent', battleEvent);
       if (battleEvent.type === "attack") {
         strike.play();
-        setCombatLog(`You attacked ${beast!.name} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+        setCombatLog(`You attacked ${beast!.baseName} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
       }
 
       else if (battleEvent.type === "beast_attack") {
         beastStrike.play();
-        setCombatLog(`${beast!.name} attacked your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+        setCombatLog(`${beast!.baseName} attacked your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
       }
 
       else if (battleEvent.type === "flee") {
@@ -86,7 +86,7 @@ export default function BeastScreen() {
       }
 
       else if (battleEvent.type === "ambush") {
-        setCombatLog(`${beast!.name} ambushed your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+        setCombatLog(`${beast!.baseName} ambushed your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
       }
     }
   }, [battleEvent]);
@@ -115,7 +115,7 @@ export default function BeastScreen() {
 
   const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
-  const maxHealth = 100 + (adventurer!.stats.vitality * 15);
+  const maxHealth = STARTING_HEALTH + (adventurer!.stats.vitality * 15);
 
   return (
     <motion.div
@@ -131,7 +131,7 @@ export default function BeastScreen() {
           <Box sx={styles.beastInfo}>
             <Box sx={styles.beastHeader}>
               <Typography
-                variant={beast!.name.length > 30 ? "h5" : "h4"}
+                variant={beast!.name.length > 28 ? "h5" : "h4"}
                 sx={styles.beastName}
               >
                 {beast!.name}

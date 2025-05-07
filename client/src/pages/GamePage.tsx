@@ -7,7 +7,6 @@ import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import { useController } from '@/contexts/Controller';
-import { useGameDirector } from '@/contexts/GameDirector';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
@@ -18,7 +17,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 export default function GamePage() {
   const navigate = useNavigate();
   const { sdk } = useDojoSDK();
-  const { reconnecting } = useGameDirector();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast } = useGameStore();
@@ -59,7 +57,7 @@ export default function GamePage() {
     setActiveNavItem('GAME');
   }, [adventurer?.stat_upgrades_available, adventurer?.beast_health]);
 
-  const isLoading = reconnecting || !gameId || !adventurer;
+  const isLoading = !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;
 
   return (

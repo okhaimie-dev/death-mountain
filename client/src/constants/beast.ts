@@ -199,7 +199,7 @@ export const BEAST_NAMES: { [key: number]: string } = {
     64: "Cyclops",
     65: "Giant",
     // T4
-    66: "NemeanLion",
+    66: "Nemeanlion",
     67: "Berserker",
     68: "Yeti",
     69: "Golem",

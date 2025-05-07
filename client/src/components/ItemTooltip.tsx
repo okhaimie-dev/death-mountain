@@ -161,7 +161,7 @@ const styles = {
   },
   specialContainer: {
     display: 'flex',
-    flexDirection: 'column',
+    justifyContent: 'space-between',
     gap: '4px',
   },
   special: {

@@ -53,6 +53,8 @@ export const useMarketStore = create<MarketState>((set) => ({
       potions: 0,
       items: [],
     },
+    slotFilter: null,
+    typeFilter: null,
   }),
   setInProgress: (inProgress) => set({ inProgress }),
 })); 

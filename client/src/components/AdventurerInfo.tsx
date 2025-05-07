@@ -1,3 +1,4 @@
+import { STARTING_HEALTH } from "@/constants/game";
 import { useGameStore } from "@/stores/gameStore";
 import { calculateLevel, calculateNextLevelXP, calculateProgress } from "@/utils/game";
 import { LinearProgress, Typography } from "@mui/material";
@@ -11,7 +12,7 @@ export default function AdventurerInfo() {
   const progress = calculateProgress(adventurer?.xp || 1);
   const nextLevelXP = calculateNextLevelXP(level);
   const xpToNextLevel = nextLevelXP - (adventurer?.xp || 0);
-  const maxHealth = 100 + (adventurer?.stats?.vitality || 0) * 15;
+  const maxHealth = STARTING_HEALTH + (adventurer?.stats?.vitality || 0) * 15;
 
   return (
     <>

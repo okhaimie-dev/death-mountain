@@ -43,6 +43,14 @@ const cartridge = new ControllerConnector({
     },
     {
       target: game_systems,
+      method: "equip",
+    },
+    {
+      target: game_systems,
+      method: "drop",
+    },
+    {
+      target: game_systems,
       method: "select_stat_upgrades",
     },
     {

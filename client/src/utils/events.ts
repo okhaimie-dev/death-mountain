@@ -8,7 +8,7 @@ import marketImg from '../assets/images/market.png';
 import upgrade from '../assets/images/upgrade.png';
 import { getBeastImageById, getBeastName, getBeastTier, getBeastType } from "./beast";
 import { ItemUtils } from "./loot";
-import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
+import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_NAMES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
 
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
@@ -61,6 +61,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
       type: 'beast',
       beast: {
         id: beast.id,
+        baseName: BEAST_NAMES[beast.id],
         name: getBeastName(beast.id, beast.level, beast.specials.special2, beast.specials.special3),
         health: beast.health,
         level: beast.level,

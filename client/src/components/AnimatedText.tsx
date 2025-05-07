@@ -41,6 +41,7 @@ const styles = {
   combatLogText: {
     color: '#80FF00',
     fontFamily: 'VT323, monospace',
+    lineHeight: '1.2',
     fontSize: '1.0rem',
     textShadow: '0 0 10px rgba(128, 255, 0, 0.3)',
     textAlign: 'center',
