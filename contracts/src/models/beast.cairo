@@ -20,14 +20,14 @@ pub impl ImplBeast of IBeast {
     /// @param starter_weapon_type: the type of weapon the adventurer starts with
     /// @param seed: the random seed
     /// @return: a beast that is weak against the weapon type
-    fn get_starter_beast(starter_weapon_type: Type, seed: u32) -> Beast {
+    fn get_starter_beast(starter_weapon_type: Type) -> Beast {
         let mut beast_id: u8 = Gnome;
 
         match starter_weapon_type {
             Type::None(()) => { panic_with_felt252('weapon cannot be None'); },
-            Type::Magic_or_Cloth(()) => { beast_id = (seed % 5).try_into().unwrap() + Troll; },
-            Type::Blade_or_Hide(()) => { beast_id = (seed % 5).try_into().unwrap() + Fairy; },
-            Type::Bludgeon_or_Metal(()) => { beast_id = (seed % 5).try_into().unwrap() + Bear; },
+            Type::Magic_or_Cloth(()) => { beast_id = Troll; },
+            Type::Blade_or_Hide(()) => { beast_id = Fairy; },
+            Type::Bludgeon_or_Metal(()) => { beast_id = Bear; },
             Type::Necklace(()) => { panic_with_felt252('weapon cannot be necklace'); },
             Type::Ring(()) => { panic_with_felt252('weapon cannot be ring'); },
         }
@@ -63,7 +63,7 @@ pub impl ImplBeast of IBeast {
         special3_rnd: u8,
     ) -> Beast {
         if (adventurer_level == 1) {
-            Self::get_starter_beast(weapon_type, seed)
+            Self::get_starter_beast(weapon_type)
         } else {
             let id = Self::get_beast_id(seed);
             let starting_health = Self::get_starting_health(adventurer_level, health_rnd);
@@ -255,6 +255,7 @@ mod tests {
         CRITICAL_HIT_AMBUSH_MULTIPLIER, CRITICAL_HIT_LEVEL_MULTIPLIER, MAXIMUM_HEALTH,
     };
     use lootsurvivor::constants::combat::CombatEnums::{Tier, Type};
+    use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
     use lootsurvivor::models::beast::{Beast, IBeast, ImplBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
 
@@ -476,5 +477,31 @@ mod tests {
         let is_ambush = false;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
         assert(chance == 100, 'crit hit ambush exceeded 100');
+    }
+
+    #[test]
+    fn test_get_beast_from_seed() {
+        let xp = 4;
+        let seed = 9972942310244935680;
+        let adventurer_level = 2;
+
+        let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+            ImplAdventurer::get_randomness(
+            xp, seed,
+        );
+
+        // get beast based on entropy seeds
+        let beast = ImplBeast::get_beast(
+            adventurer_level,
+            Type::Magic_or_Cloth(()),
+            beast_seed,
+            beast_health_rnd,
+            beast_level_rnd,
+            beast_specials1_rnd,
+            beast_specials2_rnd,
+        );
+
+        println!("beast id: {:?}", beast.id);
+        println!("beast starting health: {:?}", beast.starting_health);
     }
 }

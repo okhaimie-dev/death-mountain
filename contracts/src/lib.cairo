@@ -30,7 +30,6 @@ pub mod models {
     }
     pub mod beast;
     pub mod combat;
-    pub mod event;
     pub mod game;
     pub mod loot;
     pub mod market;

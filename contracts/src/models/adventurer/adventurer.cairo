@@ -30,7 +30,7 @@ use lootsurvivor::models::obstacle::{ImplObstacle, Obstacle};
 use lootsurvivor::utils::loot::ItemUtils;
 
 
-#[derive(Drop, Copy, Serde)]
+#[derive(Introspect, Drop, Copy, Serde)]
 pub struct Adventurer {
     pub health: u16, // 10 bits
     pub xp: u16, // 15 bits
@@ -39,8 +39,7 @@ pub struct Adventurer {
     pub stat_upgrades_available: u8, // 4 bits
     pub stats: Stats, // 30 bits
     pub equipment: Equipment, // 128 bits
-    pub action_count: u16, // 16 bits
-    pub item_specials_seed: u16 // 16 bits
+    pub item_specials_seed: u16,
 }
 
 #[derive(Drop, Serde)]
@@ -74,7 +73,6 @@ pub impl ImplAdventurer of IAdventurer {
             },
             beast_health: BeastSettings::STARTER_BEAST_HEALTH.into(),
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         }
     }
@@ -96,8 +94,7 @@ pub impl ImplAdventurer of IAdventurer {
             + adventurer.stat_upgrades_available.into() * TWO_POW_44
             + adventurer.stats.pack().into() * TWO_POW_48
             + adventurer.equipment.pack().into() * TWO_POW_78
-            + adventurer.action_count.into() * TWO_POW_206
-            + adventurer.item_specials_seed.into() * TWO_POW_222)
+            + adventurer.item_specials_seed.into() * TWO_POW_206)
             .try_into()
             .unwrap()
     }
@@ -114,7 +111,6 @@ pub impl ImplAdventurer of IAdventurer {
         let (packed, stat_upgrades_available) = DivRem::div_rem(packed, TWO_POW_4_NZ);
         let (packed, stats) = DivRem::div_rem(packed, TWO_POW_30_NZ);
         let (packed, equipment) = DivRem::div_rem(packed, TWO_POW_128_NZ);
-        let (packed, action_count) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
         let (_, item_specials_seed) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
 
         Adventurer {
@@ -125,7 +121,6 @@ pub impl ImplAdventurer of IAdventurer {
             stat_upgrades_available: stat_upgrades_available.try_into().unwrap(),
             stats: ImplStats::unpack(stats.try_into().unwrap()),
             equipment: ImplEquipment::unpack(equipment.try_into().unwrap()),
-            action_count: action_count.try_into().unwrap(),
             item_specials_seed: item_specials_seed.try_into().unwrap(),
         }
     }
@@ -853,14 +848,15 @@ pub impl ImplAdventurer of IAdventurer {
     }
 
     /// @notice Increment the battle action count
-    /// @param self: The adventurer
+    /// @param count: The current count
+    /// @return The incremented count
     #[inline(always)]
-    fn increment_action_count(ref self: Adventurer) {
-        let (result, overflow) = self.action_count.overflowing_add(1);
+    fn increment_battle_action_count(count: u16) -> u16 {
+        let (result, overflow) = count.overflowing_add(1);
         if (!overflow) {
-            self.action_count = result;
+            result
         } else {
-            self.action_count = 0;
+            0
         }
     }
 
@@ -1077,7 +1073,6 @@ const TWO_POW_44: u256 = 0x100000000000;
 const TWO_POW_48: u256 = 0x1000000000000;
 const TWO_POW_78: u256 = 0x40000000000000000000;
 const TWO_POW_206: u256 = 0x4000000000000000000000000000000000000000000000000000;
-const TWO_POW_222: u256 = 0x40000000000000000000000000000000000000000000000000000000;
 const TWO_POW_128_NZ: NonZero<u256> = 0x100000000000000000000000000000000;
 
 // ---------------------------
@@ -1089,9 +1084,9 @@ mod tests {
     use lootsurvivor::constants::adventurer::{
         BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS,
         JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD,
-        MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
-        MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
-        SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
+        MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED, MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE,
+        MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS, SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS,
+        STARTING_GOLD, STARTING_HEALTH,
     };
     use lootsurvivor::constants::beast::{BeastId, BeastSettings};
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
@@ -1138,7 +1133,6 @@ mod tests {
             equipment,
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
-            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -1150,7 +1144,6 @@ mod tests {
         assert(adventurer.stat_upgrades_available == unpacked.stat_upgrades_available, 'stat_upgrades_available');
         assert(adventurer.stats == unpacked.stats, 'wrong unpacked stats');
         assert(adventurer.equipment == unpacked.equipment, 'equipment mistmatch');
-        assert(adventurer.action_count == unpacked.action_count, 'action_count');
         assert(adventurer.item_specials_seed == unpacked.item_specials_seed, 'item_specials_seed');
 
         let adventurer = Adventurer {
@@ -1178,7 +1171,6 @@ mod tests {
             },
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
-            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -3495,7 +3487,6 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -3587,7 +3578,6 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -3625,7 +3615,6 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -3664,7 +3653,6 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -4230,10 +4218,9 @@ mod tests {
         // Test case 1: Basic functionality
         let mut level_seed: u64 = 1;
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
-        assert(adventurer.action_count == 0, 'Battle action should start at 0');
-        let (rnd1, rnd2, rnd3, rnd4) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
-        );
+        let mut action_count = 0;
+
+        let (rnd1, rnd2, rnd3, rnd4) = ImplAdventurer::get_battle_randomness(adventurer.xp, action_count, level_seed);
         assert(rnd1 != 0 && rnd2 != 0 && rnd3 != 0 && rnd4 != 0, 'Randomness should not be zero');
         // assert values don't equal each other
         assert(rnd1 != rnd2, 'rnd1 same as rnd2');
@@ -4245,37 +4232,35 @@ mod tests {
 
         // Test case 2: Different seed produces different results
         level_seed = 2;
-        let (rnd5, rnd6, rnd7, rnd8) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
-        );
+        let (rnd5, rnd6, rnd7, rnd8) = ImplAdventurer::get_battle_randomness(adventurer.xp, action_count, level_seed);
         assert(rnd1 != rnd5 || rnd2 != rnd6 || rnd3 != rnd7 || rnd4 != rnd8, 'entropy should affect rnd');
 
         // Test case 3: XP affects randomness
         adventurer.xp = 10;
         let (rnd9, rnd10, rnd11, rnd12) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
+            adventurer.xp, action_count, level_seed,
         );
         adventurer.xp = 11;
         let (rnd13, rnd14, rnd15, rnd16) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
+            adventurer.xp, action_count, level_seed,
         );
         assert(rnd9 != rnd13 || rnd10 != rnd14 || rnd11 != rnd15 || rnd12 != rnd16, 'XP should affect rnd');
 
         // Test case 4: Battle action count affects randomness
-        adventurer.action_count = 1;
+        action_count = 1;
         let (rnd17, rnd18, rnd19, rnd20) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
+            adventurer.xp, action_count, level_seed,
         );
-        adventurer.action_count = 2;
+        action_count = 2;
         let (rnd21, rnd22, rnd23, rnd24) = ImplAdventurer::get_battle_randomness(
-            adventurer.xp, adventurer.action_count, level_seed,
+            adventurer.xp, action_count, level_seed,
         );
         assert(rnd17 != rnd21 || rnd18 != rnd22 || rnd19 != rnd23 || rnd20 != rnd24, 'action count should affect rnd');
 
         // Test case 6: Action count overflow
-        adventurer.action_count = 65535;
-        adventurer.increment_action_count();
-        assert(adventurer.action_count == 0, 'action count should overflow');
+        action_count = 65535;
+        action_count = ImplAdventurer::increment_battle_action_count(action_count);
+        assert(action_count == 0, 'action count should overflow');
     }
 
     #[test]
@@ -4400,5 +4385,15 @@ mod tests {
         previous_health = adventurer.health;
         adventurer.apply_health_boost_from_vitality_unlock(giant_specials);
         assert(adventurer.health == previous_health, 'Health should not exceed max');
+    }
+
+    #[test]
+    fn test_unpacking_seed() {
+        let seed = 0x000000000001000000000000000000000000000001030250802200743200105a;
+        let unpacked: Adventurer = ImplAdventurer::unpack(seed);
+
+        println!("unpacked.beast_health: {:?}", unpacked.beast_health);
+        println!("unpacked.health: {:?}", unpacked.health);
+        println!("unpacked.xp: {:?}", unpacked.xp);
     }
 }

@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x2d199fa52184c66a6412369318a00101e50174b43d7ef7d2e03636ea7f00b23",
-    "seed": "pg_test_ls",
+    "address": "0x2a96f599e5debdc6885afa3775a18439e768b70b499c77ba64049cba18fd82a",
+    "seed": "pg_test_ls_6",
     "name": "Loot Survivor 2",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x5e908b924ffb780d0efe7cb103ef0617090d9d62427bf1e92ca05e8464a32",
-      "class_hash": "0x31e8f6895836940a0b9fad7fcb4ee3a998855856901f7512a70ba04c9189aeb",
+      "address": "0x2a62dd1c1f5ce79bf54d9dadd19fd15492f241c001894f2231a49734c929e72",
+      "class_hash": "0x4b0420f3eab09c3a62acc8f96640e35daf3dd58503a30c4c15584d0bd7032a5",
       "abi": [
         {
           "type": "impl",
@@ -1487,10 +1487,6 @@
             {
               "name": "equipment",
               "type": "lootsurvivor::models::adventurer::equipment::Equipment"
-            },
-            {
-              "name": "action_count",
-              "type": "core::integer::u16"
             },
             {
               "name": "item_specials_seed",
@@ -1691,6 +1687,10 @@
                 {
                   "name": "adventurer",
                   "type": "lootsurvivor::models::adventurer::adventurer::Adventurer"
+                },
+                {
+                  "name": "bag",
+                  "type": "lootsurvivor::models::adventurer::bag::Bag"
                 }
               ],
               "outputs": [
@@ -1927,10 +1927,6 @@
                 {
                   "name": "seed",
                   "type": "core::integer::u64"
-                },
-                {
-                  "name": "stat_upgrades_available",
-                  "type": "core::integer::u8"
                 }
               ],
               "outputs": [
@@ -2065,8 +2061,8 @@
       ]
     },
     {
-      "address": "0x346a66e12ef1372e3c2d7a6a75d2b341b4589aeee755abb997132f80b129402",
-      "class_hash": "0x228b76b36a44714ce647edb7c375d84aba252cbed625cf5f4338e1a7af368f9",
+      "address": "0x255dd7107d5be706238b51a745698556182003d2c10d9642e9384921ee4da66",
+      "class_hash": "0x780a545e3216dddbe14e8598d6ae9353d075bd1cddb17a8cc14fc52888e4571",
       "abi": [
         {
           "type": "impl",
@@ -2266,10 +2262,6 @@
                 {
                   "name": "starter_weapon_type",
                   "type": "lootsurvivor::constants::combat::CombatEnums::Type"
-                },
-                {
-                  "name": "seed",
-                  "type": "core::integer::u32"
                 }
               ],
               "outputs": [
@@ -2488,8 +2480,8 @@
       ]
     },
     {
-      "address": "0x2d372e769d0860013a0e7eb3c59359036e95e651e9e03c6ebf60b4bfd62728e",
-      "class_hash": "0x414c0c0fff5c7e21ec01a036b29c662cfc0f958a8ac2432b6e7962c414423a8",
+      "address": "0x4893ab802269e76bef1f69f61a928365d95ccb46e8c64c2087413f85b21e06d",
+      "class_hash": "0x7caf58c233fdc4466de45f28e2cad6d187927c1308881673c823b15821a7473",
       "abi": [
         {
           "type": "impl",
@@ -2562,6 +2554,20 @@
         },
         {
           "type": "struct",
+          "name": "lootsurvivor::models::market::ItemPurchase",
+          "members": [
+            {
+              "name": "item_id",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "equip",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "struct",
           "name": "lootsurvivor::models::adventurer::stats::Stats",
           "members": [
             {
@@ -2591,20 +2597,6 @@
             {
               "name": "luck",
               "type": "core::integer::u8"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::market::ItemPurchase",
-          "members": [
-            {
-              "name": "item_id",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "equip",
-              "type": "core::bool"
             }
           ]
         },
@@ -2710,7 +2702,7 @@
             },
             {
               "type": "function",
-              "name": "level_up",
+              "name": "buy_items",
               "inputs": [
                 {
                   "name": "adventurer_id",
@@ -2721,12 +2713,24 @@
                   "type": "core::integer::u8"
                 },
                 {
-                  "name": "stat_upgrades",
-                  "type": "lootsurvivor::models::adventurer::stats::Stats"
-                },
-                {
                   "name": "items",
                   "type": "core::array::Array::<lootsurvivor::models::market::ItemPurchase>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "select_stat_upgrades",
+              "inputs": [
+                {
+                  "name": "adventurer_id",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "stat_upgrades",
+                  "type": "lootsurvivor::models::adventurer::stats::Stats"
                 }
               ],
               "outputs": [],
@@ -2859,13 +2863,14 @@
         "flee",
         "equip",
         "drop",
-        "level_up",
+        "buy_items",
+        "select_stat_upgrades",
         "upgrade"
       ]
     },
     {
-      "address": "0x75cbb14d200ff23ebbf36c94ef8ae3dbb33cd2f447fd82818bb190ab7c8cf94",
-      "class_hash": "0x26fc10d119d61fee389950fb5d476bb0155e8a9e3c328a6dff901290d6efd57",
+      "address": "0x1d3c155c5f1d5dd81cbececa92b4753f10fa481b75733861254259d856306c5",
+      "class_hash": "0x224ba5bbf0e02b803ddc28c9b17e6891247ef3d013abbef108601ef378535d2",
       "abi": [
         {
           "type": "impl",
@@ -3885,7 +3890,7 @@
       ]
     },
     {
-      "address": "0x574f5b6ee46e6fe3f477f7d46c0984b35fa9cff0aee3919af31568281654567",
+      "address": "0x5d196d1739692afdc9753568b67d9e73a4eae5dfce4fd8642b81f303d48d070",
       "class_hash": "0x55bda7b44bf6f0ab4df0c492b219ecb5bab307b17e06cf7da452fe1c228dd72",
       "abi": [
         {
@@ -4392,8 +4397,8 @@
       ]
     },
     {
-      "address": "0x16f6d5df534c7b51174f7afb6daa4b92b7df37bd274c0f3d6f3770aa1cfe190",
-      "class_hash": "0x57ec147aee5008944d45e256008142e32a7feabef848e861e8b777cded1f284",
+      "address": "0x9e5f0f3eebb98bdca1f27c255b990309347086b455526aa5c64ef44432042e",
+      "class_hash": "0x28fd7fa6b94ee3eba4d48e64de7a818773f073fca2c8a58899293c92f99bae6",
       "abi": [
         {
           "type": "impl",
@@ -4661,7 +4666,7 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x7055bd7137fb68673e4adbe746504a0b9f56307e7814db7a412661e84ea929e",
+      "class_hash": "0x392559c98fe523e4bf993cc24248ea0d80cea0615f03aaf63965e8bd339ab5",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }

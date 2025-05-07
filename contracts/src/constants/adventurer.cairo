@@ -8,7 +8,6 @@ pub const MAX_PACKABLE_BEAST_HEALTH: u16 = 1023; // 10 bits
 pub const MAX_ADVENTURER_XP: u16 = 32767; // 15 bits
 pub const MAX_GOLD: u16 = 511; // 9 bits
 pub const MAX_STAT_UPGRADES_AVAILABLE: u8 = 15; // 4 bits
-pub const MAX_PACKABLE_ACTION_COUNT: u16 = 65535; // 16 bits
 pub const MAX_PACKABLE_ITEM_SPECIALS_SEED: u16 = 65535; // 16 bits
 
 pub const ITEM_MAX_XP: u16 = 400;

@@ -7,7 +7,7 @@ use lootsurvivor::constants::combat::CombatSettings::{
 };
 
 /// @dev this is a struct for providing special item abilities
-#[derive(Drop, Copy, Serde)]
+#[derive(Introspect, Drop, Copy, Serde)]
 pub struct SpecialPowers {
     pub special1: u8,
     pub special2: u8,

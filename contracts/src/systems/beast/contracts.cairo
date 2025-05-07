@@ -3,7 +3,7 @@ use lootsurvivor::models::beast::Beast;
 
 #[starknet::interface]
 pub trait IBeastSystems<T> {
-    fn get_starter_beast(self: @T, starter_weapon_type: Type, seed: u32) -> Beast;
+    fn get_starter_beast(self: @T, starter_weapon_type: Type) -> Beast;
     fn get_beast(
         self: @T,
         adventurer_level: u8,
@@ -26,8 +26,8 @@ mod beast_systems {
 
     #[abi(embed_v0)]
     impl BeastSystemsImpl of IBeastSystems<ContractState> {
-        fn get_starter_beast(self: @ContractState, starter_weapon_type: Type, seed: u32) -> Beast {
-            ImplBeast::get_starter_beast(starter_weapon_type, seed)
+        fn get_starter_beast(self: @ContractState, starter_weapon_type: Type) -> Beast {
+            ImplBeast::get_starter_beast(starter_weapon_type)
         }
 
         fn get_beast(

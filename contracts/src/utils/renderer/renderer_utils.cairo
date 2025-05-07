@@ -439,7 +439,6 @@ mod tests {
             },
             beast_health: BeastSettings::STARTER_BEAST_HEALTH.into(),
             stat_upgrades_available: 0,
-            action_count: 0,
             item_specials_seed: 0,
         };
 

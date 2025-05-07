@@ -1,0 +1,21 @@
+import { GameQueryBuilder } from "@/types/game";
+import { ClauseBuilder } from "@dojoengine/sdk";
+
+import { addAddressPadding } from "starknet";
+
+const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
+
+export const gameEventsQuery = (gameId: number) => {
+  return new GameQueryBuilder()
+    .withClause(
+      new ClauseBuilder().keys(
+        [
+          `${namespace}-GameEvent`,
+        ],
+        [addAddressPadding(gameId)]
+      ).build()
+    )
+    .withEntityModels([
+      `${namespace}-GameEvent`,
+    ])
+}
