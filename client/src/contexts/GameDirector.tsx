@@ -24,7 +24,7 @@ const delayTimes: any = {
   'beast_attack': 2000,
   'flee': 1000,
 }
-const VRF_ENABLED = false;
+const VRF_ENABLED = true;
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
   const { sdk } = useDojoSDK();

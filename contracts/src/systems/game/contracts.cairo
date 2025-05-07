@@ -1,7 +1,7 @@
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
-const VRF_ENABLED: bool = false;
+const VRF_ENABLED: bool = true;
 
 #[starknet::interface]
 pub trait IGameSystems<T> {

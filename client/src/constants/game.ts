@@ -8,4 +8,4 @@ export const NUMBER_OF_ITEMS_PER_LEVEL = 21;
 export const SUFFIX_UNLOCK_GREATNESS = 15;
 export const PREFIXES_UNLOCK_GREATNESS = 19;
 
-export const STARTING_HEALTH = 255;
+export const STARTING_HEALTH = 100;
