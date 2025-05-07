@@ -19,8 +19,8 @@ const GameDirectorContext = createContext({
 const explorerDelay = 1000;
 const delayTimes: any = {
   'level_up': explorerDelay,
-  'discovery': explorerDelay,
-  'obstacle': explorerDelay,
+  'discovery': 2000,
+  'obstacle': 2000,
   'attack': 2000,
   'beast_attack': 2000,
   'flee': 1000,
@@ -33,7 +33,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
   const { gameId, adventurer, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent,
-    equipItems, dropItems, setMarketItemIds, setNewMarket, setDropItems, setEquipItems } = useGameStore();
+    equipItems, dropItems, newInventoryItems, setMarketItemIds, setNewMarket, setDropItems, setEquipItems,
+    setNewInventoryItems } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
@@ -55,6 +56,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   }, [eventQueue]);
 
   const subscribeEvents = async (gameId: number) => {
+    console.log('subscribing to events', gameId);
     if (subscription) {
       subscription.cancel();
     }
@@ -67,6 +69,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       callback: ({ data, error }: { data?: any[]; error?: Error }) => {
         if (data && data.length > 0) {
           let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
+          console.log('new events', events);
           setEventQueue(prev => [...prev, ...events]);
         }
       }
@@ -118,6 +121,10 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (ExplorerLogEvents.includes(event.type)) {
+      if (event.type === 'discovery' && event.discovery?.type === 'Loot') {
+        setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
+      }
+
       setExploreLog(event);
     }
 
@@ -126,6 +133,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!reconnecting && delayTimes[event.type]) {
+      console.log('delaying', event.type, delayTimes[event.type]);
       await delay(delayTimes[event.type]);
     }
 

@@ -2,7 +2,8 @@ import AdventurerInfo from '@/components/AdventurerInfo';
 import { OBSTACLE_NAMES } from '@/constants/obstacle';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { GameEvent } from '@/utils/events';
+import { getBeastImage, getBeastImageById } from '@/utils/beast';
+import { GameEvent, getEventIcon, getEventTitle } from '@/utils/events';
 import { Box, Button, FormControlLabel, Switch, Typography, keyframes } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
@@ -31,60 +32,6 @@ export default function ExploreScreen() {
     executeGameAction({ type: 'explore', untilBeast });
   };
 
-  const getEventIcon = (event: GameEvent) => {
-    switch (event.type) {
-      case 'discovery':
-        return '🌟';
-      case 'obstacle':
-        return '🕳️';
-      case 'defeated_beast':
-        return '👹';
-      case 'fled_beast':
-        return '🏃';
-      case 'stat_upgrade':
-        return '📈';
-      case 'level_up':
-        return '🔝';
-      case 'buy_items':
-        return '🏪';
-      case 'beast':
-        return '👹';
-      default:
-        return '❓';
-    }
-  };
-
-  const getEventTitle = (event: GameEvent) => {
-    switch (event.type) {
-      case 'beast':
-        return `Encountered beast`;
-      case 'discovery':
-        if (event.discovery?.type === 'Gold') return 'Discovered Gold';
-        if (event.discovery?.type === 'Health') return 'Discovered Health';
-        if (event.discovery?.type === 'Loot') return 'Discovered Loot';
-        return 'Discovered Unknown';
-      case 'obstacle':
-        const location = event.obstacle?.location || 'None';
-        const obstacleName = OBSTACLE_NAMES[event.obstacle?.id!] || 'Unknown Obstacle';
-        if (event.obstacle?.damage === 0) {
-          return `Avoided ${obstacleName}`;
-        }
-        return `${obstacleName} hit your ${location}`;
-      case 'defeated_beast':
-        return 'Defeated Beast';
-      case 'fled_beast':
-        return 'Fled from Beast';
-      case 'level_up':
-        return 'Level Up';
-      case 'stat_upgrade':
-        return 'Stats Upgraded';
-      case 'buy_items':
-        return 'Visited Market';
-      default:
-        return 'Unknown Event';
-    }
-  };
-
   return (
     <Box sx={styles.container}>
       {/* Main Content */}
@@ -109,7 +56,9 @@ export default function ExploreScreen() {
                   animation: `${fadeIn} 0.5s ease-in-out`,
                 }}
               >
-                <Box sx={styles.encounterIcon}>{getEventIcon(event)}</Box>
+                <Box sx={styles.encounterIcon}>
+                  <img src={getEventIcon(event)} alt={'encounter'} style={{ width: '100%', height: '100%' }} />
+                </Box>
 
                 <Box sx={styles.encounterDetails}>
                   <Typography sx={styles.encounterTitle}>{getEventTitle(event)}</Typography>
@@ -121,7 +70,7 @@ export default function ExploreScreen() {
 
                     {event.type === 'obstacle' && (
                       <Typography sx={styles.encounterXP}>
-                        {event.obstacle?.damage === 0 ? 'Avoided' : `-${event.obstacle?.damage} Health ${event.obstacle?.critical_hit ? 'critical hit!' : ''}`}
+                        {event.obstacle?.dodged ? '' : `-${event.obstacle?.damage} Health ${event.obstacle?.critical_hit ? 'critical hit!' : ''}`}
                       </Typography>
                     )}
 
@@ -143,11 +92,6 @@ export default function ExploreScreen() {
                             +{event.discovery.amount} Health
                           </Typography>
                         )}
-                        {event.discovery.type === 'Loot' && (
-                          <Typography sx={styles.encounterXP}>
-                            +{event.discovery.amount} Loot
-                          </Typography>
-                        )}
                       </>
                     )}
 
@@ -166,9 +110,15 @@ export default function ExploreScreen() {
                       </Typography>
                     )}
 
-                    {event.type === 'buy_items' && typeof event.potions === 'number' && (
+                    {event.type === 'buy_items' && typeof event.potions === 'number' && event.potions > 0 && (
                       <Typography sx={styles.encounterXP}>
-                        {event.potions > 0 ? `+${event.potions} Potions` : 'No Potions'}
+                        {`+${event.potions} Potions`}
+                      </Typography>
+                    )}
+
+                    {event.items_purchased && event.items_purchased.length > 0 && (
+                      <Typography sx={styles.encounterXP}>
+                        +{event.items_purchased.length} Items
                       </Typography>
                     )}
 

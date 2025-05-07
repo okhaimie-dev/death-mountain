@@ -1,11 +1,10 @@
-import { Box, Modal, Tooltip } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useGameStore } from '@/stores/gameStore';
+import { useMarketStore } from '@/stores/marketStore';
+import { Box, Tooltip } from '@mui/material';
+import { useEffect } from 'react';
 import adventurerImg from '../assets/images/adventurer.png';
 import marketImg from '../assets/images/market.png';
 import playImg from '../assets/images/play.png';
-import { Adventurer } from '../types/game';
-import { useGameStore } from '@/stores/gameStore';
-import { useMarketStore } from '@/stores/marketStore';
 
 interface BottomNavProps {
   activeNavItem: 'GAME' | 'CHARACTER' | 'MARKET';
@@ -13,13 +12,24 @@ interface BottomNavProps {
 }
 
 export default function BottomNav({ activeNavItem, setActiveNavItem }: BottomNavProps) {
-  const { adventurer, marketSeed, newMarket, setNewMarket } = useGameStore();
+  const { adventurer, marketItemIds, newMarket, setNewMarket, setNewInventoryItems } = useGameStore();
 
-  const { clearCart } = useMarketStore();
+  const { cart, inProgress, clearCart, setInProgress } = useMarketStore();
 
   useEffect(() => {
+    if (inProgress) {
+      if (cart.items.length > 0) {
+        setNewInventoryItems(cart.items.map(item => item.id));
+        setActiveNavItem('CHARACTER');
+      } else {
+        setActiveNavItem('GAME');
+      }
+
+      setInProgress(false);
+    }
+
     clearCart();
-  }, [marketSeed, adventurer?.gold, adventurer?.stats?.charisma]);
+  }, [marketItemIds, adventurer?.gold, adventurer?.stats?.charisma]);
 
   const isMarketAvailable = adventurer?.beast_health === 0 && adventurer?.stat_upgrades_available === 0;
   const marketTooltipText = adventurer?.beast_health! > 0

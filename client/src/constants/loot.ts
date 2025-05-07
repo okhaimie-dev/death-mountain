@@ -115,6 +115,126 @@ export const ItemSlotLength = {
     SlotItemsLengthRing: 5
 } as const;
 
+// Item Index
+export const ItemIndex = {
+    // Weapon
+    Warhammer: 0,
+    Quarterstaff: 1,
+    Maul: 2,
+    Mace: 3,
+    Club: 4,
+    Katana: 5,
+    Falchion: 6,
+    Scimitar: 7,
+    LongSword: 8,
+    ShortSword: 9,
+    GhostWand: 10,
+    GraveWand: 11,
+    BoneWand: 12,
+    Wand: 13,
+    Grimoire: 14,
+    Chronicle: 15,
+    Tome: 16,
+    Book: 17,
+
+    // Chest
+    DivineRobe: 0,
+    SilkRobe: 1,
+    LinenRobe: 2,
+    Robe: 3,
+    Shirt: 4,
+    DemonHusk: 5,
+    DragonskinArmor: 6,
+    StuddedLeatherArmor: 7,
+    HardLeatherArmor: 8,
+    LeatherArmor: 9,
+    HolyChestplate: 10,
+    OrnateChestplate: 11,
+    PlateMail: 12,
+    ChainMail: 13,
+    RingMail: 14,
+
+    // Head
+    AncientHelm: 0,
+    OrnateHelm: 1,
+    GreatHelm: 2,
+    FullHelm: 3,
+    Helm: 4,
+    DemonCrown: 5,
+    DragonsCrown: 6,
+    WarCap: 7,
+    LeatherCap: 8,
+    Cap: 9,
+    Crown: 10,
+    DivineHood: 11,
+    SilkHood: 12,
+    LinenHood: 13,
+    Hood: 14,
+
+    // Waist
+    OrnateBelt: 0,
+    WarBelt: 1,
+    PlatedBelt: 2,
+    MeshBelt: 3,
+    HeavyBelt: 4,
+    DemonhideBelt: 5,
+    DragonskinBelt: 6,
+    StuddedLeatherBelt: 7,
+    HardLeatherBelt: 8,
+    LeatherBelt: 9,
+    BrightsilkSash: 10,
+    SilkSash: 11,
+    WoolSash: 12,
+    LinenSash: 13,
+    Sash: 14,
+
+    // Foot
+    HolyGreaves: 0,
+    OrnateGreaves: 1,
+    Greaves: 2,
+    ChainBoots: 3,
+    HeavyBoots: 4,
+    DemonhideBoots: 5,
+    DragonskinBoots: 6,
+    StuddedLeatherBoots: 7,
+    HardLeatherBoots: 8,
+    LeatherBoots: 9,
+    DivineSlippers: 10,
+    SilkSlippers: 11,
+    WoolShoes: 12,
+    LinenShoes: 13,
+    Shoes: 14,
+
+    // Hand
+    HolyGauntlets: 0,
+    OrnateGauntlets: 1,
+    Gauntlets: 2,
+    ChainGloves: 3,
+    HeavyGloves: 4,
+    DemonsHands: 5,
+    DragonskinGloves: 6,
+    StuddedLeatherGloves: 7,
+    HardLeatherGloves: 8,
+    LeatherGloves: 9,
+    DivineGloves: 10,
+    SilkGloves: 11,
+    WoolGloves: 12,
+    LinenGloves: 13,
+    Gloves: 14,
+
+    // Necklaces
+    Necklace: 0,
+    Amulet: 1,
+    Pendant: 2,
+
+    // Rings
+    GoldRing: 0,
+    SilverRing: 1,
+    BronzeRing: 2,
+    PlatinumRing: 3,
+    TitaniumRing: 4
+} as const;
+
 // Item Name Prefixes
 export const ItemNamePrefix = {
     Agony: 1,
@@ -260,4 +380,11 @@ export const ITEM_NAME_SUFFIXES: { [key: number]: string } = {
     6: "Grasp", 7: "Instrument", 8: "Glow", 9: "Bender", 10: "Shadow",
     11: "Whisper", 12: "Shout", 13: "Growl", 14: "Tear", 15: "Peak",
     16: "Form", 17: "Sun", 18: "Moon"
-}; 
+};
+
+export const ITEM_SUFFIXES: { [key: number]: string } = {
+    1: "of Power", 2: "of Giant", 3: "of Titans", 4: "of Skill", 5: "of Perfection",
+    6: "of Brilliance", 7: "of Enlightenment", 8: "of Protection", 9: "of Anger",
+    10: "of Rage", 11: "of Fury", 12: "of Vitriol", 13: "of the Fox",
+    14: "of Detection", 15: "of Reflection", 16: "of the Twins"
+};

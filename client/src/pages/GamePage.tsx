@@ -37,6 +37,7 @@ export default function GamePage() {
 
   useEffect(() => {
     if (!account && gameId && adventurer) {
+      navigate('/');
       exitGame()
     }
   }, [account]);

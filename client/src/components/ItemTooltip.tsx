@@ -1,4 +1,3 @@
-import { PREFIXES_UNLOCK_GREATNESS, SUFFIX_UNLOCK_GREATNESS } from '@/constants/loot';
 import { Item } from '@/types/game';
 import { calculateLevel, calculateNextLevelXP, calculateProgress } from '@/utils/game';
 import { ItemUtils } from '@/utils/loot';
@@ -6,25 +5,24 @@ import { Box, LinearProgress, Typography } from '@mui/material';
 
 interface ItemTooltipProps {
   item: Item;
+  itemSpecialsSeed: number;
   style?: React.CSSProperties;
 }
 
-export default function ItemTooltip({ item, style }: ItemTooltipProps) {
+export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemTooltipProps) {
   const level = calculateLevel(item.xp);
   const tier = ItemUtils.getItemTier(item.id);
   const type = ItemUtils.getItemType(item.id);
   const metadata = ItemUtils.getMetadata(item.id);
   const xpToNextLevel = calculateNextLevelXP(level);
-
-  // Check if item has unlocked special names
-  const hasUnlockedSuffix = level >= SUFFIX_UNLOCK_GREATNESS;
-  const hasUnlockedPrefix = level >= PREFIXES_UNLOCK_GREATNESS;
+  const specials = ItemUtils.getSpecials(item.id, level, itemSpecialsSeed);
+  const fullName = specials.suffix ? `${specials.prefix} ${specials.suffix} ${metadata.name}` : metadata.name;
 
   return (
     <Box sx={{ ...styles.tooltip, ...style }}>
       <Box sx={styles.header}>
         <Typography variant="body2" sx={styles.itemName}>
-          {metadata.name}
+          {fullName}
         </Typography>
       </Box>
 
@@ -57,20 +55,17 @@ export default function ItemTooltip({ item, style }: ItemTooltipProps) {
         />
       </Box>
 
-      {(hasUnlockedSuffix || hasUnlockedPrefix) && (
+      {specials.special1 && (
         <>
           <Box sx={styles.divider} />
           <Box sx={styles.specialContainer}>
-            {hasUnlockedSuffix && (
-              <Typography variant="caption" sx={styles.special}>
-                ✨ Unlocked Suffix Names
-              </Typography>
-            )}
-            {hasUnlockedPrefix && (
-              <Typography variant="caption" sx={styles.special}>
-                ✨ Unlocked Prefix Names
-              </Typography>
-            )}
+            <Typography variant="caption" sx={styles.special}>
+              {specials.special1}
+            </Typography>
+
+            <Typography variant="caption" sx={styles.special}>
+              {ItemUtils.getStatBonus(specials.special1)}
+            </Typography>
           </Box>
         </>
       )}
@@ -81,15 +76,13 @@ export default function ItemTooltip({ item, style }: ItemTooltipProps) {
 const styles = {
   tooltip: {
     position: 'absolute',
-    backgroundColor: 'rgba(17, 17, 17, 0.95)',
+    backgroundColor: 'rgba(17, 17, 17, 1)',
     border: '1px solid rgba(128, 255, 0, 0.3)',
     borderRadius: '8px',
     padding: '10px',
     zIndex: 1000,
     minWidth: '200px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-    backdropFilter: 'blur(4px)',
-    ml: '40px'
   },
   header: {
     display: 'flex',

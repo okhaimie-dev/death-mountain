@@ -2,46 +2,133 @@ import AdventurerInfo from '@/components/AdventurerInfo';
 import ItemTooltip from '@/components/ItemTooltip';
 import { useGameStore } from '@/stores/gameStore';
 import { Item } from '@/types/game';
-import { ItemUtils } from '@/utils/loot';
 import { calculateLevel } from '@/utils/game';
-import { Box, Typography, Tooltip, Button } from '@mui/material';
-import { useEffect, useState } from 'react';
-import chestIcon from '@/assets/types/chest.svg';
-import clothIcon from '@/assets/types/cloth.svg';
-import footIcon from '@/assets/types/foot.svg';
-import handIcon from '@/assets/types/hand.svg';
-import headIcon from '@/assets/types/head.svg';
-import hideIcon from '@/assets/types/hide.svg';
-import metalIcon from '@/assets/types/metal.svg';
-import neckIcon from '@/assets/types/neck.svg';
-import ringIcon from '@/assets/types/ring.svg';
-import waistIcon from '@/assets/types/waist.svg';
-import weaponIcon from '@/assets/types/weapon.svg';
+import { ItemUtils, typeIcons } from '@/utils/loot';
+import { Box, Button, Tooltip, Typography } from '@mui/material';
+import { memo, useEffect, useState, useCallback } from 'react';
+import { isMobile } from 'react-device-detect';
 
 type EquipmentSlot = 'weapon' | 'chest' | 'head' | 'waist' | 'foot' | 'hand' | 'neck' | 'ring';
 
-const typeIcons = {
-  Cloth: clothIcon,
-  Hide: hideIcon,
-  Metal: metalIcon,
-  Magic: weaponIcon,
-  Bludgeon: weaponIcon,
-  Blade: weaponIcon,
-  Ring: ringIcon,
-  Necklace: neckIcon,
-};
+// Memoized ItemSlot component
+const ItemSlot = memo(({
+  item,
+  itemSpecialsSeed,
+  slot,
+  isSelected,
+  isNew,
+  onItemClick,
+  onItemHover
+}: {
+  item: Item | null,
+  itemSpecialsSeed: number,
+  slot: string,
+  isSelected: boolean,
+  isNew: boolean,
+  onItemClick: (item: Item) => void,
+  onItemHover: (id: number) => void
+}) => {
+  const metadata = item ? ItemUtils.getMetadata(item.id) : null;
+  const tier = item ? ItemUtils.getItemTier(item.id) : null;
+  const level = item ? calculateLevel(item.xp) : null;
+
+  return (
+    <Tooltip
+      title={item?.id ? <ItemTooltip itemSpecialsSeed={itemSpecialsSeed} item={item} /> : null}
+      placement="bottom"
+      slotProps={{
+        popper: {
+          disablePortal: isMobile,
+          modifiers: [
+            {
+              name: 'preventOverflow',
+              enabled: true,
+              options: { rootBoundary: 'viewport' },
+            },
+          ],
+        },
+        tooltip: {
+          sx: {
+            bgcolor: 'transparent',
+            border: 'none',
+          },
+        },
+      }}
+    >
+      <Box
+        sx={[styles.item, isSelected && styles.selectedItem, isNew && styles.newItem]}
+        onClick={() => item?.id && onItemClick(item)}
+        onMouseEnter={() => item?.id && onItemHover(item.id)}
+      >
+        {item?.id && metadata ? (
+          <>
+            <Box sx={styles.itemLevelBadge}>
+              <Typography sx={styles.itemLevelText}>{level}</Typography>
+            </Box>
+            <Box sx={styles.itemTierBadge} style={{ backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'transparent' }}>
+              <Typography sx={styles.itemTierText}>{tier ? `T${tier}` : ''}</Typography>
+            </Box>
+            <Box sx={styles.itemImageContainer}>
+              <img
+                src={metadata.imageUrl}
+                alt={metadata.name}
+                style={styles.itemImage}
+              />
+            </Box>
+            <Box sx={styles.itemTypeContainer}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                {ItemUtils.getItemType(item.id) in typeIcons && (
+                  <Box
+                    component="img"
+                    src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
+                    alt={ItemUtils.getItemType(item.id)}
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      filter: 'invert(1)',
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
+                <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
+              </Box>
+            </Box>
+          </>
+        ) : (
+          <Box sx={styles.itemImageContainer}>
+            <img src="/src/assets/images/empty_slot.png" alt={`Empty ${slot}`} style={{ ...styles.itemImage, opacity: 0.5 }} />
+            <Typography variant="body2" sx={styles.itemName}>{slot.charAt(0).toUpperCase() + slot.slice(1)}</Typography>
+          </Box>
+        )}
+      </Box>
+    </Tooltip>
+  );
+});
 
 export default function CharacterScreen() {
-  const equipItem = useGameStore(state => state.equipItem);
-  const adventurer = useGameStore(state => state.adventurer);
-  const bag = useGameStore(state => state.bag);
+  const { adventurer, bag, equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
+  const [newItems, setNewItems] = useState<number[]>([]);
+
+  // Update newItems when newInventoryItems changes and clear newInventoryItems
+  useEffect(() => {
+    if (newInventoryItems.length > 0) {
+      setNewItems([...newInventoryItems]);
+      setNewInventoryItems([]);
+    }
+  }, [newInventoryItems]);
+
+  const handleItemHover = useCallback((itemId: number) => {
+    if (newItems.includes(itemId)) {
+      setNewItems(prev => prev.filter(id => id !== itemId));
+    }
+  }, [newItems]);
 
   // Define fixed order for equipment slots
   const equipmentOrder: EquipmentSlot[] = ['head', 'chest', 'hand', 'waist', 'foot', 'weapon', 'ring', 'neck'];
 
-  const handleItemClick = (item: Item, bag: boolean = false) => {
+  const handleItemClick = useCallback((item: Item, bag: boolean = false) => {
     if (isDropMode) {
       const newItemsToDrop = new Set(itemsToDrop);
       if (newItemsToDrop.has(item.id)) {
@@ -53,18 +140,18 @@ export default function CharacterScreen() {
     } else if (bag) {
       equipItem(item);
     }
-  };
+  }, [isDropMode, itemsToDrop, equipItem]);
 
-  const handleConfirmDrop = () => {
+  const handleConfirmDrop = useCallback(() => {
     // TODO: Implement drop items logic
     setIsDropMode(false);
     setItemsToDrop(new Set());
-  };
+  }, []);
 
-  const handleCancelDrop = () => {
+  const handleCancelDrop = useCallback(() => {
     setIsDropMode(false);
     setItemsToDrop(new Set());
-  };
+  }, []);
 
   return (
     <Box sx={styles.container}>
@@ -114,70 +201,20 @@ export default function CharacterScreen() {
             <Box sx={styles.itemGrid}>
               {equipmentOrder.map((slot) => {
                 const item = adventurer?.equipment[slot];
-                const metadata = item ? ItemUtils.getMetadata(item.id) : null;
-                const tier = item ? ItemUtils.getItemTier(item.id) : null;
-                const level = item ? calculateLevel(item.xp) : null;
                 const isSelected = item?.id ? itemsToDrop.has(item.id) : false;
+                const isNew = item?.id ? newItems.includes(item.id) : false;
 
                 return (
-                  <Tooltip
+                  <ItemSlot
                     key={slot}
-                    title={item?.id ? <ItemTooltip item={item} /> : null}
-                    placement="top"
-                    slotProps={{
-                      tooltip: {
-                        sx: {
-                          bgcolor: 'transparent',
-                          border: 'none',
-                        },
-                      },
-                    }}
-                  >
-                    <Box sx={[styles.item, isSelected && styles.selectedItem]}
-                      onClick={() => item?.id && handleItemClick(item)}
-                    >
-                      {item?.id && metadata ? (
-                        <>
-                          <Box sx={styles.itemLevelBadge}>
-                            <Typography sx={styles.itemLevelText}>{level}</Typography>
-                          </Box>
-                          <Box sx={styles.itemTierBadge} style={{ backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'transparent' }}>
-                            <Typography sx={styles.itemTierText}>{tier ? `T${tier}` : ''}</Typography>
-                          </Box>
-                          <Box sx={styles.itemImageContainer}>
-                            <img
-                              src={metadata.imageUrl}
-                              alt={metadata.name}
-                              style={styles.itemImage}
-                            />
-                          </Box>
-                          <Box sx={styles.itemTypeContainer}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                              {ItemUtils.getItemType(item.id) in typeIcons && (
-                                <Box
-                                  component="img"
-                                  src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
-                                  alt={ItemUtils.getItemType(item.id)}
-                                  sx={{
-                                    width: 12,
-                                    height: 12,
-                                    filter: 'invert(1)',
-                                    opacity: 0.9,
-                                  }}
-                                />
-                              )}
-                              <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
-                            </Box>
-                          </Box>
-                        </>
-                      ) : (
-                        <Box sx={styles.itemImageContainer}>
-                          <img src="/src/assets/images/empty_slot.png" alt={`Empty ${slot}`} style={{ ...styles.itemImage, opacity: 0.5 }} />
-                          <Typography variant="body2" sx={styles.itemName}>{slot.charAt(0).toUpperCase() + slot.slice(1)}</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Tooltip>
+                    itemSpecialsSeed={adventurer?.item_specials_seed || 0}
+                    item={item || null}
+                    slot={slot}
+                    isSelected={isSelected}
+                    isNew={isNew}
+                    onItemClick={handleItemClick}
+                    onItemHover={handleItemHover}
+                  />
                 );
               })}
             </Box>
@@ -190,61 +227,20 @@ export default function CharacterScreen() {
             </Box>
             <Box sx={styles.itemGrid}>
               {bag?.map((item) => {
-                const itemDetails = ItemUtils.getMetadata(item.id);
-                const tier = ItemUtils.getItemTier(item.id);
-                const level = calculateLevel(item.xp);
                 const isSelected = itemsToDrop.has(item.id);
+                const isNew = newItems.includes(item.id);
 
                 return (
-                  <Tooltip
+                  <ItemSlot
                     key={item.id}
-                    title={<ItemTooltip item={item} />}
-                    placement="top"
-                    slotProps={{
-                      tooltip: {
-                        sx: {
-                          bgcolor: 'transparent',
-                          border: 'none',
-                        },
-                      },
-                    }}
-                  >
-                    <Box sx={[styles.item, isSelected && styles.selectedItem]}
-                      onClick={() => handleItemClick(item, true)}
-                    >
-                      <Box sx={styles.itemLevelBadge}>
-                        <Typography sx={styles.itemLevelText}>{level}</Typography>
-                      </Box>
-                      <Box sx={styles.itemTierBadge} style={{ backgroundColor: ItemUtils.getTierColor(tier) }}>
-                        <Typography sx={styles.itemTierText}>T{tier}</Typography>
-                      </Box>
-                      <Box sx={styles.itemImageContainer}>
-                        <img
-                          src={itemDetails.imageUrl}
-                          alt={itemDetails.name}
-                          style={styles.itemImage}
-                        />
-                      </Box>
-                      <Box sx={styles.itemTypeContainer}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {ItemUtils.getItemType(item.id) in typeIcons && (
-                            <Box
-                              component="img"
-                              src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
-                              alt={ItemUtils.getItemType(item.id)}
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                filter: 'invert(1)',
-                                opacity: 0.9,
-                              }}
-                            />
-                          )}
-                          <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Tooltip>
+                    item={item}
+                    itemSpecialsSeed={adventurer?.item_specials_seed || 0}
+                    slot="bag"
+                    isSelected={isSelected}
+                    isNew={isNew}
+                    onItemClick={(item) => handleItemClick(item, true)}
+                    onItemHover={handleItemHover}
+                  />
                 );
               })}
               {Array(15 - (bag?.length || 0)).fill(null).map((_, index) => (
@@ -467,6 +463,7 @@ const styles = {
     border: '1px solid rgba(128, 255, 0, 0.2)',
     position: 'relative',
     cursor: 'pointer',
+    minHeight: '55px',
     transition: 'all 0.2s ease',
     '&:hover': {
       background: 'rgba(128, 255, 0, 0.15)',
@@ -561,5 +558,32 @@ const styles = {
     '&:hover': {
       backgroundColor: 'rgba(255, 0, 0, 0.1)',
     },
+  },
+  newItem: {
+    border: '2px solid #80FF00',
+    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    '&:hover': {
+      backgroundColor: 'rgba(128, 255, 0, 0.15)',
+      '& .newItemBadge': {
+        display: 'none',
+      },
+    },
+  },
+  newItemBadge: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'rgba(128, 255, 0, 0.9)',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    zIndex: 2,
+  },
+  newItemText: {
+    color: '#000',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    letterSpacing: '1px',
   },
 };

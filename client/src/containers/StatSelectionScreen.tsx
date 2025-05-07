@@ -1,18 +1,37 @@
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { Stats } from '@/types/game';
+import { Adventurer, Stats } from '@/types/game';
 import { screenVariants } from '@/utils/animations';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import StrengthIcon from '@/assets/types/Strength.svg';
+import DexterityIcon from '@/assets/types/Dexterity.svg';
+import VitalityIcon from '@/assets/types/Vitality.svg';
+import IntelligenceIcon from '@/assets/types/Intelligence.svg';
+import WisdomIcon from '@/assets/types/Wisdom.svg';
+import CharismaIcon from '@/assets/types/Charisma.svg';
+import LuckIcon from '@/assets/types/Luck.svg';
+import { potionPrice } from '@/utils/market';
+import { calculateLevel, ability_based_percentage } from '@/utils/game';
 
 const STAT_DESCRIPTIONS = {
   strength: "Increases attack damage.",
   dexterity: "Increases chance of fleeing Beasts.",
   vitality: "Increases your maximum health.",
   intelligence: "Increases chance of dodging Obstacles.",
-  wisdom: "Increases chance of avoiding a Beast ambush.",
+  wisdom: "Increases chance of avoiding Beast ambush.",
   charisma: "Provides discounts on the marketplace."
+};
+
+const STAT_ICONS = {
+  strength: StrengthIcon,
+  dexterity: DexterityIcon,
+  vitality: VitalityIcon,
+  intelligence: IntelligenceIcon,
+  wisdom: WisdomIcon,
+  charisma: CharismaIcon,
+  luck: LuckIcon,
 };
 
 export default function StatSelectionScreen() {
@@ -56,6 +75,30 @@ export default function StatSelectionScreen() {
   const totalSelected = Object.values(selectedStats).reduce((a, b) => a + b, 0);
   const pointsRemaining = adventurer!.stat_upgrades_available - totalSelected;
 
+  function STAT_HELPER_TEXT(stat: keyof Stats) {
+    const level = calculateLevel(adventurer!.xp);
+
+    if (stat === 'strength') {
+      let strength = adventurer!.stats.strength + selectedStats.strength;
+      return `+${strength * 10}% damage`;
+    } else if (stat === 'dexterity') {
+      let dexterity = adventurer!.stats.dexterity + selectedStats.dexterity;
+      return `${ability_based_percentage(adventurer!.xp, dexterity)}% chance`;
+    } else if (stat === 'vitality') {
+      let vitality = adventurer!.stats.vitality + selectedStats.vitality;
+      return `+${vitality * 15} health`;
+    } else if (stat === 'intelligence') {
+      let intelligence = adventurer!.stats.intelligence + selectedStats.intelligence;
+      return `${ability_based_percentage(adventurer!.xp, intelligence)}% chance`;
+    } else if (stat === 'wisdom') {
+      let wisdom = adventurer!.stats.wisdom + selectedStats.wisdom;
+      return `${ability_based_percentage(adventurer!.xp, wisdom)}% chance`;
+    } else if (stat === 'charisma') {
+      let charisma = adventurer!.stats.charisma + selectedStats.charisma;
+      return `Potion: ${potionPrice(level, charisma)} gold`;
+    }
+  }
+
   return (
     <motion.div
       initial="initial"
@@ -79,9 +122,21 @@ export default function StatSelectionScreen() {
           {Object.entries(STAT_DESCRIPTIONS).map(([stat, description]) => (
             <Box key={stat} sx={styles.statCard}>
               <Box sx={styles.statHeader}>
-                <Typography sx={styles.statName}>
-                  {stat.charAt(0).toUpperCase() + stat.slice(1)}
-                </Typography>
+                <Box sx={styles.statTitleContainer}>
+                  <img
+                    src={STAT_ICONS[stat as keyof typeof STAT_ICONS]}
+                    alt={`${stat} icon`}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      marginRight: '8px',
+                      filter: 'brightness(0) saturate(100%) invert(84%) sepia(29%) saturate(1012%) hue-rotate(60deg) brightness(103%) contrast(101%)'
+                    }}
+                  />
+                  <Typography sx={styles.statName}>
+                    {stat.charAt(0).toUpperCase() + stat.slice(1)}
+                  </Typography>
+                </Box>
                 <Typography sx={styles.currentValue}>
                   {adventurer!.stats[stat as keyof Stats]}
                 </Typography>
@@ -89,6 +144,10 @@ export default function StatSelectionScreen() {
 
               <Typography sx={styles.statDescription}>
                 {description}
+              </Typography>
+
+              <Typography sx={styles.statHelperText}>
+                {STAT_HELPER_TEXT(stat as keyof Stats)}
               </Typography>
 
               <Box sx={styles.statControls}>
@@ -201,6 +260,10 @@ const styles = {
     paddingBottom: '6px',
     borderBottom: '1px solid rgba(128, 255, 0, 0.15)',
   },
+  statTitleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
   statName: {
     color: '#80FF00',
     fontSize: '1rem',
@@ -222,11 +285,20 @@ const styles = {
     fontSize: '0.95rem',
     fontFamily: 'VT323, monospace',
     lineHeight: '1.2',
-    marginBottom: '6px',
-    padding: '8px',
+    minHeight: '38px',
+    px: '8px',
+    py: '4px',
     background: 'rgba(0, 0, 0, 0.2)',
     borderRadius: '4px',
     border: '1px solid rgba(128, 255, 0, 0.1)',
+  },
+  statHelperText: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: '0.95rem',
+    fontFamily: 'VT323, monospace',
+    lineHeight: '1.2',
+    marginBottom: '6px',
+    textAlign: 'center',
   },
   statControls: {
     display: 'flex',
@@ -234,7 +306,6 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     marginTop: 'auto',
-    padding: '8px',
   },
   controlButton: {
     minWidth: '28px',

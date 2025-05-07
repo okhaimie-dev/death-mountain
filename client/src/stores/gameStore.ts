@@ -10,6 +10,7 @@ interface GameState {
   beast: Beast | null;
   newMarket: boolean;
   marketItemIds: number[];
+  newInventoryItems: number[];
   metadata: Metadata | null;
   exploreLog: GameEvent[];
   battleEvent: GameEvent | null;
@@ -23,6 +24,7 @@ interface GameState {
   setBeast: (data: Beast | null) => void;
   setMarketItemIds: (data: number[]) => void;
   setNewMarket: (data: boolean) => void;
+  setNewInventoryItems: (data: number[]) => void;
   setMetadata: (data: Metadata | null) => void;
   setExploreLog: (data: GameEvent) => void;
   setBattleEvent: (data: GameEvent | null) => void;
@@ -41,6 +43,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   beast: null,
   newMarket: false,
   marketItemIds: [],
+  newInventoryItems: [],
   exploreLog: [],
   battleEvent: null,
   equipItems: [],
@@ -57,6 +60,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       beast: null,
       newMarket: false,
       marketItemIds: [],
+      newInventoryItems: [],
       metadata: null,
       exploreLog: [],
       battleEvent: null,
@@ -71,6 +75,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setMarketItemIds: (data: number[]) => set({ marketItemIds: data }),
   setNewMarket: (data: boolean) => set({ newMarket: data }),
   setMetadata: (data: Metadata | null) => set({ metadata: data }),
+  setNewInventoryItems: (data: number[]) => set({ newInventoryItems: data }),
   setExploreLog: (data: GameEvent) => set((state) => ({ exploreLog: [data, ...state.exploreLog] })),
   setBattleEvent: (data: GameEvent | null) => set({ battleEvent: data }),
   setDropItems: (data: Item[]) => set({ dropItems: data }),
@@ -82,18 +87,17 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (!state.adventurer) {
         return state;
       }
-
       // Get the currently equipped item in this slot (if any)
       const currentEquippedItem = state.adventurer.equipment[itemSlot];
-
+      
       // Remove the new item from the bag
       const updatedBag = state.bag.filter(item => item.id !== data.id);
-
+      
       // If there was an item equipped in this slot, add it back to the bag
       if (currentEquippedItem && currentEquippedItem.id !== 0) {
         updatedBag.push(currentEquippedItem);
       }
-
+      
       return {
         adventurer: {
           ...state.adventurer,

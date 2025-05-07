@@ -45,10 +45,10 @@ const critical_hit_bonus = (base_damage: number, luck: number, ring: Item | null
 };
 
 // Calculate weapon special bonus based on matching specials
-const calculateWeaponSpecialBonus = (weaponId: number, itemSpecialsSeed: number, beastPrefix: string | undefined, beastSuffix: string | undefined, baseDamage: number, ring: Item) => {
+const calculateWeaponSpecialBonus = (weaponId: number, weaponLevel: number, itemSpecialsSeed: number, beastPrefix: string | null, beastSuffix: string | null, baseDamage: number, ring: Item) => {
     if (!beastPrefix && !beastSuffix) return 0;
 
-    const weaponSpecials = ItemUtils.getWeaponSpecials(weaponId, itemSpecialsSeed);
+    const weaponSpecials = ItemUtils.getSpecials(weaponId, weaponLevel, itemSpecialsSeed);
 
     let bonus = 0;
     // Special2 (prefix) match gives 8x damage
@@ -89,7 +89,7 @@ export const calculateAttackDamage = (adventurer: Adventurer, beast: Beast, crit
 
     // Calculate special name bonus damage with ring bonus
     const ring = adventurer.equipment.ring;
-    const specialBonus = calculateWeaponSpecialBonus(weapon.id, adventurer.item_specials_seed, beast.specialPrefix, beast.specialSuffix, elementalDamage, ring);
+    const specialBonus = calculateWeaponSpecialBonus(weapon.id, weaponLevel, adventurer.item_specials_seed, beast.specialPrefix, beast.specialSuffix, elementalDamage, ring);
     elementalDamage += specialBonus;
 
     // Calculate critical hit bonus with ring bonus using adventurer's luck stat
@@ -109,7 +109,7 @@ export const simulateBattle = (adventurer: Adventurer, beast: Beast, iterations:
     for (let i = 0; i < iterations; i++) {
         let adventurerHealth = adventurer.health;
         let beastHealth = adventurer.beast_health;
-        let battleActions =  0;
+        let battleActions = 0;
 
         // Generate a single random seed for this iteration
         const iterationSeed = BigInt(Math.floor(Math.random() * 2 ** 32));
@@ -189,17 +189,17 @@ export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: n
     return Math.floor((successCount / iterations) * 100);
 };
 
-export const flee_percentage = (adventurer_xp: number, dexterity: number) => {
+export const ability_based_percentage = (adventurer_xp: number, relevant_stat: number) => {
     let adventurer_level = calculateLevel(adventurer_xp);
 
-    if (dexterity >= adventurer_level) {
+    if (relevant_stat >= adventurer_level) {
         return 100;
     } else {
-        return Math.floor((dexterity / adventurer_level) * 100);
+        return Math.floor((relevant_stat / adventurer_level) * 100);
     }
 }
 
-const ability_based_avoid_threat = (adventurer_level: number, relevant_stat: number, rnd: number) => {
+export const ability_based_avoid_threat = (adventurer_level: number, relevant_stat: number, rnd: number) => {
     if (relevant_stat >= adventurer_level) {
         return true;
     } else {

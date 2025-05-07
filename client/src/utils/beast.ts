@@ -5,6 +5,16 @@ import {
   BEAST_NAME_SUFFIXES
 } from "../constants/beast";
 
+import bruteIcon from '@/assets/types/brute.svg';
+import hunterIcon from '@/assets/types/hunter.svg';
+import magicIcon from '@/assets/types/magic.svg';
+
+export const beastTypeIcons = {
+  Brute: bruteIcon,
+  Hunter: hunterIcon,
+  Magic: magicIcon,
+};
+
 /**
  * Determines the beast type based on its ID
  * @param id Beast ID
@@ -101,17 +111,27 @@ export function getBeastName(id: number, level: number, special2: number, specia
   const specialSuffix = level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK ? BEAST_NAME_SUFFIXES[special3] : undefined;
 
   if (specialPrefix && specialSuffix) {
-    return `${specialPrefix} ${baseName} ${specialSuffix}`;
+    return `"${specialPrefix} ${specialSuffix}" ${baseName}`;
   } else if (specialPrefix) {
-    return `${specialPrefix} ${baseName}`;
+    return `"${specialPrefix}" ${baseName}`;
   } else if (specialSuffix) {
-    return `${baseName} ${specialSuffix}`;
+    return `"${specialSuffix}" ${baseName}`;
   }
 
   return baseName;
 }
 
 export const getBeastImage = (name: string) => {
+  try {
+    return new URL(`../assets/beasts/${name.replace(" ", "_").toLowerCase()}.png`, import.meta.url).href
+  } catch (ex) {
+    return ""
+  }
+}
+
+export const getBeastImageById = (id: number) => {
+  const name = BEAST_NAMES[id]
+
   try {
     return new URL(`../assets/beasts/${name.replace(" ", "_").toLowerCase()}.png`, import.meta.url).href
   } catch (ex) {
@@ -136,29 +156,90 @@ export const getTierGlowColor = (tier: string): string => {
   }
 }
 
-// Helper functions for type strengths/weaknesses
-export const getTypeStrength = (type: string): string => {
-  switch (type) {
-    case 'Magic':
-      return 'Metal';
-    case 'Hunter':
-      return 'Cloth';
-    case 'Brute':
-      return 'Hide';
-    default:
-      return '';
-  }
-};
 
-export const getTypeWeakness = (type: string): string => {
+// Helper functions for type strengths/weaknesses
+export const getItemTypeStrength = (type: string): string => {
   switch (type) {
     case 'Magic':
-      return 'Blade';
-    case 'Hunter':
-      return 'Bludgeon';
-    case 'Brute':
+    case 'Cloth':
+      return 'Brute';
+    case 'Bludgeon':
+    case 'Metal':
+      return 'Hunter';
+    case 'Blade':
+    case 'Hide':
       return 'Magic';
     default:
       return '';
   }
 };
+
+export const getItemTypeWeakness = (type: string): string => {
+  switch (type) {
+    case 'Magic':
+    case 'Cloth':
+      return 'Hunter';
+    case 'Bludgeon':
+    case 'Metal':
+      return 'Magic';
+    case 'Blade':
+    case 'Hide':
+      return 'Brute';
+    default:
+      return '';
+  }
+};
+
+
+export const getWeaponTypeStrength = (type: string): string => {
+  switch (type) {
+    case 'Bludgeon':
+      return 'Hide';
+    case 'Magic':
+      return 'Metal';
+    case 'Blade':
+      return 'Cloth';
+    default:
+      return '';
+  }
+}
+
+export const getWeaponTypeWeakness = (type: string): string => {
+  switch (type) {
+    case 'Bludgeon':
+      return 'Cloth';
+    case 'Magic':
+      return 'Hide';
+    case 'Blade':
+      return 'Metal';
+    default:
+      return '';
+  }
+}
+
+export const getArmorTypeStrength = (type: string): string => {
+  switch (type) {
+    case 'Cloth':
+      return 'Bludgeon';
+    case 'Hide':
+      return 'Magic';
+    case 'Metal':
+      return 'Blade';
+    default:
+      return '';
+  }
+}
+
+export const getArmorTypeWeakness = (type: string): string => {
+  switch (type) {
+    case 'Cloth':
+      return 'Blade';
+    case 'Hide':
+      return 'Bludgeon';
+    case 'Metal':
+      return 'Magic';
+    default:
+      return '';
+  }
+}
+

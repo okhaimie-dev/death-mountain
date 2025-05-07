@@ -59,6 +59,8 @@ export interface Beast {
   level: number;
   type: string;
   tier: number;
+  specialPrefix: string | null;
+  specialSuffix: string | null;
 }
 
 export interface Stats {

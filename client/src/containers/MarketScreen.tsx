@@ -1,44 +1,11 @@
-import chestIcon from '@/assets/types/chest.svg';
-import clothIcon from '@/assets/types/cloth.svg';
-import footIcon from '@/assets/types/foot.svg';
-import handIcon from '@/assets/types/hand.svg';
-import headIcon from '@/assets/types/head.svg';
-import hideIcon from '@/assets/types/hide.svg';
-import metalIcon from '@/assets/types/metal.svg';
-import neckIcon from '@/assets/types/neck.svg';
-import ringIcon from '@/assets/types/ring.svg';
-import waistIcon from '@/assets/types/waist.svg';
-import weaponIcon from '@/assets/types/weapon.svg';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { useMarketStore } from '@/stores/marketStore';
 import { calculateLevel } from '@/utils/game';
-import { ItemUtils } from '@/utils/loot';
+import { ItemUtils, slotIcons, typeIcons } from '@/utils/loot';
 import { MarketItem, generateMarketItems, potionPrice } from '@/utils/market';
 import { Box, Button, Modal, Paper, Slider, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-
-const slotIcons = {
-  Weapon: weaponIcon,
-  Head: headIcon,
-  Chest: chestIcon,
-  Waist: waistIcon,
-  Hand: handIcon,
-  Foot: footIcon,
-  Ring: ringIcon,
-  Neck: neckIcon,
-};
-
-const typeIcons = {
-  Cloth: clothIcon,
-  Hide: hideIcon,
-  Metal: metalIcon,
-  Magic: weaponIcon,
-  Bludgeon: weaponIcon,
-  Blade: weaponIcon,
-  Ring: ringIcon,
-  Necklace: neckIcon,
-};
 
 const renderSlotToggleButton = (slot: keyof typeof slotIcons) => (
   <ToggleButton value={slot} aria-label={slot}>
@@ -84,10 +51,11 @@ export default function MarketScreen() {
     addToCart,
     removeFromCart,
     setPotions,
+    inProgress,
+    setInProgress,
   } = useMarketStore();
 
   const [showCart, setShowCart] = useState(false);
-  const [inProgress, setInProgress] = useState(false);
 
   // Function to check if an item is already owned (in equipment or bag)
   const isItemOwned = useCallback((itemId: number) => {
@@ -106,9 +74,7 @@ export default function MarketScreen() {
   // Memoize market items to prevent unnecessary recalculations
   const marketItems = useMemo(() => {
     if (!marketItemIds) return [];
-    console.log('marketItemIds', marketItemIds);
-    setShowCart(false);
-    setInProgress(false);
+
     const items = generateMarketItems(marketItemIds, adventurer?.stats?.charisma || 0);
 
     // Sort items by price and ownership status
@@ -133,7 +99,7 @@ export default function MarketScreen() {
         return b.price - a.price; // Both unaffordable, sort by price
       }
     });
-  }, [marketItemIds, adventurer?.gold, bag]);
+  }, [marketItemIds, adventurer?.gold]);
 
   const handleBuyItem = (item: MarketItem) => {
     addToCart(item);
@@ -178,7 +144,9 @@ export default function MarketScreen() {
   const totalCost = cart.items.reduce((sum, item) => sum + item.price, 0) + (cart.potions * potionCost);
   const remainingGold = (adventurer?.gold || 0) - totalCost;
   const maxHealth = 100 + (adventurer?.stats?.vitality || 0) * 15;
-  const maxPotions = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
+  const maxPotionsByHealth = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
+  const maxPotionsByGold = Math.floor((adventurer?.gold || 0) / potionCost);
+  const maxPotions = Math.min(maxPotionsByHealth, maxPotionsByGold);
 
   const filteredItems = marketItems.filter(item => {
     if (slotFilter && item.slot !== slotFilter) return false;

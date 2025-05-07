@@ -1,5 +1,14 @@
-import { Adventurer, Attack, Bag, Beast, Item, ItemPurchase, Obstacle, Stats, getEntityModel } from "@/types/game";
-import { getBeastName, getBeastTier, getBeastType } from "./beast";
+import { OBSTACLE_NAMES } from "@/constants/obstacle";
+import { Adventurer, Attack, Beast, Item, ItemPurchase, Obstacle, Stats, getEntityModel } from "@/types/game";
+import adventurerImg from '../assets/images/adventurer.png';
+import barrierImg from '../assets/images/barrier.png';
+import goldImg from '../assets/images/gold.png';
+import healthImg from '../assets/images/health.png';
+import marketImg from '../assets/images/market.png';
+import upgrade from '../assets/images/upgrade.png';
+import { getBeastImageById, getBeastName, getBeastTier, getBeastType } from "./beast";
+import { ItemUtils } from "./loot";
+import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
 
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
@@ -56,7 +65,9 @@ export const formatGameEvent = (entity: any): GameEvent => {
         health: beast.health,
         level: beast.level,
         type: getBeastType(beast.id),
-        tier: getBeastTier(beast.id)
+        tier: getBeastTier(beast.id),
+        specialPrefix: beast.level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK ? BEAST_NAME_PREFIXES[beast.specials.special2] : null,
+        specialSuffix: beast.level >= BEAST_SPECIAL_NAME_LEVEL_UNLOCK ? BEAST_NAME_SUFFIXES[beast.specials.special3] : null
       }
     };
   }
@@ -102,6 +113,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const beast = details.variant.fled_beast;
     return {
       type: 'fled_beast',
+      beast_id: beast.beast_id,
       xp_reward: beast.xp_reward
     };
   }
@@ -144,7 +156,6 @@ export const formatGameEvent = (entity: any): GameEvent => {
     return {
       type: 'level_up',
       level: levelUp.level,
-      market_seed: levelUp.market_seed
     };
   }
 
@@ -218,3 +229,57 @@ export const BattleEvents = [
   'flee',
   'ambush'
 ]
+
+export const getEventIcon = (event: GameEvent) => {
+  switch (event.type) {
+    case 'discovery':
+      if (event.discovery?.type === 'Gold') return goldImg;
+      if (event.discovery?.type === 'Health') return healthImg;
+      if (event.discovery?.type === 'Loot') return ItemUtils.getItemImage(event.discovery?.amount!);
+    case 'obstacle':
+      return barrierImg;
+    case 'defeated_beast':
+      return getBeastImageById(event.beast_id!);
+    case 'fled_beast':
+      return getBeastImageById(event.beast_id!);
+    case 'stat_upgrade':
+      return adventurerImg;
+    case 'level_up':
+      return upgrade;
+    case 'buy_items':
+      return marketImg;
+    default:
+      return adventurerImg;
+  }
+};
+
+export const getEventTitle = (event: GameEvent) => {
+  switch (event.type) {
+    case 'beast':
+      return `Encountered beast`;
+    case 'discovery':
+      if (event.discovery?.type === 'Gold') return 'Discovered Gold';
+      if (event.discovery?.type === 'Health') return 'Discovered Health';
+      if (event.discovery?.type === 'Loot') return `Discovered ${ItemUtils.getItemName(event.discovery?.amount!)}`;
+      return 'Discovered Unknown';
+    case 'obstacle':
+      const location = event.obstacle?.location || 'None';
+      const obstacleName = OBSTACLE_NAMES[event.obstacle?.id!] || 'Unknown Obstacle';
+      if (event.obstacle?.dodged) {
+        return `Avoided ${obstacleName}`;
+      }
+      return `${obstacleName} hit your ${location}`;
+    case 'defeated_beast':
+      return 'Defeated Beast';
+    case 'fled_beast':
+      return 'Fled from Beast';
+    case 'level_up':
+      return 'Level Up';
+    case 'stat_upgrade':
+      return 'Stats Upgraded';
+    case 'buy_items':
+      return 'Visited Market';
+    default:
+      return 'Unknown Event';
+  }
+};

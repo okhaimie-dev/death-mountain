@@ -1,5 +1,4 @@
 import { ItemUtils, Tier } from './loot';
-import { NUM_ITEMS, NUM_ITEMS_NZ_MINUS_ONE, NUMBER_OF_ITEMS_PER_LEVEL } from '../constants/game';
 
 export interface MarketItem {
   id: number;
@@ -17,7 +16,7 @@ function createMarketItem(id: number, charisma: number): MarketItem {
   const name = ItemUtils.getItemName(id);
   const type = ItemUtils.getItemType(id);
   const slot = ItemUtils.getItemSlot(id);
-  const imageUrl = ItemUtils.getItemImage(name);
+  const imageUrl = ItemUtils.getItemImage(id);
 
   return {
     id,

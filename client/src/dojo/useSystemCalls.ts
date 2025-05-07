@@ -32,11 +32,8 @@ export const useSystemCalls = () => {
    * @returns {Promise<any>} The result of the execution
    */
   const executeAction = async (calls: any[]) => {
-    console.log(calls);
     try {
-      let tx = await account!.execute(calls, { version: 3 });
-      const receipt = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 500 })
-      console.log(receipt);
+      await account!.execute(calls, { version: 3 });
     } catch (error) {
       console.error("Error executing action:", error);
       throw error;

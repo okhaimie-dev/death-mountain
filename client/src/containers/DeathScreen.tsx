@@ -1,13 +1,32 @@
+import { BEAST_NAMES } from '@/constants/beast';
+import { OBSTACLE_NAMES } from '@/constants/obstacle';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function DeathScreen() {
-  const { gameId, exitGame, adventurer, exploreLog } = useGameStore();
+  const { gameId, exitGame, adventurer, exploreLog, battleEvent, beast } = useGameStore();
+  const navigate = useNavigate();
 
-  const deathEvent = exploreLog.find(event => event.type === 'beast_attack' || event.type === 'obstacle')
+  const deathEvent = battleEvent || exploreLog.find(event => event.type === 'obstacle')
+
+  let deathMessage = '';
+  if (deathEvent?.type === 'obstacle') {
+    deathMessage = `${OBSTACLE_NAMES[deathEvent.obstacle?.id!]} hit your ${deathEvent.obstacle?.location} for ${deathEvent.obstacle?.damage} damage ${deathEvent.obstacle?.critical_hit ? 'CRITICAL HIT!' : ''}`
+  } else if (deathEvent?.type === 'beast_attack') {
+    deathMessage = `${BEAST_NAMES[beast?.id!]} attacked your ${battleEvent?.attack?.location} for ${battleEvent?.attack?.damage} damage ${battleEvent?.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`
+  } else if (deathEvent?.type === 'ambush') {
+    deathMessage = `${BEAST_NAMES[beast?.id!]} ambushed your ${battleEvent?.attack?.location} for ${battleEvent?.attack?.damage} damage ${battleEvent?.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`
+  }
+
   const shareMessage = `I fell to the mist in Loot Survivor after reaching ${adventurer?.xp || 0} XP. Want to see how I did it? Watch my replay here: lootsurvivor.io/watch/${gameId} 🗡️⚔️ @provablegames @lootsurvivor`;
+
+  const backToMenu = () => {
+    exitGame();
+    navigate('/')
+  }
 
   return (
     <motion.div
@@ -32,7 +51,9 @@ export default function DeathScreen() {
         {deathEvent && (
           <Box sx={styles.deathCauseContainer}>
             <Typography sx={styles.deathCauseTitle}>Cause of Death</Typography>
-            <Typography sx={styles.deathCauseText}>{deathEvent.type}</Typography>
+            <Typography sx={styles.deathCauseText}>
+              {deathMessage}
+            </Typography>
           </Box>
         )}
 
@@ -54,7 +75,7 @@ export default function DeathScreen() {
           </Button>
           <Button
             variant="contained"
-            onClick={() => exitGame()}
+            onClick={backToMenu}
             sx={styles.restartButton}
           >
             Play Again

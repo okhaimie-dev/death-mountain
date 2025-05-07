@@ -1,11 +1,13 @@
 import strikeAnim from "@/assets/animations/strike.json";
 import AnimatedText from '@/components/AnimatedText';
+import BeastTooltip from '@/components/BeastTooltip';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
-import { getBeastImage, getTypeStrength, getTypeWeakness } from '@/utils/beast';
-import { calculateAttackDamage, flee_percentage, simulateBattle, simulateFlee } from '@/utils/game';
-import { Box, Button, Checkbox, LinearProgress, Tooltip, Typography } from '@mui/material';
+import { getBeastImageById, getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
+import { calculateAttackDamage, calculateLevel, ability_based_percentage, simulateBattle, simulateFlee } from '@/utils/game';
+import { ItemUtils, slotIcons } from '@/utils/loot';
+import { Box, Button, Checkbox, LinearProgress, Menu, Typography, keyframes } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useLottie } from 'lottie-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -13,13 +15,22 @@ import { useEffect, useMemo, useState } from 'react';
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
 
+interface Item {
+  id: number;
+  name: string;
+  imageUrl: string;
+  tier: number;
+}
+
 export default function BeastScreen() {
   const { executeGameAction } = useGameDirector();
-  const { gameId, adventurer, beast, battleEvent } = useGameStore();
+  const { gameId, adventurer, beast, battleEvent, bag, equipItem } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(true);
   const [attackInProgress, setAttackInProgress] = useState(false);
   const [fleeInProgress, setFleeInProgress] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const [combatLog, setCombatLog] = useState("");
   const [health, setHealth] = useState(adventurer!.health);
@@ -102,7 +113,7 @@ export default function BeastScreen() {
     };
   }, [adventurer, beast]);
 
-  const fleePercentage = flee_percentage(adventurer!.xp, adventurer!.stats.dexterity);
+  const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
   const maxHealth = 100 + (adventurer!.stats.vitality * 15);
 
@@ -127,21 +138,7 @@ export default function BeastScreen() {
               </Typography>
               <Box sx={styles.beastType}>
                 <Box sx={styles.statBox}>
-                  <Typography sx={styles.statLabel}>Type</Typography>
-                  <Tooltip
-                    title={
-                      <Box>
-                        <Typography>
-                          Strong against {getTypeStrength(beast!.type).toLowerCase()} armor
-                        </Typography>
-                        <Typography>
-                          Weak against {getTypeWeakness(beast!.type).toLowerCase()} weapons
-                        </Typography>
-                      </Box>
-                    }
-                  >
-                    <Typography sx={styles.statValue}>{beast!.type}</Typography>
-                  </Tooltip>
+                  <BeastTooltip beastType={beast!.type} beastId={beast!.id} />
                 </Box>
                 <Box sx={styles.statBox}>
                   <Typography sx={styles.statLabel}>Power</Typography>
@@ -169,7 +166,7 @@ export default function BeastScreen() {
           </Box>
           <Box sx={styles.beastImageContainer}>
             <img
-              src={getBeastImage(beast!.name)}
+              src={getBeastImageById(beast!.id)}
               alt={beast!.name}
               style={{
                 ...styles.beastImage,
@@ -216,6 +213,7 @@ export default function BeastScreen() {
                 />
               </Box>
             </Box>
+
             <Box sx={styles.actionsContainer}>
               <Box sx={styles.actionButtonContainer}>
                 <Button
@@ -259,10 +257,170 @@ export default function BeastScreen() {
             </Box>
           </Box>
         </Box>
+
+        {/* Equipped Items Section */}
+        <Box sx={styles.equippedItemsContainer}>
+          <Box sx={styles.equippedItemsGrid}>
+            {Object.entries(slotIcons).map(([slot, icon]) => {
+              const equippedItem = adventurer?.equipment[slot.toLowerCase() as keyof typeof adventurer.equipment];
+              const itemType = equippedItem && equippedItem.id !== 0 ? ItemUtils.getItemType(equippedItem.id) : null;
+              const isStrong = itemType && getItemTypeStrength(itemType) === beast!.type;
+              const isWeak = itemType && getItemTypeWeakness(itemType) === beast!.type;
+              const level = calculateLevel(equippedItem!.xp);
+              const isNameMatch = ItemUtils.isNameMatch(equippedItem!.id, level, adventurer!.item_specials_seed, beast!);
+              const isArmorSlot = ['Head', 'Chest', 'Legs', 'Hands', 'Waist'].includes(slot);
+              const isWeaponSlot = slot === 'Weapon';
+              const isNameMatchDanger = isNameMatch && isArmorSlot;
+              const isNameMatchPower = isNameMatch && isWeaponSlot;
+
+              return (
+                <Box
+                  key={slot}
+                  onClick={(e) => {
+                    setSelectedSlot(slot);
+                    setMenuAnchor(e.currentTarget);
+                  }}
+                  sx={{
+                    ...styles.equippedItemSlot,
+                    ...(isStrong && styles.strongItemSlot),
+                    ...(isWeak && styles.weakItemSlot),
+                    ...(isNameMatchDanger && styles.nameMatchDangerSlot),
+                    ...(isNameMatchPower && styles.nameMatchPowerSlot)
+                  }}
+                >
+                  {equippedItem && equippedItem.id !== 0 ? (
+                    <Box sx={styles.equippedItemImageContainer}>
+                      <Box
+                        component="img"
+                        src={ItemUtils.getItemImage(equippedItem.id)}
+                        alt={ItemUtils.getItemName(equippedItem.id)}
+                        sx={styles.equippedItemImage}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </Box>
+                  ) : (
+                    <Box sx={styles.equippedItemSlotIcon}>
+                      <Box
+                        component="img"
+                        src={icon}
+                        alt={slot}
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(1.1)',
+                          opacity: 0.3,
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+
+          {/* Swap Menu */}
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={() => {
+              setMenuAnchor(null);
+            }}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  backgroundColor: 'rgba(17, 17, 17, 1)',
+                  border: '1px solid rgba(128, 255, 0, 0.1)',
+                  borderRadius: '6px',
+                  px: 1,
+                  mt: 1,
+                  minWidth: '40px',
+                  minHeight: '40px',
+                }
+              }
+            }}
+          >
+            <Box sx={styles.swapMenuGrid}>
+              {bag
+                .filter(item => ItemUtils.getItemSlot(item.id).toLowerCase() === selectedSlot?.toLowerCase())
+                .map((item) => {
+                  const level = calculateLevel(item.xp);
+                  const itemType = ItemUtils.getItemType(item.id);
+                  const isStrong = getItemTypeStrength(itemType) === beast!.type;
+                  const isWeak = getItemTypeWeakness(itemType) === beast!.type;
+                  const isNameMatch = ItemUtils.isNameMatch(item.id, level, adventurer!.item_specials_seed, beast!);
+                  const isArmorSlot = ['Head', 'Chest', 'Legs', 'Hands', 'Waist'].includes(ItemUtils.getItemSlot(item.id));
+                  const isWeaponSlot = ItemUtils.getItemSlot(item.id) === 'Weapon';
+
+                  return (
+                    <Box
+                      key={item.id}
+                      onClick={() => {
+                        equipItem(item);
+                        setMenuAnchor(null);
+                        setSelectedSlot(null);
+                      }}
+                      sx={{
+                        ...styles.swapMenuItem,
+                        ...(isStrong && styles.strongSwapMenuItem),
+                        ...(isWeak && styles.weakSwapMenuItem),
+                        ...(isNameMatch && isArmorSlot && styles.nameMatchDangerSwapMenuItem),
+                        ...(isNameMatch && isWeaponSlot && styles.nameMatchPowerSwapMenuItem)
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={ItemUtils.getItemImage(item.id)}
+                        alt={ItemUtils.getItemName(item.id)}
+                        sx={styles.swapMenuItemImage}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </Box>
+                  );
+                })}
+            </Box>
+          </Menu>
+        </Box>
       </Box>
     </motion.div>
   );
 }
+
+const pulseRed = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(248, 27, 27, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+`;
+
+const pulseGreen = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(128, 255, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+`;
 
 const styles = {
   container: {
@@ -346,6 +504,7 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid rgba(237, 207, 51, 0.2)',
     minWidth: '50px',
+    gap: '1px'
   },
   statBox: {
     display: 'flex',
@@ -357,6 +516,7 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid rgba(128, 255, 0, 0.2)',
     minWidth: '50px',
+    gap: '1px'
   },
   levelLabel: {
     color: 'rgba(237, 207, 51, 0.7)',
@@ -584,5 +744,283 @@ const styles = {
     background: 'rgba(128, 255, 0, 0.1)',
     borderRadius: '6px',
     border: '1px solid rgba(128, 255, 0, 0.2)',
+  },
+  equippedItemsContainer: {
+    mt: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    padding: '4px',
+    background: 'rgba(128, 255, 0, 0.05)',
+    borderRadius: '8px',
+    border: '1px solid rgba(128, 255, 0, 0.1)',
+  },
+  equippedItemsTitle: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.9rem',
+    fontFamily: 'VT323, monospace',
+    textAlign: 'center',
+  },
+  equippedItemsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(8, 1fr)',
+    gap: '4px',
+  },
+  equippedItemSlot: {
+    aspectRatio: '1',
+    background: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    cursor: 'pointer',
+    position: 'relative',
+  },
+  strongItemSlot: {
+    border: '1px solid #80FF00',
+    boxShadow: '0 0 8px rgba(128, 255, 0, 0.3)',
+  },
+  weakItemSlot: {
+    border: '1px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 8px rgba(255, 68, 68, 0.3)',
+  },
+  nameMatchDangerSlot: {
+    animation: `${pulseRed} 1.5s infinite`,
+    border: '2px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 12px rgba(248, 27, 27, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(248, 27, 27, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
+  },
+  nameMatchPowerSlot: {
+    animation: `${pulseGreen} 1.5s infinite`,
+    border: '2px solid #80FF00',
+    boxShadow: '0 0 12px rgba(128, 255, 0, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(128, 255, 0, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
+  },
+  equippedItemSlotIcon: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  equippedItemImageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  equippedItemImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  },
+  equippedItemTierBadge: {
+    position: 'absolute',
+    top: '2px',
+    right: '2px',
+    padding: '1px 3px 0',
+    borderRadius: '2px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  equippedItemTierText: {
+    color: '#111111',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+  },
+  typeContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  typeIcon: {
+    width: '18px',
+    height: '18px',
+    filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(1.1)',
+  },
+  tooltipContainer: {
+    padding: '8px',
+    minWidth: '240px',
+    background: 'rgba(0, 0, 0, 0.95)',
+    border: '1px solid rgba(128, 255, 0, 0.3)',
+    borderRadius: '6px',
+    boxShadow: '0 0 20px rgba(128, 255, 0, 0.2)',
+  },
+  tooltipHeader: {
+    borderBottom: '1px solid rgba(128, 255, 0, 0.3)',
+    paddingBottom: '4px',
+    marginBottom: '8px',
+  },
+  tooltipTitle: {
+    color: '#80FF00',
+    fontSize: '1rem',
+    fontFamily: 'VT323, monospace',
+    textAlign: 'center',
+    textShadow: '0 0 10px rgba(128, 255, 0, 0.3)',
+  },
+  tooltipSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    padding: '6px',
+    background: 'rgba(128, 255, 0, 0.05)',
+    borderRadius: '4px',
+    marginBottom: '8px',
+    '&:last-child': {
+      marginBottom: 0,
+    },
+  },
+  tooltipSectionTitle: {
+    color: 'rgba(128, 255, 0, 0.9)',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    borderBottom: '1px solid rgba(128, 255, 0, 0.2)',
+    paddingBottom: '2px',
+  },
+  tooltipTypeRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '2px 6px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '3px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+  },
+  tooltipTypeIcon: {
+    width: '16px',
+    height: '16px',
+    filter: 'invert(1) sepia(1) saturate(3000%) hue-rotate(50deg) brightness(1.1)',
+  },
+  tooltipTypeText: {
+    color: '#80FF00',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+  },
+  tooltipStrengths: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  tooltipWeaknesses: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  tooltipLabel: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  swapMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    border: '1px solid rgba(128, 255, 0, 0.3)',
+    borderRadius: '8px',
+    padding: '12px',
+    marginTop: '8px',
+    zIndex: 1000,
+  },
+  swapMenuTitle: {
+    color: '#80FF00',
+    fontSize: '0.9rem',
+    fontFamily: 'VT323, monospace',
+    textAlign: 'center',
+    marginBottom: '8px',
+    textTransform: 'uppercase',
+  },
+  swapMenuGrid: {
+    display: 'flex',
+    gap: '5px',
+    alignItems: 'center',
+  },
+  swapMenuItem: {
+    aspectRatio: '1',
+    backgroundColor: 'rgba(128, 255, 0, 0.05)',
+    borderRadius: '4px',
+    padding: '2px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    height: '40px',
+    width: '40px',
+    '&:hover': {
+      backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    },
+  },
+  strongSwapMenuItem: {
+    border: '1px solid #80FF00',
+    boxShadow: '0 0 8px rgba(128, 255, 0, 0.3)',
+  },
+  weakSwapMenuItem: {
+    border: '1px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 8px rgba(255, 68, 68, 0.3)',
+  },
+  nameMatchDangerSwapMenuItem: {
+    animation: `${pulseRed} 1.5s infinite`,
+    border: '2px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 12px rgba(248, 27, 27, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(248, 27, 27, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
+  },
+  nameMatchPowerSwapMenuItem: {
+    animation: `${pulseGreen} 1.5s infinite`,
+    border: '2px solid #80FF00',
+    boxShadow: '0 0 12px rgba(128, 255, 0, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(128, 255, 0, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
+  },
+  swapMenuItemImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
   },
 };

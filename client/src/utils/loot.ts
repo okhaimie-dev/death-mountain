@@ -4,8 +4,52 @@ import {
   PREFIXES_UNLOCK_GREATNESS,
   ITEM_NAME_SUFFIXES,
   ITEM_NAME_PREFIXES,
-  ItemId
+  ItemId,
+  NUM_ITEMS,
+  ItemIndex,
+  ItemSlotLength,
+  ITEM_SUFFIXES
 } from '../constants/loot';
+
+// Import icons
+import chestIcon from '@/assets/types/chest.svg';
+import clothIcon from '@/assets/types/cloth.svg';
+import footIcon from '@/assets/types/foot.svg';
+import handIcon from '@/assets/types/hand.svg';
+import headIcon from '@/assets/types/head.svg';
+import hideIcon from '@/assets/types/hide.svg';
+import metalIcon from '@/assets/types/metal.svg';
+import neckIcon from '@/assets/types/neck.svg';
+import ringIcon from '@/assets/types/ring.svg';
+import waistIcon from '@/assets/types/waist.svg';
+import weaponIcon from '@/assets/types/weapon.svg';
+import bladeIcon from '@/assets/types/blade.svg';
+import bludgeonIcon from '@/assets/types/bludgeon.svg';
+import magicIcon from '@/assets/types/magic.svg';
+import { Beast } from '@/types/game';
+import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
+
+export const slotIcons = {
+  Weapon: weaponIcon,
+  Head: headIcon,
+  Chest: chestIcon,
+  Waist: waistIcon,
+  Hand: handIcon,
+  Foot: footIcon,
+  Ring: ringIcon,
+  Neck: neckIcon,
+};
+
+export const typeIcons = {
+  Cloth: clothIcon,
+  Hide: hideIcon,
+  Metal: metalIcon,
+  Magic: magicIcon,
+  Bludgeon: bludgeonIcon,
+  Blade: bladeIcon,
+  Ring: ringIcon,
+  Necklace: neckIcon,
+};
 
 // Create a mapping from ID to name
 const ItemString: { [key: number]: string } = Object.entries(ItemId).reduce((acc, [name, id]) => {
@@ -141,39 +185,75 @@ export const ItemUtils = {
     return ItemUtils.getCharismaAdjustedItemPrice(basePrice, charisma);
   },
 
+  getSpecialsSeed: (itemId: number, entropy: number): number => {
+    let itemEntropy = entropy + itemId;
+    if (itemEntropy > 65535) {
+      itemEntropy = entropy - itemId;
+    }
+
+    // Scope rnd between 0 and NUM_ITEMS-1
+    const rnd = itemEntropy % NUM_ITEMS;
+
+    // Get item name and index
+    const itemName = Object.entries(ItemId).find(([_, value]) => value === itemId)?.[0];
+    const itemIndex = itemName ? (ItemIndex as any)[itemName] || 0 : 0;
+
+    // Get slot length based on item slot
+    const slot = ItemUtils.getItemSlot(itemId);
+    let slotLength = 1;
+    switch (slot) {
+      case "Weapon": slotLength = ItemSlotLength.SlotItemsLengthWeapon; break;
+      case "Chest": slotLength = ItemSlotLength.SlotItemsLengthChest; break;
+      case "Head": slotLength = ItemSlotLength.SlotItemsLengthHead; break;
+      case "Waist": slotLength = ItemSlotLength.SlotItemsLengthWaist; break;
+      case "Foot": slotLength = ItemSlotLength.SlotItemsLengthFoot; break;
+      case "Hand": slotLength = ItemSlotLength.SlotItemsLengthHand; break;
+      case "Neck": slotLength = ItemSlotLength.SlotItemsLengthNeck; break;
+      case "Ring": slotLength = ItemSlotLength.SlotItemsLengthRing; break;
+    }
+
+    // Return the item specific entropy
+    return rnd * slotLength + itemIndex;
+  },
+
   getSpecials: (id: number, greatness: number, seed: number) => {
+    let specialSeed = ItemUtils.getSpecialsSeed(id, seed);
+
+    const special1 = ItemUtils.getItemSuffix(specialSeed);
+    const special2 = ItemUtils.getItemPrefix1(specialSeed); // Prefix1
+    const special3 = ItemUtils.getItemPrefix2(specialSeed); // Prefix2
+
     if (greatness < SUFFIX_UNLOCK_GREATNESS) {
-      return { special1: 0, special2: 0, special3: 0 };
+      return {
+        special1: null,
+        prefix: null,
+        suffix: null
+      };
     } else if (greatness < PREFIXES_UNLOCK_GREATNESS) {
-      return { special1: ItemUtils.getItemSuffix(id, seed), special2: 0, special3: 0 };
+      return {
+        special1: ITEM_SUFFIXES[special1],
+        prefix: null,
+        suffix: null
+      };
     } else {
       return {
-        special1: ItemUtils.getItemSuffix(id, seed),
-        special2: ItemUtils.getItemPrefix1(id, seed),
-        special3: ItemUtils.getItemPrefix2(id, seed)
+        special1: ITEM_SUFFIXES[special1],
+        prefix: ITEM_NAME_PREFIXES[special2],
+        suffix: ITEM_NAME_SUFFIXES[special3]
       };
     }
   },
 
-  getItemSuffix: (id: number, seed: number) => {
-    return (seed + id) % 18 + 1;
+  getItemSuffix: (seed: number) => {
+    return seed % 18 + 1;
   },
 
-  getItemPrefix1: (id: number, seed: number) => {
-    return (seed + id) % 69 + 1;
+  getItemPrefix1: (seed: number) => {
+    return seed % 69 + 1;
   },
 
-  getItemPrefix2: (id: number, seed: number) => {
-    return (seed + id) % 18 + 1;
-  },
-
-  getWeaponSpecials: (id: number, seed: number) => {
-    const special2 = 1 + (seed + id) % 69; // Prefix
-    const special3 = 1 + (seed + id) % 18; // Suffix
-    return {
-      prefix: ITEM_NAME_PREFIXES[special2],
-      suffix: ITEM_NAME_SUFFIXES[special3]
-    };
+  getItemPrefix2: (seed: number) => {
+    return seed % 18 + 1;
   },
 
   getItemName: (id: number): string => {
@@ -184,7 +264,9 @@ export const ItemUtils = {
     return name.replace(/([A-Z])/g, ' $1').trim();
   },
 
-  getItemImage: (name: string) => {
+  getItemImage: (id: number) => {
+    const name = ItemUtils.getItemName(id);
+
     try {
       const fileName = name.replace(/ /g, "_").toLowerCase();
       return new URL(`../assets/loot/${fileName}.png`, import.meta.url).href;
@@ -196,7 +278,7 @@ export const ItemUtils = {
   getMetadata: (id: number) => {
     const name = ItemUtils.getItemName(id);
     const formattedName = ItemUtils.formatItemName(name);
-    const imageUrl = ItemUtils.getItemImage(name);
+    const imageUrl = ItemUtils.getItemImage(id);
 
     return {
       name: formattedName,
@@ -215,17 +297,48 @@ export const ItemUtils = {
     }
   },
 
-  getItemTypeIcon: (type: string): string => {
-    switch (type) {
-      case 'Magic': return '✨';
-      case 'Bludgeon': return '🔨';
-      case 'Blade': return '⚔️';
-      case 'Cloth': return '🧥';
-      case 'Hide': return '🦁';
-      case 'Metal': return '🛡️';
-      case 'Ring': return '💍';
-      case 'Necklace': return '📿';
-      default: return '❓';
+  isNameMatch: (itemId: number, itemLevel: number, itemSeed: number, beast: Beast) => {
+    if (itemLevel < PREFIXES_UNLOCK_GREATNESS || beast.level < BEAST_SPECIAL_NAME_LEVEL_UNLOCK) {
+      return false;
+    }
+
+    let specials = ItemUtils.getSpecials(itemId, itemLevel, itemSeed)
+    return specials.prefix === beast.specialPrefix || specials.suffix === beast.specialSuffix;
+  },
+
+  getStatBonus: (special1: string) => {
+    if (special1 === "of Power") {
+      return "+3 STR"
+    } else if (special1 === "of Giant") {
+      return "+3 VIT"
+    } else if (special1 === "of Titans") {
+      return "+2 STR +1 CHA"
+    } else if (special1 === "of Skill") {
+      return "+3 DEX"
+    } else if (special1 === "of Perfection") {
+      return "+1 STR +1 DEX +1 VIT"
+    } else if (special1 === "of Brilliance") {
+      return "+3 INT"
+    } else if (special1 === "of Enlightenment") {
+      return "+3 WIS"
+    } else if (special1 === "of Protection") {
+      return "+2 VIT +1 DEX"
+    } else if (special1 === "of Anger") {
+      return "+2 STR +1 DEX"
+    } else if (special1 === "of Rage") {
+      return "+1 STR +1 CHA +1 WIS"
+    } else if (special1 === "of Fury") {
+      return "+1 VIT +1 CHA +1 INT"
+    } else if (special1 === "of Vitriol") {
+      return "+2 INT +1 WIS"
+    } else if (special1 === "of the Fox") {
+      return "+2 DEX +1 CHA"
+    } else if (special1 === "of Detection") {
+      return "+2 WIS +1 DEX"
+    } else if (special1 === "of Reflection") {
+      return "+1 INT +2 WIS"
+    } else if (special1 === "of the Twins") {
+      return "+3 CHA"
     }
   }
-}; 
+};
