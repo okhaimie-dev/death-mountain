@@ -121,8 +121,25 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (ExplorerLogEvents.includes(event.type)) {
-      if (event.type === 'discovery' && event.discovery?.type === 'Loot') {
-        setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
+      if (event.type === 'discovery') {
+        if (event.discovery?.type === 'Loot') {
+          setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
+        }
+
+        setAdventurer({
+          ...adventurer!,
+          xp: adventurer!.xp + (event.xp_reward || 0),
+          health: adventurer!.health + (event.discovery?.type === 'Health' ? event.discovery.amount! : 0),
+          gold: adventurer!.gold + (event.discovery?.type === 'Gold' ? event.discovery.amount! : 0)
+        });
+      }
+
+      if (event.type === 'obstacle') {
+        setAdventurer({
+          ...adventurer!,
+          health: event.obstacle!.dodged ? adventurer!.health : adventurer!.health - event.obstacle!.damage!,
+          xp: adventurer!.xp + event.xp_reward!
+        });
       }
 
       setExploreLog(event);
