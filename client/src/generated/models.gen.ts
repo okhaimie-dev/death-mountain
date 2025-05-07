@@ -312,6 +312,33 @@ export type GameEventDetails = {
 };
 export type GameEventDetailsEnum = CairoCustomEnum;
 
+// Type definition for `lootsurvivor::models::game::Bag` struct
+export interface Bag {
+	adventurer_id: BigNumberish;
+	items: Array<BigNumberish>;
+}
+
+// Type definition for `lootsurvivor::models::game::Item` struct
+export interface Item {
+	id: BigNumberish;
+	item_type: BigNumberish;
+	slot: SlotEnum;
+	rarity: BigNumberish;
+	stats: Stats;
+}
+
+// Type definition for `lootsurvivor::models::game::Adventurer` struct
+export interface Adventurer {
+	id: BigNumberish;
+	level: BigNumberish;
+	xp: BigNumberish;
+	gold: BigNumberish;
+	health: BigNumberish;
+	max_health: BigNumberish;
+	stats: Stats;
+	equipped_items: Array<BigNumberish>;
+}
+
 export interface SchemaType extends ISchemaType {
 	lootsurvivor: {
 		AdventurerEntropy: AdventurerEntropy,
@@ -320,6 +347,9 @@ export interface SchemaType extends ISchemaType {
 		AdventurerPackedValue: AdventurerPackedValue,
 		BagPacked: BagPacked,
 		BagPackedValue: BagPackedValue,
+		Bag: Bag,
+		Item: Item,
+		Adventurer: Adventurer,
 	},
 	tournaments: {
 		GameCounter: GameCounter,
@@ -379,6 +409,55 @@ export const schema: SchemaType = {
 		BagPackedValue: {
 			packed: 0,
 		},
+		Bag: {
+			adventurer_id: 0,
+			items: [0],
+		},
+		Item: {
+			id: 0,
+			item_type: 0,
+			slot: new CairoCustomEnum({
+				None: "",
+				Weapon: undefined,
+				Chest: undefined,
+				Head: undefined,
+				Waist: undefined,
+				Foot: undefined,
+				Hand: undefined,
+				Neck: undefined,
+				Ring: undefined,
+			}),
+			rarity: 0,
+			stats: {
+				strength: 0,
+				dexterity: 0,
+				vitality: 0,
+				intelligence: 0,
+				wisdom: 0,
+				charisma: 0,
+				luck: 0,
+			},
+		},
+		Adventurer: {
+			id: 0,
+			level: 0,
+			xp: 0,
+			gold: 0,
+			health: 0,
+			max_health: 0,
+			stats: {
+				strength: 0,
+				dexterity: 0,
+				vitality: 0,
+				intelligence: 0,
+				wisdom: 0,
+				charisma: 0,
+				luck: 0,
+			},
+			equipped_items: [0],
+		},
+	},
+	tournaments: {
 		GameCounter: {
 			key: 0,
 			count: 0,
@@ -390,20 +469,20 @@ export const schema: SchemaType = {
 			contract_address: "",
 			creator_address: "",
 			name: 0,
-		description: "",
+			description: "",
 			developer: 0,
 			publisher: 0,
 			genre: 0,
-		image: "",
+			image: "",
 		},
 		GameMetadataValue: {
 			creator_address: "",
 			name: 0,
-		description: "",
+			description: "",
 			developer: 0,
 			publisher: 0,
 			genre: 0,
-		image: "",
+			image: "",
 		},
 		Score: {
 			game_id: 0,
@@ -427,12 +506,12 @@ export const schema: SchemaType = {
 		SettingsDetails: {
 			id: 0,
 			name: 0,
-		description: "",
+			description: "",
 			exists: false,
 		},
 		SettingsDetailsValue: {
 			name: 0,
-		description: "",
+			description: "",
 			exists: false,
 		},
 		SettingsValue: {
@@ -443,18 +522,18 @@ export const schema: SchemaType = {
 			minted_by: "",
 			player_name: 0,
 			settings_id: 0,
-		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+			lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
 		},
 		TokenMetadataValue: {
 			minted_by: "",
 			player_name: 0,
 			settings_id: 0,
-		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+			lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
 		},
 		Lifecycle: {
 			mint: 0,
-		start: new CairoOption(CairoOptionVariant.None),
-		end: new CairoOption(CairoOptionVariant.None),
+			start: new CairoOption(CairoOptionVariant.None),
+			end: new CairoOption(CairoOptionVariant.None),
 		},
 		Stats: {
 			strength: 0,
@@ -467,8 +546,8 @@ export const schema: SchemaType = {
 		},
 		AttackEvent: {
 			damage: 0,
-		location: new CairoCustomEnum({ 
-					None: "",
+			location: new CairoCustomEnum({ 
+				None: "",
 				Weapon: undefined,
 				Chest: undefined,
 				Head: undefined,
@@ -476,49 +555,54 @@ export const schema: SchemaType = {
 				Foot: undefined,
 				Hand: undefined,
 				Neck: undefined,
-				Ring: undefined, }),
+				Ring: undefined,
+			}),
 			critical_hit: false,
 		},
 		BattleEvent: {
 			adventurer_id: 0,
 			adventurer_xp: 0,
-		details: new CairoCustomEnum({ 
+			details: new CairoCustomEnum({ 
 				ambush: { damage: 0, location: new CairoCustomEnum({ 
 					None: "",
-				Weapon: undefined,
-				Chest: undefined,
-				Head: undefined,
-				Waist: undefined,
-				Foot: undefined,
-				Hand: undefined,
-				Neck: undefined,
-				Ring: undefined, }), critical_hit: false, },
+					Weapon: undefined,
+					Chest: undefined,
+					Head: undefined,
+					Waist: undefined,
+					Foot: undefined,
+					Hand: undefined,
+					Neck: undefined,
+					Ring: undefined,
+				}), critical_hit: false, },
 				flee: undefined,
 				attack: undefined,
 				beast_attack: undefined,
 				equip: undefined,
 				fled_beast: undefined,
-				defeated_beast: undefined, }),
+				defeated_beast: undefined,
+			}),
 		},
 		BattleEventValue: {
 			adventurer_xp: 0,
-		details: new CairoCustomEnum({ 
+			details: new CairoCustomEnum({ 
 				ambush: { damage: 0, location: new CairoCustomEnum({ 
 					None: "",
-				Weapon: undefined,
-				Chest: undefined,
-				Head: undefined,
-				Waist: undefined,
-				Foot: undefined,
-				Hand: undefined,
-				Neck: undefined,
-				Ring: undefined, }), critical_hit: false, },
+					Weapon: undefined,
+					Chest: undefined,
+					Head: undefined,
+					Waist: undefined,
+					Foot: undefined,
+					Hand: undefined,
+					Neck: undefined,
+					Ring: undefined,
+				}), critical_hit: false, },
 				flee: undefined,
 				attack: undefined,
 				beast_attack: undefined,
 				equip: undefined,
 				fled_beast: undefined,
-				defeated_beast: undefined, }),
+				defeated_beast: undefined,
+			}),
 		},
 		DefeatedBeastEvent: {
 			beast_id: 0,
@@ -526,10 +610,11 @@ export const schema: SchemaType = {
 			xp_reward: 0,
 		},
 		DiscoveryEvent: {
-		discovery_type: new CairoCustomEnum({ 
-					Gold: 0,
+			discovery_type: new CairoCustomEnum({ 
+				Gold: 0,
 				Health: undefined,
-				Loot: undefined, }),
+				Loot: undefined,
+			}),
 			xp_reward: 0,
 		},
 		FledBeastEvent: {
@@ -538,11 +623,12 @@ export const schema: SchemaType = {
 		},
 		GameEvent: {
 			adventurer_id: 0,
-		details: new CairoCustomEnum({ 
+			details: new CairoCustomEnum({ 
 				discovery: { discovery_type: new CairoCustomEnum({ 
 					Gold: 0,
-				Health: undefined,
-				Loot: undefined, }), xp_reward: 0, },
+					Health: undefined,
+					Loot: undefined,
+				}), xp_reward: 0, },
 				obstacle: undefined,
 				defeated_beast: undefined,
 				fled_beast: undefined,
@@ -550,14 +636,16 @@ export const schema: SchemaType = {
 				market: undefined,
 				equip: undefined,
 				drop: undefined,
-				level_up: undefined, }),
+				level_up: undefined,
+			}),
 		},
 		GameEventValue: {
-		details: new CairoCustomEnum({ 
+			details: new CairoCustomEnum({ 
 				discovery: { discovery_type: new CairoCustomEnum({ 
 					Gold: 0,
-				Health: undefined,
-				Loot: undefined, }), xp_reward: 0, },
+					Health: undefined,
+					Loot: undefined,
+				}), xp_reward: 0, },
 				obstacle: undefined,
 				defeated_beast: undefined,
 				fled_beast: undefined,
@@ -565,7 +653,8 @@ export const schema: SchemaType = {
 				market: undefined,
 				equip: undefined,
 				drop: undefined,
-				level_up: undefined, }),
+				level_up: undefined,
+			}),
 		},
 		ItemEvent: {
 			items: [0],
@@ -581,8 +670,8 @@ export const schema: SchemaType = {
 			obstacle_id: 0,
 			dodged: false,
 			damage: 0,
-		location: new CairoCustomEnum({ 
-					None: "",
+			location: new CairoCustomEnum({ 
+				None: "",
 				Weapon: undefined,
 				Chest: undefined,
 				Head: undefined,
@@ -590,12 +679,13 @@ export const schema: SchemaType = {
 				Foot: undefined,
 				Hand: undefined,
 				Neck: undefined,
-				Ring: undefined, }),
+				Ring: undefined,
+			}),
 			critical_hit: false,
 			xp_reward: 0,
 		},
 		StatUpgradeEvent: {
-		stats: { strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0, },
+			stats: { strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0, },
 		},
 		ItemPurchase: {
 			item_id: 0,

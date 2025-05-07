@@ -1,5 +1,4 @@
 import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
-import { AnimatePresence } from "framer-motion";
 import { BrowserRouter, Route, Routes, } from "react-router-dom";
 
 import Box from '@mui/material/Box';
@@ -7,7 +6,7 @@ import { SnackbarProvider } from 'notistack';
 
 import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
-import { ControllerProvider } from './contexts/Controller';
+import { ControllerProvider } from './contexts/controller';
 import Header from './components/Header';
 import { GameDirector } from './contexts/GameDirector';
 

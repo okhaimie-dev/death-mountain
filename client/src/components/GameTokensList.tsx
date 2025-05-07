@@ -1,4 +1,4 @@
-import { useController } from '@/contexts/Controller';
+import { useController } from '@/contexts/controller';
 import { fetchGameTokenIds, fetchGameTokensData } from '@/dojo/useGameTokens';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Stack, Typography } from '@mui/material';

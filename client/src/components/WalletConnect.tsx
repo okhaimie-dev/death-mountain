@@ -1,4 +1,4 @@
-import { useController } from '@/contexts/Controller';
+import { useController } from '@/contexts/controller';
 import { ellipseAddress } from '@/utils/utils';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { Button } from '@mui/material';

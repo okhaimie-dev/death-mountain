@@ -6,7 +6,7 @@ import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
-import { useController } from '@/contexts/Controller';
+import { useController } from '@/contexts/controller';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
