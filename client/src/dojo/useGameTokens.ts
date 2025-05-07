@@ -39,7 +39,7 @@ export async function fetchMetadata(sdk: any, tokenId: number) {
           [
             `${namespace}-TokenMetadata`,
           ],
-          [addAddressPadding(tokenId)]
+          [addAddressPadding(`0x${tokenId.toString(16)}`)]
         ).build()
       )
       .withEntityModels([

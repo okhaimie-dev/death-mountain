@@ -12,7 +12,7 @@ export const gameEventsQuery = (gameId: number) => {
         [
           `${namespace}-GameEvent`,
         ],
-        [addAddressPadding(gameId)]
+        [addAddressPadding(`0x${gameId.toString(16)}`)]
       ).build()
     )
     .withEntityModels([

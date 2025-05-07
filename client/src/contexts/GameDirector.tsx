@@ -76,7 +76,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       }
     });
 
-    console.log('initialData', initialData);
     if (initialData?.getItems() && initialData.getItems().length === 0) {
       startGame(gameId);
     } else {
