@@ -16,7 +16,7 @@ mod tests {
     use lootsurvivor::models::adventurer::adventurer::{IAdventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::stats::{IStat, Stats};
     use lootsurvivor::models::game::{AdventurerEntropy};
-    use lootsurvivor::models::game::{e_BattleEvent, e_GameEvent, m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
+    use lootsurvivor::models::game::{e_GameEvent, m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
     use lootsurvivor::models::market::{ItemPurchase};
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
     use lootsurvivor::systems::beast::contracts::{beast_systems};
@@ -52,7 +52,6 @@ mod tests {
                 TestResource::Contract(beast_systems::TEST_CLASS_HASH),
                 TestResource::Contract(game_token_systems::TEST_CLASS_HASH),
                 TestResource::Event(e_GameEvent::TEST_CLASS_HASH.try_into().unwrap()),
-                TestResource::Event(e_BattleEvent::TEST_CLASS_HASH.try_into().unwrap()),
             ]
                 .span(),
         };
