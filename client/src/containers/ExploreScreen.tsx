@@ -198,7 +198,7 @@ const styles = {
   mainContent: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 1.5,
+    gap: 1,
   },
   xpSection: {
     background: 'rgba(128, 255, 0, 0.05)',

@@ -271,9 +271,9 @@ export const getEventTitle = (event: GameEvent) => {
       }
       return `${obstacleName} hit your ${location}`;
     case 'defeated_beast':
-      return 'Defeated Beast';
+      return `Defeated ${BEAST_NAMES[event.beast_id!]}`;
     case 'fled_beast':
-      return 'Fled from Beast';
+      return `Fled from ${BEAST_NAMES[event.beast_id!]}`;
     case 'level_up':
       return 'Level Up';
     case 'stat_upgrade':

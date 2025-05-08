@@ -75,12 +75,25 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!data || !state.adventurer) {
       return { adventurer: data };
     }
-    // Reject update if new XP is lower than current
+
     if (data.xp < state.adventurer.xp) {
       return state;
     }
 
-    return { adventurer: data };
+    if (data.xp === state.adventurer.xp && data.beast_health === 0 && state.adventurer?.beast_health !== 0) {
+      return state;
+    }
+
+    if (data.beast_health === 0) {
+      return {
+        adventurer: data,
+        equipment: data.equipment,
+        beast: null,
+        battleEvent: null
+      };
+    }
+
+    return { adventurer: data, equipment: data.equipment };
   }),
   setEquipment: (data: Equipment | null) => set({ equipment: data }),
   setBag: (data: Item[]) => set({ bag: data }),

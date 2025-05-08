@@ -64,6 +64,38 @@ export default function AdventurerInfo() {
           </Box>
         </Box>
       </Box>
+
+      {/* Stats Grid */}
+      <Box sx={styles.statsGrid}>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>STR</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.strength || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>DEX</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.dexterity || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>VIT</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.vitality || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>INT</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.intelligence || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>WIS</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.wisdom || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>CHA</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.charisma || 0}</Typography>
+        </Box>
+        <Box sx={styles.statCard}>
+          <Typography sx={styles.statLabel}>LUCK</Typography>
+          <Typography sx={styles.statValue}>{adventurer?.stats?.luck || 0}</Typography>
+        </Box>
+      </Box>
     </>
   )
 }
@@ -151,5 +183,20 @@ const styles = {
   headerStats: {
     display: 'flex',
     gap: '8px',
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '4px',
+    marginBottom: '4px',
+  },
+  statCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '4px',
+    py: '4px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
   },
 };

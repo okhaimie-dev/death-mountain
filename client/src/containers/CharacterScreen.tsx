@@ -66,8 +66,19 @@ const ItemSlot = memo(({
             <Box sx={styles.itemLevelBadge}>
               <Typography sx={styles.itemLevelText}>{level}</Typography>
             </Box>
-            <Box sx={styles.itemTierBadge} style={{ backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'transparent' }}>
-              <Typography sx={styles.itemTierText}>{tier ? `T${tier}` : ''}</Typography>
+            <Box sx={styles.itemTierBadge}>
+              <Box
+                sx={{
+                  width: 14,
+                  height: 14,
+                  backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'white',
+                  maskImage: `url(${typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]})`,
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center',
+                  opacity: 0.9,
+                }}
+              />
             </Box>
             <Box sx={styles.itemImageContainer}>
               <img
@@ -78,20 +89,7 @@ const ItemSlot = memo(({
             </Box>
             <Box sx={styles.itemTypeContainer}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                {ItemUtils.getItemType(item.id) in typeIcons && (
-                  <Box
-                    component="img"
-                    src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
-                    alt={ItemUtils.getItemType(item.id)}
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      filter: 'invert(1)',
-                      opacity: 0.9,
-                    }}
-                  />
-                )}
-                <Typography sx={styles.itemTypeText}>{ItemUtils.getItemType(item.id)}</Typography>
+                <Typography sx={styles.itemTypeText}>{ItemUtils.getItemSlot(item.id)}</Typography>
               </Box>
             </Box>
           </>
@@ -160,38 +158,6 @@ export default function CharacterScreen() {
         {/* Character Info Section */}
         <Box sx={styles.characterInfo}>
           <AdventurerInfo />
-
-          {/* Stats Grid */}
-          <Box sx={styles.statsGrid}>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>STR</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.strength || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>DEX</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.dexterity || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>VIT</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.vitality || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>INT</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.intelligence || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>WIS</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.wisdom || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>CHA</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.charisma || 0}</Typography>
-            </Box>
-            <Box sx={styles.statCard}>
-              <Typography sx={styles.statLabel}>LUCK</Typography>
-              <Typography sx={styles.statValue}>{adventurer?.stats?.luck || 0}</Typography>
-            </Box>
-          </Box>
 
           {/* Equipment Section */}
           <Box sx={styles.section}>
@@ -385,21 +351,6 @@ const styles = {
     fontSize: '0.8rem',
     fontFamily: 'VT323, monospace',
   },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '4px',
-    marginBottom: '4px',
-  },
-  statCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    background: 'rgba(128, 255, 0, 0.1)',
-    borderRadius: '4px',
-    py: '4px',
-    border: '1px solid rgba(128, 255, 0, 0.2)',
-  },
   section: {
     padding: 1,
     background: 'rgba(128, 255, 0, 0.05)',
@@ -502,8 +453,7 @@ const styles = {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    padding: '0 2px',
+    padding: '2px',
     borderRadius: '4px',
   },
   itemTierText: {
@@ -535,7 +485,7 @@ const styles = {
   },
   itemTypeText: {
     color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: '0.7rem',
+    fontSize: '0.8rem',
     fontFamily: 'VT323, monospace',
   },
   dropButton: {

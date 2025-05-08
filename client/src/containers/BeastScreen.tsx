@@ -272,7 +272,7 @@ export default function BeastScreen() {
                     FLEE
                   </Button>
                   <Typography sx={styles.probabilityText}>
-                    {`${fleePercentage}% chance`}
+                    {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : `${fleePercentage}% chance`}
                   </Typography>
                 </Box>
                 <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>

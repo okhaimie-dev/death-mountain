@@ -185,7 +185,10 @@ export default function MarketScreen() {
       {/* Cart Modal */}
       <Modal
         open={showCart}
-        onClose={() => setShowCart(false)}
+        onClose={() => {
+          setShowCart(false);
+          setInProgress(false);
+        }}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -205,7 +208,10 @@ export default function MarketScreen() {
           position: 'relative',
         }}>
           <Button
-            onClick={() => setShowCart(false)}
+            onClick={() => {
+              setShowCart(false);
+              setInProgress(false);
+            }}
             sx={{
               position: 'absolute',
               top: '8px',
@@ -430,15 +436,33 @@ export default function MarketScreen() {
                     <Typography sx={styles.itemPrice}>
                       {item.price} Gold
                     </Typography>
-                    <Button
-                      variant="contained"
-                      onClick={() => handleBuyItem(item)}
-                      disabled={remainingGold < item.price || cart.items.some(cartItem => cartItem.id === item.id) || isItemOwned(item.id)}
-                      sx={styles.buyButton}
-                      size="small"
-                    >
-                      {cart.items.some(cartItem => cartItem.id === item.id) ? 'In Cart' : isItemOwned(item.id) ? 'Owned' : 'Buy'}
-                    </Button>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      {cart.items.some(cartItem => cartItem.id === item.id) && (
+                        <Typography sx={{
+                          color: 'rgba(255, 165, 0, 0.7)',
+                          fontSize: '0.9rem',
+                          fontFamily: 'VT323, monospace',
+                          mt: '-18px'
+                        }}>
+                          In Cart
+                        </Typography>
+                      )}
+                      <Button
+                        variant="contained"
+                        onClick={() => cart.items.some(cartItem => cartItem.id === item.id) ? handleRemoveItem(item) : handleBuyItem(item)}
+                        disabled={!cart.items.some(cartItem => cartItem.id === item.id) && (remainingGold < item.price || isItemOwned(item.id))}
+                        sx={{
+                          ...styles.buyButton,
+                          ...(cart.items.some(cartItem => cartItem.id === item.id) && {
+                            background: 'rgba(128, 255, 0, 0.2)',
+                            color: 'rgba(128, 255, 0, 0.8)',
+                          })
+                        }}
+                        size="small"
+                      >
+                        {cart.items.some(cartItem => cartItem.id === item.id) ? 'Undo' : isItemOwned(item.id) ? 'Owned' : 'Buy'}
+                      </Button>
+                    </Box>
                   </Box>
                 </Box>
               </Paper>
@@ -628,7 +652,6 @@ const styles = {
     transition: 'transform 0.2s, box-shadow 0.2s',
     height: 'fit-content',
     '&:hover': {
-      transform: 'translateY(-1px)',
       boxShadow: '0 1px 3px rgba(128, 255, 0, 0.1)',
     },
   },
@@ -705,6 +728,7 @@ const styles = {
     fontWeight: 'bold',
     color: '#111111',
     fontFamily: 'VT323, monospace',
+    height: '32px',
     minWidth: '60px',
     '&:disabled': {
       background: 'rgba(128, 255, 0, 0.1)',

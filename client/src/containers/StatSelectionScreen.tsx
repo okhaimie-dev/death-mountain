@@ -76,33 +76,37 @@ export default function StatSelectionScreen() {
   const pointsRemaining = adventurer!.stat_upgrades_available - totalSelected;
 
   function STAT_HELPER_TEXT(stat: keyof Stats) {
-    if (stat !== 'charisma' &&selectedStats[stat] === 0) return null;
-
     const level = calculateLevel(adventurer!.xp);
 
     if (stat === 'strength') {
-      let currentStrength = adventurer!.stats.strength;
-      let newStrength = currentStrength + selectedStats.strength;
-      return `${currentStrength * 10}% → ${newStrength * 10}%`;
+      if (selectedStats[stat] === 0) return null;
+      return `+${selectedStats.strength * 10}% damage`;
     } else if (stat === 'dexterity') {
       let currentDexterity = adventurer!.stats.dexterity;
       let newDexterity = currentDexterity + selectedStats.dexterity;
+      if (selectedStats[stat] === 0) return `${ability_based_percentage(adventurer!.xp, currentDexterity)}% chance of fleeing`;
       return `${ability_based_percentage(adventurer!.xp, currentDexterity)}% → ${ability_based_percentage(adventurer!.xp, newDexterity)}%`;
     } else if (stat === 'vitality') {
       let newVitality = selectedStats.vitality;
+      if (selectedStats[stat] === 0) return null;
       return `+${newVitality * 15} Health`;
     } else if (stat === 'intelligence') {
       let currentIntelligence = adventurer!.stats.intelligence;
       let newIntelligence = currentIntelligence + selectedStats.intelligence;
+      if (selectedStats[stat] === 0) return `${ability_based_percentage(adventurer!.xp, currentIntelligence)}% chance of avoiding obstacles`;
       return `${ability_based_percentage(adventurer!.xp, currentIntelligence)}% → ${ability_based_percentage(adventurer!.xp, newIntelligence)}%`;
     } else if (stat === 'wisdom') {
       let currentWisdom = adventurer!.stats.wisdom;
       let newWisdom = currentWisdom + selectedStats.wisdom;
+      if (selectedStats[stat] === 0) return `${ability_based_percentage(adventurer!.xp, currentWisdom)}% chance of avoiding ambush`;
       return `${ability_based_percentage(adventurer!.xp, currentWisdom)}% → ${ability_based_percentage(adventurer!.xp, newWisdom)}%`;
     } else if (stat === 'charisma') {
       let currentCharisma = adventurer!.stats.charisma;
       let newCharisma = currentCharisma + selectedStats.charisma;
-      return `Potion: ${potionPrice(level, newCharisma)} Gold`;
+      return <Box>
+        <Typography sx={{ lineHeight: '1.1', opacity: 0.6 }}>Potion cost: {potionPrice(level, newCharisma)} Gold</Typography>
+        <Typography sx={{ lineHeight: '1.1', opacity: 0.6 }}>Item discount: {newCharisma} Gold</Typography>
+      </Box>
     }
   }
 
@@ -145,7 +149,7 @@ export default function StatSelectionScreen() {
                   </Typography>
                 </Box>
                 <Typography sx={styles.currentValue}>
-                  {adventurer!.stats[stat as keyof Stats]}
+                  {adventurer!.stats[stat as keyof Stats] + selectedStats[stat as keyof Stats]}
                 </Typography>
               </Box>
 
@@ -300,13 +304,13 @@ const styles = {
     border: '1px solid rgba(128, 255, 0, 0.1)',
   },
   statHelperText: {
-    color: 'rgba(128, 255, 0, 0.8)',
+    color: 'rgba(128, 255, 0, 0.6)',
     fontSize: '0.95rem',
     fontFamily: 'VT323, monospace',
-    lineHeight: '1.2',
+    lineHeight: '1.0',
     marginBottom: '6px',
     textAlign: 'center',
-    minHeight: '18px',
+    minHeight: '30px',
   },
   statControls: {
     display: 'flex',

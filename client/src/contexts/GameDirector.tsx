@@ -95,14 +95,9 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const processEvent = async (entity: any, reconnecting: boolean) => {
     let event = formatGameEvent(entity);
+
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
-      setEquipment(event.adventurer!.equipment!);
-
-      if (event.adventurer?.beast_health === 0) {
-        setBeast(null);
-        setBattleEvent(null);
-      }
     }
 
     if (event.type === 'bag') {
