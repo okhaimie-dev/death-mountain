@@ -6,31 +6,25 @@ export interface Item {
   xp: number;
 }
 
+export interface Equipment {
+  weapon: Item;
+  chest: Item;
+  head: Item;
+  waist: Item;
+  foot: Item;
+  hand: Item;
+  neck: Item;
+  ring: Item;
+}
+
 export interface Adventurer {
   health: number;
   xp: number;
   gold: number;
   beast_health: number;
   stat_upgrades_available: number;
-  stats: {
-    strength: number;
-    dexterity: number;
-    vitality: number;
-    intelligence: number;
-    wisdom: number;
-    charisma: number;
-    luck: number;
-  };
-  equipment: {
-    weapon: Item;
-    chest: Item;
-    head: Item;
-    waist: Item;
-    foot: Item;
-    hand: Item;
-    neck: Item;
-    ring: Item;
-  };
+  stats: Stats;
+  equipment: Equipment;
   item_specials_seed: number;
 }
 

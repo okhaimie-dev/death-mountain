@@ -5,8 +5,10 @@ import { useMarketStore } from '@/stores/marketStore';
 import { calculateLevel } from '@/utils/game';
 import { ItemUtils, slotIcons, typeIcons } from '@/utils/loot';
 import { MarketItem, generateMarketItems, potionPrice } from '@/utils/market';
-import { Box, Button, Modal, Paper, Slider, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Button, Modal, Paper, Slider, ToggleButton, ToggleButtonGroup, Typography, IconButton } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
+import healthPotionImg from '@/assets/images/health.png';
+import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
 
 const renderSlotToggleButton = (slot: keyof typeof slotIcons) => (
   <ToggleButton key={slot} value={slot} aria-label={slot}>
@@ -54,6 +56,8 @@ export default function MarketScreen() {
     setPotions,
     inProgress,
     setInProgress,
+    showFilters,
+    setShowFilters,
   } = useMarketStore();
 
   const [showCart, setShowCart] = useState(false);
@@ -245,10 +249,46 @@ export default function MarketScreen() {
               </Box>
             ))}
           </Box>
+
+          {(adventurer?.stats?.charisma || 0) > 0 && <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px',
+            pr: '12px',
+            background: 'rgba(237, 207, 51, 0.1)',
+            borderRadius: '4px',
+            marginBottom: '8px',
+          }}>
+            <Typography sx={{
+              color: 'rgba(237, 207, 51, 0.8)',
+              fontSize: '0.9rem',
+              fontFamily: 'VT323, monospace',
+            }}>
+              Gold Saved from Charisma
+            </Typography>
+            <Typography sx={{
+              color: '#EDCF33',
+              fontSize: '0.9rem',
+              fontFamily: 'VT323, monospace',
+              fontWeight: 'bold',
+            }}>
+              {Math.round(
+                (potionPrice(calculateLevel(adventurer?.xp || 0), 0) * cart.potions) - (potionCost * cart.potions) +
+                cart.items.reduce((total, item) => {
+                  const maxDiscount = (6 - item.tier) * 4;
+                  const charismaDiscount = Math.min(adventurer?.stats?.charisma || 0, maxDiscount);
+                  return total + charismaDiscount;
+                }, 0)
+              )} Gold
+            </Typography>
+          </Box>}
+
           <Box sx={styles.cartTotal}>
             <Typography sx={styles.totalLabel}>Total</Typography>
             <Typography sx={styles.totalValue}>{totalCost} Gold</Typography>
           </Box>
+
           <Box sx={styles.cartActions}>
             <Button
               variant="contained"
@@ -275,55 +315,70 @@ export default function MarketScreen() {
       {/* Main Content */}
       <Box sx={styles.mainContent}>
         {/* Potions Section */}
-        <Box sx={styles.potionsSection}>
-          <Box sx={styles.potionSliderContainer}>
-            <Box sx={styles.potionHeader}>
-              <Typography sx={styles.potionLabel}>
-                Potions: {cart.potions}
-              </Typography>
-              <Typography sx={styles.potionHelperText}>
-                1 Potion = 10 Health
-              </Typography>
-              <Typography sx={styles.potionCost}>
-                Cost: {potionCost}
-              </Typography>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mb: 1 }}>
+          <Box sx={styles.potionsSection}>
+            <Box sx={styles.potionSliderContainer}>
+              <Box sx={styles.potionLeftSection}>
+                <Box component="img" src={healthPotionImg} alt="Health Icon" sx={styles.potionImage} />
+                <Box sx={styles.potionInfo}>
+                  <Typography sx={styles.potionLabel}>Buy Potions</Typography>
+                  <Typography sx={styles.potionHelperText}>+10 Health</Typography>
+                </Box>
+              </Box>
+              <Box sx={styles.potionRightSection}>
+                <Box sx={styles.potionControls}>
+                  <Typography sx={styles.potionCost}>Cost: {potionCost} Gold</Typography>
+                </Box>
+                <Slider
+                  value={cart.potions}
+                  onChange={(_, value) => handleBuyPotion(value as number)}
+                  min={0}
+                  max={maxPotions}
+                  sx={styles.potionSlider}
+                />
+              </Box>
             </Box>
-            <Slider
-              value={cart.potions}
-              onChange={(_, value) => handleBuyPotion(value as number)}
-              min={0}
-              max={maxPotions}
-              sx={styles.potionSlider}
-            />
           </Box>
+
+          <IconButton
+            onClick={() => setShowFilters(!showFilters)}
+            sx={{
+              ...styles.filterToggleButton,
+              ...(showFilters ? styles.filterToggleButtonActive : {})
+            }}
+          >
+            <FilterListAltIcon sx={{ fontSize: 20 }} />
+          </IconButton>
         </Box>
 
         {/* Filters */}
-        <Box sx={styles.filtersContainer}>
-          <Box sx={styles.filterGroup}>
-            <ToggleButtonGroup
-              value={slotFilter}
-              exclusive
-              onChange={handleSlotFilter}
-              aria-label="item slot"
-              sx={styles.filterButtons}
-            >
-              {Object.keys(slotIcons).map((slot) => renderSlotToggleButton(slot as keyof typeof slotIcons))}
-            </ToggleButtonGroup>
-          </Box>
+        {showFilters && (
+          <Box sx={styles.filtersContainer}>
+            <Box sx={styles.filterGroup}>
+              <ToggleButtonGroup
+                value={slotFilter}
+                exclusive
+                onChange={handleSlotFilter}
+                aria-label="item slot"
+                sx={styles.filterButtons}
+              >
+                {Object.keys(slotIcons).map((slot) => renderSlotToggleButton(slot as keyof typeof slotIcons))}
+              </ToggleButtonGroup>
+            </Box>
 
-          <Box sx={styles.filterGroup}>
-            <ToggleButtonGroup
-              value={typeFilter}
-              exclusive
-              onChange={handleTypeFilter}
-              aria-label="item type"
-              sx={styles.filterButtons}
-            >
-              {Object.keys(typeIcons).filter(type => ['Cloth', 'Hide', 'Metal'].includes(type)).map((type) => renderTypeToggleButton(type as keyof typeof typeIcons))}
-            </ToggleButtonGroup>
+            <Box sx={styles.filterGroup}>
+              <ToggleButtonGroup
+                value={typeFilter}
+                exclusive
+                onChange={handleTypeFilter}
+                aria-label="item type"
+                sx={styles.filterButtons}
+              >
+                {Object.keys(typeIcons).filter(type => ['Cloth', 'Hide', 'Metal'].includes(type)).map((type) => renderTypeToggleButton(type as keyof typeof typeIcons))}
+              </ToggleButtonGroup>
+            </Box>
           </Box>
-        </Box>
+        )}
 
         {/* Items Grid */}
         <Box sx={styles.itemsGrid}>
@@ -474,35 +529,70 @@ const styles = {
     mb: '60px'
   },
   potionsSection: {
-    marginBottom: 1,
+    flex: 1,
   },
   potionSliderContainer: {
     display: 'flex',
-    flexDirection: 'column',
-    padding: '8px 12px 4px',
+    justifyContent: 'space-between',
+    padding: '8px',
     background: 'rgba(0, 0, 0, 0.2)',
     borderRadius: '8px',
     border: '1px solid rgba(128, 255, 0, 0.1)',
   },
-  potionHeader: {
+  potionLeftSection: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 1,
+  },
+  potionRightSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    flex: 1,
+    ml: '16px',
+  },
+  potionImage: {
+    width: 42,
+    height: 42,
+  },
+  potionInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
   },
   potionLabel: {
     color: '#80FF00',
     fontSize: '0.9rem',
     fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+  },
+  potionHelperText: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+  },
+  potionControls: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '95%',
+    ml: 1,
   },
   potionCost: {
     color: '#EDCF33',
     fontSize: '0.9rem',
     fontFamily: 'VT323, monospace',
   },
-  potionSlider: {
-    ml: 1,
-    width: '96%',
+  potionCount: {
     color: '#80FF00',
+    fontSize: '0.9rem',
+    fontFamily: 'VT323, monospace',
+  },
+  potionSlider: {
+    color: '#80FF00',
+    width: '95%',
+    py: 1,
+    ml: 1,
     '& .MuiSlider-thumb': {
       backgroundColor: '#80FF00',
       width: '14px',
@@ -517,12 +607,6 @@ const styles = {
     '& .MuiSlider-rail': {
       backgroundColor: 'rgba(128, 255, 0, 0.2)',
     },
-  },
-  potionHelperText: {
-    color: 'rgba(128, 255, 0, 0.7)',
-    fontSize: '0.8rem',
-    fontFamily: 'VT323, monospace',
-    textAlign: 'center',
   },
   itemsGrid: {
     flex: 1,
@@ -755,6 +839,30 @@ const styles = {
         color: '#111111',
         backgroundColor: 'rgba(128, 255, 0, 0.3)',
       },
+    },
+  },
+  filterToggleButton: {
+    width: 36,
+    height: 36,
+    minWidth: 36,
+    padding: 0,
+    background: 'rgba(0, 0, 0, 0.2)',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    color: 'rgba(255, 165, 0, 0.8)',
+    transition: 'all 0.2s ease',
+    borderRadius: '6px',
+    '&:hover': {
+      background: 'rgba(255, 165, 0, 0.1)',
+      borderColor: 'rgba(255, 165, 0, 0.3)',
+      color: 'rgba(255, 165, 0, 0.8)',
+    },
+  },
+  filterToggleButtonActive: {
+    background: 'rgba(255, 165, 0, 0.15)',
+    borderColor: 'rgba(255, 165, 0, 0.4)',
+    color: '#FFA500',
+    '&:hover': {
+      background: 'rgba(255, 165, 0, 0.2)',
     },
   },
 };

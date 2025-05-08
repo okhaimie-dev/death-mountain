@@ -3,6 +3,7 @@ import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
 import { BattleEvents, ExplorerLogEvents, formatGameEvent } from '@/utils/events';
+import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
@@ -15,11 +16,10 @@ const GameDirectorContext = createContext({
 /**
  * Wait times for events in milliseconds
  */
-const explorerDelay = 1000;
 const delayTimes: any = {
-  'level_up': explorerDelay,
-  'discovery': 2000,
-  'obstacle': 2000,
+  'level_up': 1000,
+  'discovery': 1000,
+  'obstacle': 1000,
   'attack': 2000,
   'beast_attack': 2000,
   'flee': 1000,
@@ -31,8 +31,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent,
-    equipItems, dropItems, newInventoryItems, setMarketItemIds, setNewMarket, setDropItems, setEquipItems,
+  const { gameId, adventurer, equipment, setAdventurer, setEquipment, setBag, setBeast, setExploreLog, setBattleEvent,
+    dropItems, newInventoryItems, setMarketItemIds, setNewMarket, setDropItems,
     setNewInventoryItems } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
@@ -95,9 +95,9 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const processEvent = async (entity: any, reconnecting: boolean) => {
     let event = formatGameEvent(entity);
-
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
+      setEquipment(event.adventurer!.equipment!);
 
       if (event.adventurer?.beast_health === 0) {
         setBeast(null);
@@ -123,27 +123,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         if (event.discovery?.type === 'Loot') {
           setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
         }
-
-        setAdventurer({
-          ...adventurer!,
-          xp: adventurer!.xp + (event.xp_reward || 0),
-          health: adventurer!.health + (event.discovery?.type === 'Health' ? event.discovery.amount! : 0),
-          gold: adventurer!.gold + (event.discovery?.type === 'Gold' ? event.discovery.amount! : 0)
-        });
-      }
-
-      if (!reconnecting && event.type === 'obstacle') {
-        setAdventurer({
-          ...adventurer!,
-          health: event.obstacle!.dodged ? adventurer!.health : adventurer!.health - event.obstacle!.damage!,
-          xp: adventurer!.xp + event.xp_reward!
-        });
       }
 
       setExploreLog(event);
     }
 
-    if (BattleEvents.includes(event.type)) {
+    if (!reconnecting && BattleEvents.includes(event.type)) {
       setBattleEvent(event);
     }
 
@@ -157,17 +142,17 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
     let txs: any[] = [];
 
-    if (equipItems.length > 0) {
-      if (VRF_ENABLED && adventurer?.beast_health! > 0) {
-        txs.push(requestRandom());
-      }
-
-      txs.push(equip(gameId!, equipItems.map(item => item.id)));
-      setEquipItems([]);
-    }
-
     if (VRF_ENABLED && ['explore', 'attack', 'flee'].includes(action.type)) {
       txs.push(requestRandom());
+    }
+
+    if (VRF_ENABLED && action.type === 'equip' && adventurer?.beast_health! > 0) {
+      txs.push(requestRandom());
+    }
+
+    let newItemsEquipped = getNewItemsEquipped(adventurer?.equipment!, equipment!);
+    if (action.type !== 'equip' && newItemsEquipped.length > 0) {
+      txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));
     }
 
     if (action.type === 'explore') {
@@ -180,6 +165,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       txs.push(buyItems(gameId!, action.potions!, action.itemPurchases!));
     } else if (action.type === 'select_stat_upgrades') {
       txs.push(selectStatUpgrades(gameId!, action.statUpgrades!));
+    } else if (action.type === 'equip') {
+      txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));
     } else if (action.type === 'drop') {
       txs.push(drop(gameId!, dropItems.map(item => item.id)));
       setDropItems([]);

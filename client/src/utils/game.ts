@@ -1,4 +1,4 @@
-import { Adventurer, Beast, Item } from "@/types/game";
+import { Adventurer, Beast, Equipment, Item } from "@/types/game";
 import { ItemType, ItemUtils } from "./loot";
 import { getRandomnessWithActions } from "./entropy";
 import { getArmorType, getAttackType } from "./beast";
@@ -24,6 +24,24 @@ export const calculateProgress = (xp: number) => {
     const nextLevelXP = calculateNextLevelXP(currentLevel);
     const currentLevelXP = Math.pow(currentLevel, 2);
     return ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+};
+
+export const getNewItemsEquipped = (newEquipment: Equipment, oldEquipment: Equipment) => {
+    const newItems: Item[] = [];
+    
+    // Check each equipment slot in the current adventurer
+    Object.entries(newEquipment).forEach(([slot, currentItem]) => {
+        const initialItem = oldEquipment[slot as keyof Equipment];
+        // Skip if initial slot was empty (id 0 or null)
+        if (!initialItem || initialItem.id === 0) return;
+
+        // Only add if there's a current item and it's different from the initial item
+        if (currentItem && currentItem.id !== initialItem.id) {
+            newItems.push(currentItem);
+        }
+    });
+
+    return newItems;
 };
 
 // Calculate critical hit bonus based on luck and ring

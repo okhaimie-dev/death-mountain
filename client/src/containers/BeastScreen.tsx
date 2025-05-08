@@ -6,15 +6,16 @@ import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
 import { getBeastImageById, getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
-import { calculateAttackDamage, calculateLevel, ability_based_percentage, simulateBattle, simulateFlee } from '@/utils/game';
+import { calculateAttackDamage, calculateLevel, ability_based_percentage, simulateBattle, simulateFlee, getNewItemsEquipped } from '@/utils/game';
 import { ItemUtils, slotIcons } from '@/utils/loot';
 import { Box, Button, Checkbox, LinearProgress, Menu, Typography, keyframes } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useLottie } from 'lottie-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, memo, useCallback } from 'react';
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
+const equipMessage = "Equipping items";
 
 interface Item {
   id: number;
@@ -25,11 +26,12 @@ interface Item {
 
 export default function BeastScreen() {
   const { executeGameAction } = useGameDirector();
-  const { gameId, adventurer, beast, battleEvent, bag, equipItem } = useGameStore();
+  const { adventurer, equipment, beast, battleEvent, bag, equipItem, undoEquipment } = useGameStore();
 
-  const [untilDeath, setUntilDeath] = useState(true);
+  const [untilDeath, setUntilDeath] = useState(false);
   const [attackInProgress, setAttackInProgress] = useState(false);
   const [fleeInProgress, setFleeInProgress] = useState(false);
+  const [equipInProgress, setEquipInProgress] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -56,6 +58,10 @@ export default function BeastScreen() {
     onComplete: () => {
       setHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
       beastStrike.stop();
+
+      setAttackInProgress(false);
+      setFleeInProgress(false);
+      setEquipInProgress(false);
     }
   });
 
@@ -103,6 +109,12 @@ export default function BeastScreen() {
     executeGameAction({ type: 'flee', untilDeath });
   };
 
+  const handleEquipItems = () => {
+    setEquipInProgress(true);
+    setCombatLog(equipMessage);
+    executeGameAction({ type: 'equip' });
+  };
+
   const { killChance, fleeChance } = useMemo(() => {
     if (adventurer!.health === 0 || adventurer!.beast_health === 0) {
       return { killChance: 0, fleeChance: 0 };
@@ -116,6 +128,11 @@ export default function BeastScreen() {
   const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
   const maxHealth = STARTING_HEALTH + (adventurer!.stats.vitality * 15);
+
+  const hasNewItemsEquipped = useMemo(() => {
+    if (!adventurer?.equipment || !equipment) return false;
+    return getNewItemsEquipped(adventurer.equipment, equipment).length > 0;
+  }, [adventurer?.equipment]);
 
   return (
     <motion.div
@@ -180,7 +197,7 @@ export default function BeastScreen() {
         <Box sx={styles.middleSection}>
           <Box sx={styles.combatLogContainer}>
             <AnimatedText text={combatLog} />
-            {(combatLog === fleeMessage || combatLog === attackMessage) && <div className='dotLoader green' style={{ marginTop: '6px' }} />}
+            {(combatLog === fleeMessage || combatLog === attackMessage || combatLog === equipMessage) && <div className='dotLoader green' style={{ marginTop: '6px' }} />}
           </Box>
         </Box>
 
@@ -214,47 +231,77 @@ export default function BeastScreen() {
               </Box>
             </Box>
 
-            <Box sx={styles.actionsContainer}>
-              <Box sx={styles.actionButtonContainer}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleAttack}
-                  sx={styles.attackButton}
-                  disabled={attackInProgress || fleeInProgress}
-                >
-                  ATTACK
-                </Button>
-                <Typography sx={styles.probabilityText}>
-                  {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
-                </Typography>
+            {hasNewItemsEquipped && (
+              <Box sx={styles.actionsContainer}>
+                <Box sx={styles.actionButtonContainer}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleEquipItems}
+                    sx={[styles.attackButton, { mb: '18px' }]}
+                    disabled={equipInProgress}
+                  >
+                    EQUIP
+                  </Button>
+                </Box>
+
+                <Box sx={styles.actionButtonContainer}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={undoEquipment}
+                    sx={[styles.fleeButton, { mb: '18px' }]}
+                    disabled={equipInProgress}
+                  >
+                    UNDO
+                  </Button>
+                </Box>
               </Box>
-              <Box sx={styles.actionButtonContainer}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleFlee}
-                  sx={styles.fleeButton}
-                  disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
-                >
-                  FLEE
-                </Button>
-                <Typography sx={styles.probabilityText}>
-                  {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : untilDeath ? `${fleeChance}% chance` : `${fleePercentage}% chance`}
-                </Typography>
+            )}
+
+            {!hasNewItemsEquipped && (
+              <Box sx={styles.actionsContainer}>
+                <Box sx={styles.actionButtonContainer}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleAttack}
+                    sx={styles.attackButton}
+                    disabled={attackInProgress || fleeInProgress}
+                  >
+                    ATTACK
+                  </Button>
+                  <Typography sx={styles.probabilityText}>
+                    {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
+                  </Typography>
+                </Box>
+                <Box sx={styles.actionButtonContainer}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleFlee}
+                    sx={styles.fleeButton}
+                    disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
+                  >
+                    FLEE
+                  </Button>
+                  <Typography sx={styles.probabilityText}>
+                    {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : untilDeath ? `${fleeChance}% chance` : `${fleePercentage}% chance`}
+                  </Typography>
+                </Box>
+                <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>
+                  <Typography sx={styles.deathCheckboxLabel}>
+                    until<br />death
+                  </Typography>
+                  <Checkbox
+                    checked={untilDeath}
+                    onChange={(e) => setUntilDeath(e.target.checked)}
+                    size="small"
+                    sx={styles.deathCheckbox}
+                  />
+                </Box>
               </Box>
-              <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>
-                <Typography sx={styles.deathCheckboxLabel}>
-                  until<br />death
-                </Typography>
-                <Checkbox
-                  checked={untilDeath}
-                  onChange={(e) => setUntilDeath(e.target.checked)}
-                  size="small"
-                  sx={styles.deathCheckbox}
-                />
-              </Box>
-            </Box>
+            )}
           </Box>
         </Box>
 

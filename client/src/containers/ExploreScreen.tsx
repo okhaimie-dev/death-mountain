@@ -1,10 +1,8 @@
 import AdventurerInfo from '@/components/AdventurerInfo';
-import { OBSTACLE_NAMES } from '@/constants/obstacle';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { getBeastImage, getBeastImageById } from '@/utils/beast';
-import { GameEvent, getEventIcon, getEventTitle } from '@/utils/events';
-import { Box, Button, FormControlLabel, Switch, Typography, keyframes } from '@mui/material';
+import { getEventIcon, getEventTitle } from '@/utils/events';
+import { Box, Button, Typography, keyframes } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 export default function ExploreScreen() {
@@ -161,7 +159,7 @@ export default function ExploreScreen() {
               </Typography>
             }
           </Button>
-          <FormControlLabel
+          {/* <FormControlLabel
             control={
               <Switch
                 checked={untilBeast}
@@ -171,7 +169,7 @@ export default function ExploreScreen() {
             }
             label="Until Beast"
             sx={styles.switchLabel}
-          />
+          /> */}
         </Box>
       </Box>
     </Box>

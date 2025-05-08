@@ -106,7 +106,7 @@ const ItemSlot = memo(({
 });
 
 export default function CharacterScreen() {
-  const { adventurer, bag, equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
+  const { adventurer, bag, newInventoryItems, setNewInventoryItems, equipItem } = useGameStore();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
   const [newItems, setNewItems] = useState<number[]>([]);

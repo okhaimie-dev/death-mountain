@@ -1,19 +1,19 @@
+import CharismaIcon from '@/assets/types/Charisma.svg';
+import DexterityIcon from '@/assets/types/Dexterity.svg';
+import IntelligenceIcon from '@/assets/types/Intelligence.svg';
+import LuckIcon from '@/assets/types/Luck.svg';
+import StrengthIcon from '@/assets/types/Strength.svg';
+import VitalityIcon from '@/assets/types/Vitality.svg';
+import WisdomIcon from '@/assets/types/Wisdom.svg';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { Adventurer, Stats } from '@/types/game';
+import { Stats } from '@/types/game';
 import { screenVariants } from '@/utils/animations';
+import { ability_based_percentage, calculateLevel } from '@/utils/game';
+import { potionPrice } from '@/utils/market';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import StrengthIcon from '@/assets/types/Strength.svg';
-import DexterityIcon from '@/assets/types/Dexterity.svg';
-import VitalityIcon from '@/assets/types/Vitality.svg';
-import IntelligenceIcon from '@/assets/types/Intelligence.svg';
-import WisdomIcon from '@/assets/types/Wisdom.svg';
-import CharismaIcon from '@/assets/types/Charisma.svg';
-import LuckIcon from '@/assets/types/Luck.svg';
-import { potionPrice } from '@/utils/market';
-import { calculateLevel, ability_based_percentage } from '@/utils/game';
 
 const STAT_DESCRIPTIONS = {
   strength: "Increases attack damage.",
@@ -76,26 +76,33 @@ export default function StatSelectionScreen() {
   const pointsRemaining = adventurer!.stat_upgrades_available - totalSelected;
 
   function STAT_HELPER_TEXT(stat: keyof Stats) {
+    if (stat !== 'charisma' &&selectedStats[stat] === 0) return null;
+
     const level = calculateLevel(adventurer!.xp);
 
     if (stat === 'strength') {
-      let strength = adventurer!.stats.strength + selectedStats.strength;
-      return `+${strength * 10}% damage`;
+      let currentStrength = adventurer!.stats.strength;
+      let newStrength = currentStrength + selectedStats.strength;
+      return `${currentStrength * 10}% → ${newStrength * 10}%`;
     } else if (stat === 'dexterity') {
-      let dexterity = adventurer!.stats.dexterity + selectedStats.dexterity;
-      return `${ability_based_percentage(adventurer!.xp, dexterity)}% chance`;
+      let currentDexterity = adventurer!.stats.dexterity;
+      let newDexterity = currentDexterity + selectedStats.dexterity;
+      return `${ability_based_percentage(adventurer!.xp, currentDexterity)}% → ${ability_based_percentage(adventurer!.xp, newDexterity)}%`;
     } else if (stat === 'vitality') {
-      let vitality = adventurer!.stats.vitality + selectedStats.vitality;
-      return `+${vitality * 15} health`;
+      let newVitality = adventurer!.stats.vitality + selectedStats.vitality;
+      return `+${newVitality * 15} Health`;
     } else if (stat === 'intelligence') {
-      let intelligence = adventurer!.stats.intelligence + selectedStats.intelligence;
-      return `${ability_based_percentage(adventurer!.xp, intelligence)}% chance`;
+      let currentIntelligence = adventurer!.stats.intelligence;
+      let newIntelligence = currentIntelligence + selectedStats.intelligence;
+      return `${ability_based_percentage(adventurer!.xp, currentIntelligence)}% → ${ability_based_percentage(adventurer!.xp, newIntelligence)}%`;
     } else if (stat === 'wisdom') {
-      let wisdom = adventurer!.stats.wisdom + selectedStats.wisdom;
-      return `${ability_based_percentage(adventurer!.xp, wisdom)}% chance`;
+      let currentWisdom = adventurer!.stats.wisdom;
+      let newWisdom = currentWisdom + selectedStats.wisdom;
+      return `${ability_based_percentage(adventurer!.xp, currentWisdom)}% → ${ability_based_percentage(adventurer!.xp, newWisdom)}%`;
     } else if (stat === 'charisma') {
-      let charisma = adventurer!.stats.charisma + selectedStats.charisma;
-      return `Potion: ${potionPrice(level, charisma)} gold`;
+      let currentCharisma = adventurer!.stats.charisma;
+      let newCharisma = currentCharisma + selectedStats.charisma;
+      return `Potion: ${potionPrice(level, newCharisma)} Gold`;
     }
   }
 
@@ -293,12 +300,13 @@ const styles = {
     border: '1px solid rgba(128, 255, 0, 0.1)',
   },
   statHelperText: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(128, 255, 0, 0.8)',
     fontSize: '0.95rem',
     fontFamily: 'VT323, monospace',
     lineHeight: '1.2',
     marginBottom: '6px',
     textAlign: 'center',
+    minHeight: '18px',
   },
   statControls: {
     display: 'flex',

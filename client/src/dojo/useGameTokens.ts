@@ -48,8 +48,8 @@ export async function fetchMetadata(sdk: any, tokenId: number) {
       .includeHashedKeys()
   });
 
-  let data = getEntityModel(entities[0], "TokenMetadata")
-
+  let data = getEntityModel(entities.getItems()[0], "TokenMetadata")
+  
   useGameStore.getState().setMetadata({
     player_name: hexToAscii(data.player_name),
     settings_id: parseInt(data.settings_id, 16),
