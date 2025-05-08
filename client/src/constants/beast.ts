@@ -171,7 +171,7 @@ export const BEAST_NAMES: { [key: number]: string } = {
     42: "Fenrir",
     43: "Jaguar",
     44: "Satori",
-    45: "DireWolf",
+    45: "Direwolf",
     // T5
     46: "Bear",
     47: "Wolf",

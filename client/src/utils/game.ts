@@ -1,7 +1,6 @@
 import { Adventurer, Beast, Equipment, Item } from "@/types/game";
-import { ItemType, ItemUtils } from "./loot";
-import { getRandomnessWithActions } from "./entropy";
 import { getArmorType, getAttackType } from "./beast";
+import { ItemType, ItemUtils } from "./loot";
 
 // Get attack location based on entropy
 const getAttackLocation = (entropy: number): string => {
@@ -28,7 +27,7 @@ export const calculateProgress = (xp: number) => {
 
 export const getNewItemsEquipped = (newEquipment: Equipment, oldEquipment: Equipment) => {
     const newItems: Item[] = [];
-    
+
     // Check each equipment slot in the current adventurer
     Object.entries(newEquipment).forEach(([slot, currentItem]) => {
         const initialItem = oldEquipment[slot as keyof Equipment];
@@ -119,92 +118,6 @@ export const calculateAttackDamage = (adventurer: Adventurer, beast: Beast, crit
     const totalDamage = Math.floor(totalAttack - baseArmor);
 
     return Math.max(4, totalDamage);
-};
-
-export const simulateBattle = (adventurer: Adventurer, beast: Beast, iterations: number) => {
-    let successCount = 0;
-
-    for (let i = 0; i < iterations; i++) {
-        let adventurerHealth = adventurer.health;
-        let beastHealth = adventurer.beast_health;
-        let battleActions = 0;
-
-        // Generate a single random seed for this iteration
-        const iterationSeed = BigInt(Math.floor(Math.random() * 2 ** 32));
-
-        while (adventurerHealth > 0 && beastHealth > 0) {
-            // Get randomness for this battle action using entropy.ts
-            const { rnd2_u8, rnd3_u8, rnd4_u8 } = getRandomnessWithActions(
-                adventurer.xp,
-                battleActions,
-                iterationSeed
-            );
-
-            // Adventurer attacks with rnd2_u8 as critical hit entropy
-            const damage = calculateAttackDamage(adventurer, beast, rnd2_u8);
-            beastHealth -= damage;
-
-            if (beastHealth <= 0) {
-                successCount++;
-                break;
-            }
-
-            // Beast counter-attacks with entropy-determined location
-            const attackLocation = getAttackLocation(rnd4_u8);
-            const beastDamage = calculateBeastDamage(beast, adventurer, attackLocation, rnd3_u8);
-            adventurerHealth -= beastDamage;
-
-            if (adventurerHealth <= 0) {
-                break;
-            }
-
-            battleActions++;
-        }
-    }
-
-    return Math.floor((successCount / iterations) * 100);
-};
-
-export const simulateFlee = (adventurer: Adventurer, beast: Beast, iterations: number) => {
-    if (!adventurer.stats.dexterity) return 0;
-
-    let adventurer_level = calculateLevel(adventurer.xp);
-    let successCount = 0;
-    for (let i = 0; i < iterations; i++) {
-        let adventurerHealth = adventurer.health;
-        let battleActions = 0;
-
-        // Generate a single random seed for this iteration
-        const iterationSeed = BigInt(Math.floor(Math.random() * 2 ** 32));
-
-        while (adventurerHealth > 0) {
-            // Get randomness for this flee attempt using entropy.ts
-            const { rnd1_u8, rnd3_u8, rnd4_u8 } = getRandomnessWithActions(
-                adventurer.xp,
-                battleActions,
-                iterationSeed
-            );
-
-            // Try to flee using entropy
-            if (ability_based_avoid_threat(adventurer_level, adventurer.stats.dexterity, rnd1_u8)) {
-                successCount++;
-                break;
-            }
-
-            // If flee fails, beast attacks
-            const attackLocation = getAttackLocation(rnd4_u8);
-            const beastDamage = calculateBeastDamage(beast, adventurer, attackLocation, rnd3_u8);
-            adventurerHealth -= beastDamage;
-
-            if (adventurerHealth <= 0) {
-                break;
-            }
-
-            battleActions++;
-        }
-    }
-
-    return Math.floor((successCount / iterations) * 100);
 };
 
 export const ability_based_percentage = (adventurer_xp: number, relevant_stat: number) => {

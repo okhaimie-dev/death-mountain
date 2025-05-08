@@ -159,6 +159,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     gap: '4px',
+    pb: 0.5,
     cursor: 'pointer',
     opacity: 0.7,
     transition: 'all 0.2s ease',

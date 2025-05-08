@@ -1,4 +1,5 @@
 import strikeAnim from "@/assets/animations/strike.json";
+import adventurerImg from '@/assets/images/adventurer.png';
 import AnimatedText from '@/components/AnimatedText';
 import BeastTooltip from '@/components/BeastTooltip';
 import { STARTING_HEALTH } from "@/constants/game";
@@ -6,23 +7,16 @@ import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
 import { getBeastImageById, getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
-import { calculateAttackDamage, calculateLevel, ability_based_percentage, simulateBattle, simulateFlee, getNewItemsEquipped } from '@/utils/game';
+import { ability_based_percentage, calculateAttackDamage, calculateLevel, getNewItemsEquipped } from '@/utils/game';
 import { ItemUtils, slotIcons } from '@/utils/loot';
 import { Box, Button, Checkbox, LinearProgress, Menu, Typography, keyframes } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useLottie } from 'lottie-react';
-import { useEffect, useMemo, useState, memo, useCallback } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
 const equipMessage = "Equipping items";
-
-interface Item {
-  id: number;
-  name: string;
-  imageUrl: string;
-  tier: number;
-}
 
 export default function BeastScreen() {
   const { executeGameAction } = useGameDirector();
@@ -59,9 +53,11 @@ export default function BeastScreen() {
       setHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
       beastStrike.stop();
 
-      setAttackInProgress(false);
-      setFleeInProgress(false);
-      setEquipInProgress(false);
+      if (!untilDeath) {
+        setAttackInProgress(false);
+        setFleeInProgress(false);
+        setEquipInProgress(false);
+      }
     }
   });
 
@@ -114,16 +110,6 @@ export default function BeastScreen() {
     setCombatLog(equipMessage);
     executeGameAction({ type: 'equip' });
   };
-
-  const { killChance, fleeChance } = useMemo(() => {
-    if (adventurer!.health === 0 || adventurer!.beast_health === 0) {
-      return { killChance: 0, fleeChance: 0 };
-    }
-    return {
-      killChance: simulateBattle(adventurer!, beast!, 1000),
-      fleeChance: simulateFlee(adventurer!, beast!, 1000)
-    };
-  }, [adventurer, beast]);
 
   const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
@@ -205,7 +191,7 @@ export default function BeastScreen() {
         <Box sx={styles.bottomSection}>
           <Box sx={styles.adventurerImageContainer}>
             <img
-              src="/src/assets/images/adventurer.png"
+              src={adventurerImg}
               alt="Adventurer"
               style={styles.adventurerImage}
             />
@@ -272,7 +258,7 @@ export default function BeastScreen() {
                     ATTACK
                   </Button>
                   <Typography sx={styles.probabilityText}>
-                    {untilDeath ? `${killChance}% chance` : `${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
+                    {`${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
                   </Typography>
                 </Box>
                 <Box sx={styles.actionButtonContainer}>
@@ -286,7 +272,7 @@ export default function BeastScreen() {
                     FLEE
                   </Button>
                   <Typography sx={styles.probabilityText}>
-                    {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : untilDeath ? `${fleeChance}% chance` : `${fleePercentage}% chance`}
+                    {`${fleePercentage}% chance`}
                   </Typography>
                 </Box>
                 <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>

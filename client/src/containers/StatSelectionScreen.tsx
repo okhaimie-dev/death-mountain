@@ -89,7 +89,7 @@ export default function StatSelectionScreen() {
       let newDexterity = currentDexterity + selectedStats.dexterity;
       return `${ability_based_percentage(adventurer!.xp, currentDexterity)}% → ${ability_based_percentage(adventurer!.xp, newDexterity)}%`;
     } else if (stat === 'vitality') {
-      let newVitality = adventurer!.stats.vitality + selectedStats.vitality;
+      let newVitality = selectedStats.vitality;
       return `+${newVitality * 15} Health`;
     } else if (stat === 'intelligence') {
       let currentIntelligence = adventurer!.stats.intelligence;
