@@ -17,7 +17,7 @@ pub trait IGameSystems<T> {
     fn buy_items(ref self: T, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>);
     fn select_stat_upgrades(ref self: T, adventurer_id: u64, stat_upgrades: Stats);
     // ------ Game Settings ------
-    fn add_settings(ref self: T, name: felt252, description: ByteArray, adventurer: Adventurer, bag: Bag) -> u32;
+    fn add_settings(ref self: T, name: felt252, adventurer: Adventurer, bag: Bag) -> u32;
 }
 
 
@@ -90,6 +90,9 @@ mod game_systems {
             // assert provided weapon
             _assert_valid_starter_weapon(weapon, game_libs);
 
+            // get random seed
+            let (_, market_seed) = _get_random_seed(world, adventurer_id, 1);
+
             if (game_settings.adventurer.xp == 0) {
                 // generate a new adventurer using the provided started weapon
                 let mut adventurer = ImplAdventurer::new(weapon);
@@ -116,6 +119,21 @@ mod game_systems {
                 _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
             } else {
                 let mut adventurer = game_settings.adventurer;
+
+                _save_market_seed(ref world, adventurer_id, market_seed);
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
+                );
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::market_items(
+                        MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
+                    ),
+                );
+
                 _save_adventurer(ref world, ref adventurer, game_settings.bag, adventurer_id, game_libs);
             }
         }
@@ -626,9 +644,7 @@ mod game_systems {
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
-        fn add_settings(
-            ref self: ContractState, name: felt252, description: ByteArray, adventurer: Adventurer, bag: Bag,
-        ) -> u32 {
+        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag) -> u32 {
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
             // increment settings counter
             let mut settings_count: SettingsCounter = world.read_model(VERSION);
@@ -640,7 +656,6 @@ mod game_systems {
                     @GameSettingsMetadata {
                         settings_id: settings_count.count,
                         name,
-                        description,
                         created_by: starknet::get_caller_address(),
                         created_at: starknet::get_block_timestamp(),
                     },

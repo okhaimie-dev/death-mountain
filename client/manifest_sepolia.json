@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x114f689133f60008ed9e4fc2eac0ecb18caa197e42b2817ff6bfe4e71eb9818",
-    "seed": "pg_test_ls_7",
+    "address": "0x6bfa8841647aa448a415a34e6d097b0417143df1fc75b7601265218ead054b2",
+    "seed": "pg_test_ls_8",
     "name": "Loot Survivor 2",
     "entrypoints": [
       "uuid",
@@ -1312,7 +1312,7 @@
   },
   "contracts": [
     {
-      "address": "0x631c5a08d8bf63ed5224e7c475416ba9ff70f9ece7b2cccbd2291f2c73438ed",
+      "address": "0x2d670ff804738e5100f77cabc50afe0bd9ac6bcae1a01bb4ad6848bae6f41a9",
       "class_hash": "0x4b0420f3eab09c3a62acc8f96640e35daf3dd58503a30c4c15584d0bd7032a5",
       "abi": [
         {
@@ -2061,7 +2061,7 @@
       ]
     },
     {
-      "address": "0x5c5cb36e7adaf05529bfd0866e3ff28ebd477c22af36373f9e13150d67cf6b2",
+      "address": "0x52b485c58758ef85c60cb66691489fc9ce51dfd5a9f43e204d6918d323800a0",
       "class_hash": "0x780a545e3216dddbe14e8598d6ae9353d075bd1cddb17a8cc14fc52888e4571",
       "abi": [
         {
@@ -2480,8 +2480,8 @@
       ]
     },
     {
-      "address": "0x6f77660cc65dde61082057d8888c511a4491df201e85fd7037dd91a1abcb802",
-      "class_hash": "0x1f328325c79635f8a0a3c1ddd1a58cbafefbe8df9146bf4580d6d7862632893",
+      "address": "0x6339e54b4ecf0ddf2ff6f7ef2b864ed11b06b85f88c6daebf4f4354d9b2ff1d",
+      "class_hash": "0x4dc463133413deaa1e6891df891b7ca741866f54730835ae27ef8b2dfb7e576",
       "abi": [
         {
           "type": "impl",
@@ -2905,10 +2905,6 @@
                   "type": "core::felt252"
                 },
                 {
-                  "name": "description",
-                  "type": "core::byte_array::ByteArray"
-                },
-                {
                   "name": "adventurer",
                   "type": "lootsurvivor::models::adventurer::adventurer::Adventurer"
                 },
@@ -3058,8 +3054,8 @@
       ]
     },
     {
-      "address": "0x648cb7466d2c43ca31adb4ae3c14ca4d879f70d0ffc42a593e871c5e0a64440",
-      "class_hash": "0x44dc69f78a48190ecd00eaa2bbc834f9f61a190608c78eb09bcc42b7e7361a",
+      "address": "0x49efcd3f2feb2ca6c02aacd71b15f74b247ff8f0e71b6cff69c334597c2b318",
+      "class_hash": "0x7895bbef47e1a1872fde89c4ff47a933cae213e92e3f7404eedc44c5ce9805c",
       "abi": [
         {
           "type": "impl",
@@ -4079,7 +4075,7 @@
       ]
     },
     {
-      "address": "0x3901505be1dca58d46fbddc661cd61ed32a42dd5951f16197101192b47873ac",
+      "address": "0x67c362939c558bfa9b01cf3884c38175668c4a24210714d287cded854d85e7e",
       "class_hash": "0x55bda7b44bf6f0ab4df0c492b219ecb5bab307b17e06cf7da452fe1c228dd72",
       "abi": [
         {
@@ -4586,7 +4582,7 @@
       ]
     },
     {
-      "address": "0x2f4831a05cc5067affefbd5e98dec629de59d577b7fd76b5344bcc318f0507d",
+      "address": "0x2679b5c8949889331b08cbdfcaa823a251f3225bc6306a529150daa30572cfa",
       "class_hash": "0x28fd7fa6b94ee3eba4d48e64de7a818773f073fca2c8a58899293c92f99bae6",
       "abi": [
         {
@@ -4829,7 +4825,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x4bfc08a9b768cd754ae8a8fe4169d7b1b5a905221dea4081d2c2c8ec6ab86c6",
+      "class_hash": "0x7b1c2c1e3846f26024ea56ef80cab2361a08f7acc3ff29cfb5493e13c37495c",
       "tag": "ls_0_0_1-GameSettingsMetadata",
       "selector": "0x625c0bd4f129262bf06ae31dce0790db319e6dc1ebf8b6a7f996dccfd27a03b"
     },

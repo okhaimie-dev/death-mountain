@@ -1,7 +1,7 @@
 [world]
 name = "Loot Survivor 2"
 description = "Slay The Beasts"
-seed = "pg_test_ls_7"
+seed = "pg_test_ls_8"
 
 [env]
 rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"

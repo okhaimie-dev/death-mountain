@@ -13,6 +13,7 @@ import { Box, Button, Checkbox, LinearProgress, Menu, Typography, keyframes } fr
 import { motion } from 'framer-motion';
 import { useLottie } from 'lottie-react';
 import { useEffect, useMemo, useState } from 'react';
+import { byteArray } from "starknet";
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
@@ -43,6 +44,8 @@ export default function BeastScreen() {
       strike.stop();
     }
   });
+
+  console.log(byteArray.byteArrayFromString("test settings"))
 
   const beastStrike = useLottie({
     animationData: strikeAnim,

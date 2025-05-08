@@ -145,6 +145,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       txs.push(requestRandom());
     }
 
+    console.log(adventurer?.equipment!, equipment!)
     let newItemsEquipped = getNewItemsEquipped(adventurer?.equipment!, equipment!);
     if (action.type !== 'equip' && newItemsEquipped.length > 0) {
       txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));

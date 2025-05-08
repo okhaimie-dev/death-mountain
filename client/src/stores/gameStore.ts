@@ -73,7 +73,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setAdventurer: (data: Adventurer | null) => set((state) => {
     if (!data || !state.adventurer) {
-      return { adventurer: data };
+      return { adventurer: data, equipment: data?.equipment };
     }
 
     if (data.xp < state.adventurer.xp) {

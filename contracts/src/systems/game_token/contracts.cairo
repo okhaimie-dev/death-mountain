@@ -94,7 +94,6 @@ mod game_token_systems {
                 @GameSettingsMetadata {
                     settings_id: 0,
                     name: 'Default',
-                    description: "Default settings",
                     created_by: starknet::get_caller_address(),
                     created_at: starknet::get_block_timestamp(),
                 },

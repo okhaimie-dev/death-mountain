@@ -33,7 +33,9 @@ export const useSystemCalls = () => {
    */
   const executeAction = async (calls: any[]) => {
     try {
-      await account!.execute(calls, { version: 3 });
+      let tx = await account!.execute(calls, { version: 3 });
+      let receipt: any = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 500 })
+      console.log(receipt)
     } catch (error) {
       console.error("Error executing action:", error);
       throw error;
@@ -82,6 +84,7 @@ export const useSystemCalls = () => {
     let weapon = starterWeapons[Math.floor(Math.random() * starterWeapons.length)]
 
     await executeAction([
+      requestRandom(),
       {
         contractAddress: GAME_ADDRESS,
         entrypoint: 'start_game',
