@@ -3,8 +3,14 @@ pub trait IGameTokenSystems<T> {}
 
 #[dojo::contract]
 mod game_token_systems {
+    use dojo::model::ModelStorage;
+    use dojo::world::{WorldStorage};
     use lootsurvivor::constants::world::{DEFAULT_NS, SCORE_ATTRIBUTE, SCORE_MODEL, SETTINGS_MODEL};
     use lootsurvivor::libs::game::ImplGameLibs;
+    use lootsurvivor::models::adventurer::adventurer::{ImplAdventurer};
+    use lootsurvivor::models::adventurer::bag::{ImplBag};
+
+    use lootsurvivor::models::game::{GameSettings, GameSettingsMetadata};
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait};
     use lootsurvivor::systems::renderer::contracts::{IRendererSystemsDispatcherTrait};
 
@@ -63,6 +69,8 @@ mod game_token_systems {
     ///
     /// @param creator_address: the address of the creator of the game
     fn dojo_init(ref self: ContractState, creator_address: ContractAddress) {
+        let mut world: WorldStorage = self.world(@DEFAULT_NS());
+
         self.erc721.initializer("Loot Survivor", "LSVR", "https://lootsurvivor.io/");
         self
             .game
@@ -79,6 +87,18 @@ mod game_token_systems {
                 SCORE_ATTRIBUTE(),
                 SETTINGS_MODEL(),
             );
+
+        world.write_model(@GameSettings { settings_id: 0, adventurer: ImplAdventurer::new(0), bag: ImplBag::new() });
+        world
+            .write_model(
+                @GameSettingsMetadata {
+                    settings_id: 0,
+                    name: 'Default',
+                    description: "Default settings",
+                    created_by: starknet::get_caller_address(),
+                    created_at: starknet::get_block_timestamp(),
+                },
+            );
     }
 
     // ------------------------------------------ //
@@ -87,7 +107,9 @@ mod game_token_systems {
     #[abi(embed_v0)]
     impl SettingsImpl of ISettings<ContractState> {
         fn setting_exists(self: @ContractState, settings_id: u32) -> bool {
-            return settings_id == 0;
+            let world: WorldStorage = self.world(@DEFAULT_NS());
+            let settings: GameSettings = world.read_model(settings_id);
+            settings.adventurer.health != 0
         }
     }
 

@@ -16,7 +16,10 @@ mod tests {
     use lootsurvivor::models::adventurer::adventurer::{IAdventurer, ImplAdventurer};
     use lootsurvivor::models::adventurer::stats::{IStat, Stats};
     use lootsurvivor::models::game::{AdventurerEntropy};
-    use lootsurvivor::models::game::{e_GameEvent, m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked};
+    use lootsurvivor::models::game::{
+        e_GameEvent, m_AdventurerEntropy, m_AdventurerPacked, m_BagPacked, m_GameSettings, m_GameSettingsMetadata,
+        m_SettingsCounter,
+    };
     use lootsurvivor::models::market::{ItemPurchase};
     use lootsurvivor::systems::adventurer::contracts::{IAdventurerSystemsDispatcherTrait, adventurer_systems};
     use lootsurvivor::systems::beast::contracts::{beast_systems};
@@ -28,7 +31,7 @@ mod tests {
     use tournaments::components::interfaces::{IGameTokenDispatcher, IGameTokenDispatcherTrait};
 
     use tournaments::components::models::game::{
-        m_GameCounter, m_GameMetadata, m_Score, m_Settings, m_SettingsCounter, m_SettingsDetails, m_TokenMetadata,
+        m_GameCounter, m_GameMetadata, m_Score, m_Settings, m_SettingsDetails, m_TokenMetadata,
     };
 
     fn namespace_def() -> NamespaceDef {
@@ -45,6 +48,8 @@ mod tests {
                 TestResource::Model(m_Settings::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Model(m_SettingsDetails::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Model(m_SettingsCounter::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Model(m_GameSettings::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Model(m_GameSettingsMetadata::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Contract(game_systems::TEST_CLASS_HASH),
                 TestResource::Contract(loot_systems::TEST_CLASS_HASH),
                 TestResource::Contract(renderer_systems::TEST_CLASS_HASH),

@@ -1,3 +1,5 @@
+use lootsurvivor::models::adventurer::adventurer::{Adventurer};
+use lootsurvivor::models::adventurer::bag::{Bag};
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
@@ -14,6 +16,8 @@ pub trait IGameSystems<T> {
     fn drop(ref self: T, adventurer_id: u64, items: Array<u8>);
     fn buy_items(ref self: T, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>);
     fn select_stat_upgrades(ref self: T, adventurer_id: u64, stat_upgrades: Stats);
+    // ------ Game Settings ------
+    fn add_settings(ref self: T, name: felt252, description: ByteArray, adventurer: Adventurer, bag: Bag) -> u32;
 }
 
 
@@ -32,7 +36,7 @@ mod game_systems {
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
     use lootsurvivor::constants::game::{MAINNET_CHAIN_ID, SEPOLIA_CHAIN_ID, STARTER_BEAST_ATTACK_DAMAGE, messages};
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
-    use lootsurvivor::constants::world::{DEFAULT_NS};
+    use lootsurvivor::constants::world::{DEFAULT_NS, VERSION};
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
@@ -42,7 +46,9 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked};
+    use lootsurvivor::models::game::{
+        AdventurerEntropy, AdventurerPacked, BagPacked, GameSettings, GameSettingsMetadata, SettingsCounter,
+    };
     use lootsurvivor::models::game::{
         AttackEvent, BeastEvent, BuyItemsEvent, DefeatedBeastEvent, DiscoveryEvent, FledBeastEvent, GameEvent,
         GameEventDetails, ItemEvent, LevelUpEvent, MarketItemsEvent, ObstacleEvent, StatUpgradeEvent,
@@ -78,32 +84,40 @@ mod game_systems {
             // get game libaries
             let game_libs = ImplGameLibs::new(world);
 
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
+
             // assert provided weapon
             _assert_valid_starter_weapon(weapon, game_libs);
 
-            // generate a new adventurer using the provided started weapon
-            let mut adventurer = ImplAdventurer::new(weapon);
+            if (game_settings.adventurer.xp == 0) {
+                // generate a new adventurer using the provided started weapon
+                let mut adventurer = ImplAdventurer::new(weapon);
 
-            // spoof a beast ambush by deducting health from the adventurer
-            adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
+                // spoof a beast ambush by deducting health from the adventurer
+                adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
 
-            let beast = game_libs.beast.get_starter_beast(game_libs.loot.get_type(weapon));
-            _emit_game_event(
-                ref world,
-                adventurer_id,
-                GameEventDetails::beast(
-                    BeastEvent {
-                        id: beast.id,
-                        seed: adventurer_id,
-                        health: beast.starting_health,
-                        level: beast.combat_spec.level,
-                        specials: beast.combat_spec.specials,
-                    },
-                ),
-            );
+                let beast = game_libs.beast.get_starter_beast(game_libs.loot.get_type(weapon));
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    GameEventDetails::beast(
+                        BeastEvent {
+                            id: beast.id,
+                            seed: adventurer_id,
+                            health: beast.starting_health,
+                            level: beast.combat_spec.level,
+                            specials: beast.combat_spec.specials,
+                        },
+                    ),
+                );
 
-            _save_beast_seed(ref world, adventurer_id, adventurer_id);
-            _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
+                _save_beast_seed(ref world, adventurer_id, adventurer_id);
+                _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
+            } else {
+                let mut adventurer = game_settings.adventurer;
+                _save_adventurer(ref world, ref adventurer, game_settings.bag, adventurer_id, game_libs);
+            }
         }
 
         /// @title Explore Function
@@ -611,6 +625,30 @@ mod game_systems {
 
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
+
+        fn add_settings(
+            ref self: ContractState, name: felt252, description: ByteArray, adventurer: Adventurer, bag: Bag,
+        ) -> u32 {
+            let mut world: WorldStorage = self.world(@DEFAULT_NS());
+            // increment settings counter
+            let mut settings_count: SettingsCounter = world.read_model(VERSION);
+            settings_count.count += 1;
+
+            world.write_model(@GameSettings { settings_id: settings_count.count, adventurer, bag });
+            world
+                .write_model(
+                    @GameSettingsMetadata {
+                        settings_id: settings_count.count,
+                        name,
+                        description,
+                        created_by: starknet::get_caller_address(),
+                        created_at: starknet::get_block_timestamp(),
+                    },
+                );
+            world.write_model(@settings_count);
+
+            settings_count.count
+        }
     }
 
     /// @title Reveal Starting Stats
@@ -707,6 +745,12 @@ mod game_systems {
     //             );
     //     }
     // }
+
+    fn _get_game_settings(world: WorldStorage, game_id: u64) -> GameSettings {
+        let token_metadata: TokenMetadata = world.read_model(game_id);
+        let game_settings: GameSettings = world.read_model(token_metadata.settings_id);
+        game_settings
+    }
 
     /// @title Explore
     /// @notice Allows the adventurer to explore the world and encounter beasts, obstacles, or
