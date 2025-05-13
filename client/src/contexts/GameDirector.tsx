@@ -1,4 +1,3 @@
-import { SUFFIX_UNLOCK_GREATNESS } from '@/constants/game';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -32,8 +31,8 @@ const tracks: any = {
   Intro: "/audio/Intro.mp3",
   Death: "/audio/Game-Ending.mp3",
   Beginning: "/audio/Quest-Journey-Music.mp3",
-  Early: "/audio/Torchlit-Passage.mp3",
-  RampUp: "/audio/Vault-Of-Whispers.mp3",
+  Early: "/audio/Vault-Of-Whispers.mp3",
+  RampUp: "/audio/Torchlit-Passage.mp3",
   Mid: "/audio/Trap-Door.mp3",
   Late: "/audio/Courage.mp3",
   SuperLate: "/audio/Hall-Of-A-Thousand-Eyes.mp3",
@@ -46,9 +45,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, equipment, setAdventurer, setEquipment, setBag, setBeast, setExploreLog, setBattleEvent,
-    dropItems, newInventoryItems, setMarketItemIds, setNewMarket, setDropItems,
-    setNewInventoryItems } = useGameStore();
+  const { gameId, adventurer, equipment, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
+    setMarketItemIds, setNewMarket, setNewInventoryItems } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
@@ -57,10 +55,21 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const audioRef = useRef(new Audio(tracks.Intro));
   audioRef.current.loop = true;
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
 
   useEffect(() => {
-    playing ? audioRef.current.play() : audioRef.current.pause();
+    const handleFirstInteraction = () => {
+      audioRef.current.play().catch(() => { });
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+  }, []);
+
+  useEffect(() => {
+    playing ? audioRef.current.play().catch(() => { }) : audioRef.current.pause();
   }, [playing]);
 
   useEffect(() => {
@@ -74,13 +83,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         const level = calculateLevel(adventurer.xp);
         if (level < 3) {
           newTrack = tracks.Beginning;
-        } else if (level < 5) {
+        } else if (level < 6) {
           newTrack = tracks.Early;
-        } else if (level < 10) {
+        } else if (level < 9) {
           newTrack = tracks.RampUp;
         } else if (level < 15) {
           newTrack = tracks.Mid;
-        } else if (level < 20) {
+        } else if (level < 25) {
           newTrack = tracks.Late;
         } else {
           newTrack = tracks.SuperLate;
@@ -202,7 +211,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       txs.push(requestRandom());
     }
 
-    console.log(adventurer?.equipment!, equipment!)
     let newItemsEquipped = getNewItemsEquipped(adventurer?.equipment!, equipment!);
     if (action.type !== 'equip' && newItemsEquipped.length > 0) {
       txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));
@@ -221,8 +229,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     } else if (action.type === 'equip') {
       txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));
     } else if (action.type === 'drop') {
-      txs.push(drop(gameId!, dropItems.map(item => item.id)));
-      setDropItems([]);
+      txs.push(drop(gameId!, action.items!));
     }
 
     executeAction(txs);

@@ -16,7 +16,6 @@ interface GameState {
   metadata: Metadata | null;
   exploreLog: GameEvent[];
   battleEvent: GameEvent | null;
-  dropItems: Item[];
 
   setGameId: (gameId: number) => void;
   exitGame: () => void;
@@ -30,11 +29,8 @@ interface GameState {
   setMetadata: (data: Metadata | null) => void;
   setExploreLog: (data: GameEvent) => void;
   setBattleEvent: (data: GameEvent | null) => void;
-  setDropItems: (data: Item[]) => void;
   equipItem: (data: Item) => void;
   undoEquipment: () => void;
-  dropItem: (data: Item) => void;
-  undoDropItem: (data: Item) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -49,7 +45,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   newInventoryItems: [],
   exploreLog: [],
   battleEvent: null,
-  dropItems: [],
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -67,7 +62,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       metadata: null,
       exploreLog: [],
       battleEvent: null,
-      dropItems: [],
     });
   },
 
@@ -104,7 +98,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   setNewInventoryItems: (data: number[]) => set({ newInventoryItems: data }),
   setExploreLog: (data: GameEvent) => set((state) => ({ exploreLog: [data, ...state.exploreLog] })),
   setBattleEvent: (data: GameEvent | null) => set({ battleEvent: data }),
-  setDropItems: (data: Item[]) => set({ dropItems: data }),
 
   equipItem: (data: Item) => {
     let itemSlot = ItemUtils.getItemSlot(data.id).toLowerCase() as keyof Adventurer['equipment'];
@@ -159,17 +152,5 @@ export const useGameStore = create<GameState>((set, get) => ({
         bag: updatedBag,
       };
     });
-  },
-
-  dropItem: (data: Item) => {
-    set((state) => ({
-      dropItems: [data, ...state.dropItems.filter(item => item.id !== data.id)]
-    }));
-  },
-
-  undoDropItem: (data: Item) => {
-    set((state) => ({
-      dropItems: state.dropItems.filter(item => item.id !== data.id)
-    }));
   },
 }));

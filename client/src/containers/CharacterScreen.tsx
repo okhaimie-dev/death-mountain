@@ -1,6 +1,7 @@
 import emptySlot from '@/assets/images/empty_slot.png';
 import AdventurerInfo from '@/components/AdventurerInfo';
 import ItemTooltip from '@/components/ItemTooltip';
+import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { Item } from '@/types/game';
 import { calculateLevel } from '@/utils/game';
@@ -109,6 +110,7 @@ const ItemSlot = memo(({
 });
 
 export default function CharacterScreen() {
+  const { executeGameAction } = useGameDirector();
   const { adventurer, bag, newInventoryItems, setNewInventoryItems, equipItem } = useGameStore();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
@@ -146,10 +148,14 @@ export default function CharacterScreen() {
   }, [isDropMode, itemsToDrop, equipItem]);
 
   const handleConfirmDrop = useCallback(() => {
-    // TODO: Implement drop items logic
+    executeGameAction({
+      type: 'drop',
+      items: Array.from(itemsToDrop),
+    });
+
     setIsDropMode(false);
     setItemsToDrop(new Set());
-  }, []);
+  }, [itemsToDrop]);
 
   const handleCancelDrop = useCallback(() => {
     setIsDropMode(false);
