@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import WalletConnect from './WalletConnect';
+import { isMobile } from 'react-device-detect';
 
 function Header() {
   const navigate = useNavigate()
@@ -12,6 +13,8 @@ function Header() {
     exitGame();
     navigate('/')
   }
+
+  if (gameId && isMobile) return null;
 
   return (
     <Box sx={styles.header}>

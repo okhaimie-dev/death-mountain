@@ -12,6 +12,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { isMobile } from 'react-device-detect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function GamePage() {
@@ -89,7 +90,7 @@ const styles = {
   container: {
     width: '450px',
     maxWidth: '100vw',
-    height: 'calc(100dvh - 50px)',
+    height: isMobile ? '100dvh' : 'calc(100dvh - 50px)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

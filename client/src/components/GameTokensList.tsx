@@ -95,7 +95,7 @@ export default function GameTokensList() {
 
           {game.xp ? <Stack direction="column" flex={1} minWidth="55px">
             <Typography variant="body2" lineHeight={1.2} color="#EDCF33">
-              LVL: {calculateLevel(game.xp)}
+              Lvl: {calculateLevel(game.xp)}
             </Typography>
             <Typography variant="body2" lineHeight={1.1}>
               HP: {game.health}
