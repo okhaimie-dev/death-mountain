@@ -1,21 +1,24 @@
+import { SUFFIX_UNLOCK_GREATNESS } from '@/constants/game';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
 import { BattleEvents, ExplorerLogEvents, formatGameEvent } from '@/utils/events';
-import { getNewItemsEquipped } from '@/utils/game';
+import { calculateLevel, getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 
 const GameDirectorContext = createContext({
   executeGameAction: (action: GameAction) => { },
+  setPlaying: (playing: boolean) => { },
+  playing: false,
 });
 
 /**
  * Wait times for events in milliseconds
- */
+*/
 const delayTimes: any = {
   'level_up': 1000,
   'discovery': 1000,
@@ -24,6 +27,18 @@ const delayTimes: any = {
   'beast_attack': 2000,
   'flee': 1000,
 }
+
+const tracks: any = {
+  Intro: "/audio/Intro.mp3",
+  Death: "/audio/Game-Ending.mp3",
+  Beginning: "/audio/Quest-Journey-Music.mp3",
+  Early: "/audio/Torchlit-Passage.mp3",
+  RampUp: "/audio/Vault-Of-Whispers.mp3",
+  Mid: "/audio/Trap-Door.mp3",
+  Late: "/audio/Courage.mp3",
+  SuperLate: "/audio/Hall-Of-A-Thousand-Eyes.mp3",
+}
+
 const VRF_ENABLED = true;
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
@@ -39,6 +54,48 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<any[]>([]);
+
+  const audioRef = useRef(new Audio(tracks.Intro));
+  audioRef.current.loop = true;
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    playing ? audioRef.current.play() : audioRef.current.pause();
+  }, [playing]);
+
+  useEffect(() => {
+    let newTrack = null;
+    if (!gameId || !adventurer) {
+      newTrack = tracks.Intro;
+    } else {
+      if (adventurer.health === 0) {
+        newTrack = tracks.Death;
+      } else {
+        const level = calculateLevel(adventurer.xp);
+        if (level < 3) {
+          newTrack = tracks.Beginning;
+        } else if (level < 5) {
+          newTrack = tracks.Early;
+        } else if (level < 10) {
+          newTrack = tracks.RampUp;
+        } else if (level < 15) {
+          newTrack = tracks.Mid;
+        } else if (level < 20) {
+          newTrack = tracks.Late;
+        } else {
+          newTrack = tracks.SuperLate;
+        }
+      }
+    }
+
+    if (newTrack && newTrack !== new URL(audioRef.current.src).pathname) {
+      audioRef.current.src = newTrack;
+      if (playing) {
+        audioRef.current.load();
+        audioRef.current.play();
+      }
+    }
+  }, [gameId, adventurer, playing]);
 
   useEffect(() => {
     if (gameId) {
@@ -174,6 +231,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   return (
     <GameDirectorContext.Provider value={{
       executeGameAction,
+      setPlaying,
+      playing,
     }}>
       {children}
     </GameDirectorContext.Provider>

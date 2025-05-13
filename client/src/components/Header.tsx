@@ -1,20 +1,24 @@
 import { useGameStore } from '@/stores/gameStore';
 import CloseIcon from '@mui/icons-material/Close';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import MusicOffIcon from '@mui/icons-material/MusicOff';
 import { Box } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import WalletConnect from './WalletConnect';
 import { isMobile } from 'react-device-detect';
+import { useGameDirector } from '@/contexts/GameDirector';
 
 function Header() {
   const navigate = useNavigate()
-  const { gameId, exitGame } = useGameStore();
+  const { gameId, adventurer, exitGame } = useGameStore();
+  const { playing, setPlaying } = useGameDirector();
 
   const backToMenu = () => {
     exitGame();
     navigate('/')
   }
 
-  if (gameId && isMobile) return null;
+  if (gameId && adventurer && isMobile) return null;
 
   return (
     <Box sx={styles.header}>
@@ -25,6 +29,21 @@ function Header() {
       </Box>
 
       <Box sx={styles.headerButtons}>
+        <Box
+          sx={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            '&:hover': { opacity: 0.8 }
+          }}
+          onClick={() => setPlaying(!playing)}
+        >
+          {playing ?
+            <MusicNoteIcon fontSize='medium' htmlColor='white' /> :
+            <MusicOffIcon fontSize='medium' htmlColor='white' />
+          }
+        </Box>
+
         <WalletConnect />
       </Box>
     </Box>
