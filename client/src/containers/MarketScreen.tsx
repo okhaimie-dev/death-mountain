@@ -201,7 +201,7 @@ export default function MarketScreen() {
           padding: '16px',
           width: '100%',
           maxWidth: '400px',
-          maxHeight: '80vh',
+          maxHeight: '80dvh',
           display: 'flex',
           flexDirection: 'column',
           border: '1px solid rgba(128, 255, 0, 0.1)',

@@ -1,11 +1,11 @@
 import { OBSTACLE_NAMES } from "@/constants/obstacle";
 import { Adventurer, Attack, Beast, Item, ItemPurchase, Obstacle, Stats, getEntityModel } from "@/types/game";
-import adventurerImg from '../assets/images/adventurer.png';
-import barrierImg from '../assets/images/barrier.png';
-import goldImg from '../assets/images/gold.png';
-import healthImg from '../assets/images/health.png';
-import marketImg from '../assets/images/market.png';
-import upgrade from '../assets/images/upgrade.png';
+import adventurerImg from '@/assets/images/adventurer.png';
+import barrierImg from '@/assets/images/barrier.png';
+import goldImg from '@/assets/images/gold.png';
+import healthImg from '@/assets/images/health.png';
+import marketImg from '@/assets/images/market.png';
+import upgrade from '@/assets/images/upgrade.png';
 import { getBeastImageById, getBeastName, getBeastTier, getBeastType } from "./beast";
 import { ItemUtils } from "./loot";
 import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_NAMES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";

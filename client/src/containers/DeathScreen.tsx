@@ -89,7 +89,7 @@ export default function DeathScreen() {
 const styles = {
   container: {
     width: '100%',
-    height: '100vh',
+    height: '100dvh',
     display: 'flex',
     flexDirection: 'column' as const,
     background: 'rgba(17, 17, 17, 0.95)',

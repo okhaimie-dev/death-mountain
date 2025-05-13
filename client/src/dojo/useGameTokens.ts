@@ -8,7 +8,6 @@ import { getContractByName } from "@dojoengine/core";
 import { gql, request } from 'graphql-request';
 import { addAddressPadding } from "starknet";
 import { dojoConfig } from "../../dojoConfig";
-import { unpackAdventurer } from "@/utils/unpack";
 
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
@@ -49,7 +48,7 @@ export async function fetchMetadata(sdk: any, tokenId: number) {
   });
 
   let data = getEntityModel(entities.getItems()[0], "TokenMetadata")
-  
+
   useGameStore.getState().setMetadata({
     player_name: hexToAscii(data.player_name),
     settings_id: parseInt(data.settings_id, 16),
@@ -85,13 +84,40 @@ export const fetchGameTokensData = async (tokenIds: string[]) => {
       }
     }
 
-    ${NS_SHORT}AdventurerPackedModels (limit:10000, where:{
+    ${NS_SHORT}GameEventModels (limit:10000, where:{
       adventurer_idIN:[${tokenIds}]}
     ){
       edges {
         node {
           adventurer_id
-          packed
+          details {
+            option
+            adventurer {
+              health
+              xp
+              gold
+              equipment {
+                weapon {
+                  id
+                }
+                chest {
+                  id
+                }
+                head {
+                  id
+                }
+                waist {
+                  id
+                }
+                foot {
+                  id
+                }
+                hand {
+                  id
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -100,11 +126,11 @@ export const fetchGameTokensData = async (tokenIds: string[]) => {
   try {
     const res: any = await request(dojoConfig.toriiUrl + "/graphql", document)
     let tokenMetadata = res?.[`${NS_SHORT}TokenMetadataModels`]?.edges.map((edge: any) => edge.node) ?? []
-    let adventurerData = res?.[`${NS_SHORT}AdventurerPackedModels`]?.edges.map((edge: any) => edge.node) ?? []
+    let gameEvents = res?.[`${NS_SHORT}GameEventModels`]?.edges.map((edge: any) => edge.node) ?? []
 
     let games = tokenMetadata.map((metaData: any) => {
-      let adventurerPacked = adventurerData.find((adventurer: any) => adventurer.adventurer_id === metaData.token_id)
-      let adventurer = adventurerPacked ? unpackAdventurer(BigInt(adventurerPacked.packed)) : { health: 0, xp: 0, gold: 0 }
+      let adventurerData = gameEvents.find((event: any) => event.adventurer_id === metaData.token_id)
+      let adventurer = adventurerData?.details?.adventurer || {}
 
       let tokenId = parseInt(metaData.token_id, 16)
       let expires_at = parseInt(metaData.lifecycle.end.Some || 0, 16) * 1000

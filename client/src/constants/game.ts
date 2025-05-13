@@ -8,4 +8,6 @@ export const NUMBER_OF_ITEMS_PER_LEVEL = 21;
 export const SUFFIX_UNLOCK_GREATNESS = 15;
 export const PREFIXES_UNLOCK_GREATNESS = 19;
 
+// Adventurer constants
 export const STARTING_HEALTH = 100;
+export const MAX_STAT_VALUE = 31;

@@ -89,7 +89,7 @@ const styles = {
   container: {
     width: '450px',
     maxWidth: '100vw',
-    height: 'calc(100vh - 50px)',
+    height: 'calc(100dvh - 50px)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

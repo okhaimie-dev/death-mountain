@@ -54,13 +54,13 @@ export default function LandingPage() {
 const styles = {
   container: {
     maxWidth: '500px',
-    height: 'calc(100vh - 50px)',
+    height: 'calc(100dvh - 120px)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     boxSizing: 'border-box',
-    padding: '16px',
+    padding: '10px',
     margin: '0 auto',
     gap: 2
   },

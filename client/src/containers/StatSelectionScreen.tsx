@@ -14,6 +14,7 @@ import { potionPrice } from '@/utils/market';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { MAX_STAT_VALUE } from '@/constants/game';
 
 const STAT_DESCRIPTIONS = {
   strength: "Increases attack damage.",
@@ -35,7 +36,7 @@ const STAT_ICONS = {
 };
 
 export default function StatSelectionScreen() {
-  const { gameId, adventurer } = useGameStore();
+  const { adventurer } = useGameStore();
   const { executeGameAction } = useGameDirector();
 
   const [isSelectingStats, setIsSelectingStats] = useState(false);
@@ -50,7 +51,7 @@ export default function StatSelectionScreen() {
   });
 
   const handleStatIncrement = (stat: keyof Stats) => {
-    if (pointsRemaining > 0) {
+    if (pointsRemaining > 0 && (selectedStats[stat] + adventurer!.stats[stat]) < MAX_STAT_VALUE) {
       setSelectedStats(prev => ({
         ...prev,
         [stat]: prev[stat] + 1
@@ -148,9 +149,18 @@ export default function StatSelectionScreen() {
                     {stat.charAt(0).toUpperCase() + stat.slice(1)}
                   </Typography>
                 </Box>
-                <Typography sx={styles.currentValue}>
-                  {adventurer!.stats[stat as keyof Stats] + selectedStats[stat as keyof Stats]}
-                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {(adventurer!.stats[stat as keyof Stats] + selectedStats[stat as keyof Stats]) >= MAX_STAT_VALUE && (
+                    <Typography sx={styles.maxValueIndicator}>
+                      (MAX)
+                    </Typography>
+                  )}
+
+                  <Typography sx={styles.currentValue}>
+                    {adventurer!.stats[stat as keyof Stats] + selectedStats[stat as keyof Stats]}
+                  </Typography>
+                </Box>
               </Box>
 
               <Typography sx={styles.statDescription}>
@@ -177,6 +187,7 @@ export default function StatSelectionScreen() {
                   variant="contained"
                   size="small"
                   onClick={() => handleStatIncrement(stat as keyof Stats)}
+                  disabled={(adventurer!.stats[stat as keyof Stats] + selectedStats[stat as keyof Stats]) >= MAX_STAT_VALUE}
                   sx={styles.controlButton}
                 >
                   +
@@ -210,7 +221,7 @@ export default function StatSelectionScreen() {
 const styles = {
   container: {
     width: '100%',
-    height: '100vh',
+    height: '100dvh',
     display: 'flex',
     flexDirection: 'column' as const,
     overflowY: 'auto' as const,
@@ -263,6 +274,7 @@ const styles = {
       inset 0 1px 0 rgba(255, 255, 255, 0.1)
     `,
     backdropFilter: 'blur(8px)',
+    maxWidth: '41dvw'
   },
   statHeader: {
     display: 'flex',
@@ -290,6 +302,13 @@ const styles = {
     padding: '2px 8px',
     borderRadius: '4px',
     boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+  },
+  maxValueIndicator: {
+    color: '#EDCF33',
+    fontSize: '1rem',
+    fontFamily: 'VT323, monospace',
+    marginRight: '4px',
+    opacity: 0.9,
   },
   statDescription: {
     color: 'rgba(255, 255, 255, 0.85)',
@@ -331,6 +350,10 @@ const styles = {
     fontSize: '1.4rem',
     fontWeight: '300',
     borderRadius: '4px',
+    '&:disabled': {
+      background: 'rgba(0, 0, 0, 0.1)',
+      color: 'rgba(255, 255, 255, 0.3)',
+    },
   },
   selectedValue: {
     color: '#80FF00',
