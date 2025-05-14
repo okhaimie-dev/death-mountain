@@ -45,7 +45,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, equipment, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
+  const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
     setMarketItemIds, setNewMarket, setNewInventoryItems } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
@@ -211,7 +211,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       txs.push(requestRandom());
     }
 
-    let newItemsEquipped = getNewItemsEquipped(adventurer?.equipment!, equipment!);
+    let newItemsEquipped = getNewItemsEquipped(adventurer?.equipment!, adventurerState?.equipment!);
     if (action.type !== 'equip' && newItemsEquipped.length > 0) {
       txs.push(equip(gameId!, newItemsEquipped.map(item => item.id)));
     }

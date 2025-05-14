@@ -11,7 +11,7 @@ import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -24,6 +24,7 @@ export default function GamePage() {
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [update, forceUpdate] = useReducer(x => x + 1, 0);
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
@@ -46,13 +47,18 @@ export default function GamePage() {
 
     if (!address) return login();
 
+    if (!account) {
+      forceUpdate()
+      return
+    }
+
     if (game_id) {
       setLoadingProgress(99);
       setGameId(game_id);
     } else if (game_id === 0) {
       mint();
     }
-  }, [game_id, address, isPending, sdk]);
+  }, [game_id, address, isPending, sdk, update]);
 
   useEffect(() => {
     setActiveNavItem('GAME');

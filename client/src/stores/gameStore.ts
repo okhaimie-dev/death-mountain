@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Adventurer, Beast, Equipment, Item, Metadata } from '../types/game';
+import { Adventurer, Beast, Item, Metadata } from '../types/game';
 import { GameEvent } from '@/utils/events';
 import { ItemUtils } from '@/utils/loot';
 import { getNewItemsEquipped } from '@/utils/game';
@@ -7,7 +7,7 @@ import { getNewItemsEquipped } from '@/utils/game';
 interface GameState {
   gameId: number | null;
   adventurer: Adventurer | null;
-  equipment: Equipment | null;
+  adventurerState: Adventurer | null;
   bag: Item[];
   beast: Beast | null;
   newMarket: boolean;
@@ -20,7 +20,7 @@ interface GameState {
   setGameId: (gameId: number) => void;
   exitGame: () => void;
   setAdventurer: (data: Adventurer | null) => void;
-  setEquipment: (data: Equipment | null) => void;
+  setAdventurerState: (data: Adventurer | null) => void;
   setBag: (data: Item[]) => void;
   setBeast: (data: Beast | null) => void;
   setMarketItemIds: (data: number[]) => void;
@@ -37,7 +37,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   gameId: null,
   metadata: null,
   adventurer: null,
-  equipment: null,
+  adventurerState: null,
   bag: [],
   beast: null,
   newMarket: false,
@@ -53,7 +53,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       gameId: null,
       adventurer: null,
-      equipment: null,
+      adventurerState: null,
       bag: [],
       beast: null,
       newMarket: false,
@@ -67,7 +67,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setAdventurer: (data: Adventurer | null) => set((state) => {
     if (!data || !state.adventurer) {
-      return { adventurer: data, equipment: data?.equipment };
+      return { adventurer: data, adventurerState: data };
     }
 
     if (data.xp < state.adventurer.xp) {
@@ -81,15 +81,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (data.beast_health === 0) {
       return {
         adventurer: data,
-        equipment: data.equipment,
+        adventurerState: data,
         beast: null,
         battleEvent: null
       };
     }
 
-    return { adventurer: data, equipment: data.equipment };
+    return { adventurer: data, adventurerState: data };
   }),
-  setEquipment: (data: Equipment | null) => set({ equipment: data }),
+  setAdventurerState: (data: Adventurer | null) => set({ adventurerState: data }),
   setBag: (data: Item[]) => set({ bag: data }),
   setBeast: (data: Beast | null) => set({ beast: data }),
   setMarketItemIds: (data: number[]) => set({ marketItemIds: data }),
@@ -131,23 +131,23 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   undoEquipment: () => {
     set((state) => {
-      if (!state.adventurer || !state.equipment) {
+      if (!state.adventurer || !state.adventurerState) {
         return state;
       }
 
       // Get the currently equipped item in this slot (if any)
-      const newItemsEquipped = getNewItemsEquipped(state.adventurer?.equipment!, state.equipment!);
+      const newItemsEquipped = getNewItemsEquipped(state.adventurer?.equipment!, state.adventurerState?.equipment!);
 
       // restore the bag
       const updatedBag = [
-        ...state.bag.filter(item => !Object.values(state.equipment!).find(newItem => newItem.id === item.id)),
+        ...state.bag.filter(item => !Object.values(state.adventurerState?.equipment!).find(newItem => newItem.id === item.id)),
         ...newItemsEquipped,
       ];
 
       return {
         adventurer: {
           ...state.adventurer,
-          equipment: state.equipment,
+          equipment: state.adventurerState?.equipment,
         },
         bag: updatedBag,
       };

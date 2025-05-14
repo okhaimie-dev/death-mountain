@@ -21,7 +21,7 @@ const equipMessage = "Equipping items";
 
 export default function BeastScreen() {
   const { executeGameAction } = useGameDirector();
-  const { adventurer, equipment, beast, battleEvent, bag, equipItem, undoEquipment } = useGameStore();
+  const { adventurer, adventurerState, beast, battleEvent, bag, equipItem, undoEquipment } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(false);
   const [attackInProgress, setAttackInProgress] = useState(false);
@@ -119,8 +119,8 @@ export default function BeastScreen() {
   const maxHealth = STARTING_HEALTH + (adventurer!.stats.vitality * 15);
 
   const hasNewItemsEquipped = useMemo(() => {
-    if (!adventurer?.equipment || !equipment) return false;
-    return getNewItemsEquipped(adventurer.equipment, equipment).length > 0;
+    if (!adventurer?.equipment || !adventurerState?.equipment) return false;
+    return getNewItemsEquipped(adventurer.equipment, adventurerState.equipment).length > 0;
   }, [adventurer?.equipment]);
 
   return (

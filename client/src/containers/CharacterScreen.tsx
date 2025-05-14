@@ -19,6 +19,7 @@ const ItemSlot = memo(({
   slot,
   isSelected,
   isNew,
+  highlight,
   onItemClick,
   onItemHover
 }: {
@@ -27,6 +28,7 @@ const ItemSlot = memo(({
   slot: string,
   isSelected: boolean,
   isNew: boolean,
+  highlight: boolean,
   onItemClick: (item: Item) => void,
   onItemHover: (id: number) => void
 }) => {
@@ -58,7 +60,7 @@ const ItemSlot = memo(({
       }}
     >
       <Box
-        sx={[styles.item, isSelected && styles.selectedItem, isNew && styles.newItem]}
+        sx={[styles.item, isSelected && styles.selectedItem, isNew && styles.newItem, highlight && styles.highlight]}
         onClick={() => item?.id && onItemClick(item)}
         onMouseEnter={() => item?.id && onItemHover(item.id)}
       >
@@ -69,19 +71,18 @@ const ItemSlot = memo(({
             </Box>
             <Box sx={styles.itemTierBadge}>
               <Box
+                component="img"
+                src={typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]}
+                alt=""
                 sx={{
                   width: 14,
                   height: 14,
-                  backgroundColor: tier ? ItemUtils.getTierColor(tier) : 'white',
-                  WebkitMaskImage: `url(${typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]})`,
-                  WebkitMaskSize: 'contain',
-                  WebkitMaskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskImage: `url(${typeIcons[ItemUtils.getItemType(item.id) as keyof typeof typeIcons]})`,
-                  maskSize: 'contain',
-                  maskRepeat: 'no-repeat',
-                  maskPosition: 'center',
-                  opacity: 0.9,
+                  filter: `brightness(0) saturate(100%) ${ItemUtils.getItemTier(item.id) === 1 ? 'invert(83%) sepia(30%) saturate(638%) hue-rotate(358deg) brightness(103%) contrast(107%)' : 
+                          ItemUtils.getItemTier(item.id) === 2 ? 'invert(43%) sepia(15%) saturate(1234%) hue-rotate(231deg) brightness(110%) contrast(87%)' :
+                          ItemUtils.getItemTier(item.id) === 3 ? 'invert(24%) sepia(98%) saturate(1823%) hue-rotate(209deg) brightness(96%) contrast(101%)' :
+                          ItemUtils.getItemTier(item.id) === 4 ? 'invert(48%) sepia(98%) saturate(1183%) hue-rotate(86deg) brightness(94%) contrast(101%)' :
+                          'invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%)'}`,
+                  opacity: 1,
                 }}
               />
             </Box>
@@ -89,7 +90,9 @@ const ItemSlot = memo(({
               <img
                 src={metadata.imageUrl}
                 alt={metadata.name}
-                style={styles.itemImage}
+                style={{
+                  ...styles.itemImage,
+                }}
               />
             </Box>
             <Box sx={styles.itemTypeContainer}>
@@ -112,6 +115,8 @@ const ItemSlot = memo(({
 export default function CharacterScreen() {
   const { executeGameAction } = useGameDirector();
   const { adventurer, bag, newInventoryItems, setNewInventoryItems, equipItem } = useGameStore();
+
+  const [dropInProgress, setDropInProgress] = useState(false);
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
   const [newItems, setNewItems] = useState<number[]>([]);
@@ -123,6 +128,14 @@ export default function CharacterScreen() {
       setNewInventoryItems([]);
     }
   }, [newInventoryItems]);
+
+  useEffect(() => {
+    if (dropInProgress) {
+      setDropInProgress(false);
+      setIsDropMode(false);
+      setItemsToDrop(new Set());
+    }
+  }, [adventurer?.equipment, bag]);
 
   const handleItemHover = useCallback((itemId: number) => {
     if (newItems.includes(itemId)) {
@@ -148,13 +161,11 @@ export default function CharacterScreen() {
   }, [isDropMode, itemsToDrop, equipItem]);
 
   const handleConfirmDrop = useCallback(() => {
+    setDropInProgress(true);
     executeGameAction({
       type: 'drop',
       items: Array.from(itemsToDrop),
     });
-
-    setIsDropMode(false);
-    setItemsToDrop(new Set());
   }, [itemsToDrop]);
 
   const handleCancelDrop = useCallback(() => {
@@ -180,6 +191,7 @@ export default function CharacterScreen() {
                 const item = adventurer?.equipment[slot];
                 const isSelected = item?.id ? itemsToDrop.has(item.id) : false;
                 const isNew = item?.id ? newItems.includes(item.id) : false;
+                const highlight = item?.id ? (isDropMode && itemsToDrop.size === 0) : false;
 
                 return (
                   <ItemSlot
@@ -189,6 +201,7 @@ export default function CharacterScreen() {
                     slot={slot}
                     isSelected={isSelected}
                     isNew={isNew}
+                    highlight={highlight}
                     onItemClick={handleItemClick}
                     onItemHover={handleItemHover}
                   />
@@ -206,6 +219,7 @@ export default function CharacterScreen() {
               {bag?.map((item) => {
                 const isSelected = itemsToDrop.has(item.id);
                 const isNew = newItems.includes(item.id);
+                const highlight = isDropMode && itemsToDrop.size === 0;
 
                 return (
                   <ItemSlot
@@ -215,6 +229,7 @@ export default function CharacterScreen() {
                     slot="bag"
                     isSelected={isSelected}
                     isNew={isNew}
+                    highlight={highlight}
                     onItemClick={(item) => handleItemClick(item, true)}
                     onItemHover={handleItemHover}
                   />
@@ -246,7 +261,8 @@ export default function CharacterScreen() {
                 variant="contained"
                 color="error"
                 onClick={handleCancelDrop}
-                sx={styles.dropControlButton}
+                sx={styles.cancelDropButton}
+                disabled={dropInProgress}
               >
                 Cancel
               </Button>
@@ -254,8 +270,19 @@ export default function CharacterScreen() {
                 variant="contained"
                 onClick={handleConfirmDrop}
                 sx={styles.dropControlButton}
+                disabled={dropInProgress || itemsToDrop.size === 0}
               >
-                Confirm
+                {dropInProgress
+                  ? <Box display={'flex'} alignItems={'baseline'}>
+                    <Typography>
+                      Dropping items
+                    </Typography>
+                    <div className='dotLoader green' />
+                  </Box>
+                  : <Typography>
+                    Confirm
+                  </Typography>
+                }
               </Button>
             </Box>
           )}
@@ -510,8 +537,25 @@ const styles = {
     display: 'flex',
     gap: 1,
   },
+  cancelDropButton: {
+    flex: 1,
+    fontSize: '0.9rem',
+    background: 'rgba(255, 0, 0, 0.1)',
+    color: '#FF0000',
+    '&:disabled': {
+      background: 'rgba(255, 0, 0, 0.05)',
+      color: 'rgba(255, 0, 0, 0.3)',
+    },
+  },
   dropControlButton: {
     flex: 1,
+    fontSize: '0.9rem',
+    background: 'rgba(128, 255, 0, 0.15)',
+    color: '#80FF00',
+    '&:disabled': {
+      background: 'rgba(128, 255, 0, 0.1)',
+      color: 'rgba(128, 255, 0, 0.5)',
+    },
   },
   selectedItem: {
     border: '2px solid #FF0000',
@@ -546,5 +590,12 @@ const styles = {
     fontFamily: 'VT323, monospace',
     fontWeight: 'bold',
     letterSpacing: '1px',
+  },
+  highlight: {
+    border: '1px solid #80FF00',
+    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    '&:hover': {
+      backgroundColor: 'rgba(128, 255, 0, 0.15)',
+    },
   },
 };
