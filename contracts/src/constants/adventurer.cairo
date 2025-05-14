@@ -1,5 +1,5 @@
 // Starting Setting
-pub const STARTING_GOLD: u8 = 25;
+pub const STARTING_GOLD: u8 = 35;
 pub const STARTING_HEALTH: u8 = 100;
 
 // Adventurer Max Values
