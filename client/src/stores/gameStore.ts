@@ -116,13 +116,20 @@ export const useGameStore = create<GameState>((set, get) => ({
         updatedBag.push(currentEquippedItem);
       }
 
+      let updatedStats = { ...state.adventurer.stats };
+      if (currentEquippedItem) {
+        updatedStats = ItemUtils.removeItemBoosts(currentEquippedItem, state.adventurer.item_specials_seed, updatedStats);
+      }
+      updatedStats = ItemUtils.addItemBoosts(data, state.adventurer.item_specials_seed, updatedStats);
+
       return {
         adventurer: {
           ...state.adventurer,
           equipment: {
             ...state.adventurer.equipment,
             [itemSlot]: data
-          }
+          },
+          stats: updatedStats,
         },
         bag: updatedBag,
       };
@@ -149,6 +156,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           ...state.adventurer,
           equipment: state.adventurerState?.equipment,
         },
+        stats: state.adventurerState?.stats,
         bag: updatedBag,
       };
     });

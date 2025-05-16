@@ -1,33 +1,34 @@
 import { TIER_PRICE } from '../constants/game';
 import {
-  SUFFIX_UNLOCK_GREATNESS,
-  PREFIXES_UNLOCK_GREATNESS,
-  ITEM_NAME_SUFFIXES,
   ITEM_NAME_PREFIXES,
+  ITEM_NAME_SUFFIXES,
+  ITEM_SUFFIXES,
   ItemId,
-  NUM_ITEMS,
   ItemIndex,
   ItemSlotLength,
-  ITEM_SUFFIXES
+  NUM_ITEMS,
+  PREFIXES_UNLOCK_GREATNESS,
+  SUFFIX_UNLOCK_GREATNESS
 } from '../constants/loot';
 
 // Import icons
+import bladeIcon from '@/assets/types/blade.svg';
+import bludgeonIcon from '@/assets/types/bludgeon.svg';
 import chestIcon from '@/assets/types/chest.svg';
 import clothIcon from '@/assets/types/cloth.svg';
 import footIcon from '@/assets/types/foot.svg';
 import handIcon from '@/assets/types/hand.svg';
 import headIcon from '@/assets/types/head.svg';
 import hideIcon from '@/assets/types/hide.svg';
+import magicIcon from '@/assets/types/magic.svg';
 import metalIcon from '@/assets/types/metal.svg';
 import neckIcon from '@/assets/types/neck.svg';
 import ringIcon from '@/assets/types/ring.svg';
 import waistIcon from '@/assets/types/waist.svg';
 import weaponIcon from '@/assets/types/weapon.svg';
-import bladeIcon from '@/assets/types/blade.svg';
-import bludgeonIcon from '@/assets/types/bludgeon.svg';
-import magicIcon from '@/assets/types/magic.svg';
-import { Beast } from '@/types/game';
 import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
+import { Beast, Item, Stats } from '@/types/game';
+import { calculateLevel } from './game';
 
 export const slotIcons = {
   Weapon: weaponIcon,
@@ -340,5 +341,109 @@ export const ItemUtils = {
     } else if (special1 === "of the Twins") {
       return "+3 CHA"
     }
+  },
+
+  removeItemBoosts: (item: Item, item_specials_seed: number, stats: Stats): Stats => {
+    const level = calculateLevel(item.xp);
+    const specials = ItemUtils.getSpecials(item.id, level, item_specials_seed);
+
+    // Silver ring
+    if (item.id === 4) {
+      stats.luck = Math.max(2, stats.luck - level);
+    }
+
+    if (!specials.special1) {
+      return stats;
+    }
+
+    if (specials.special1 === "of Power") {
+      stats.strength -= 3;
+    } else if (specials.special1 === "of Titans") {
+      stats.strength -= 2;
+    } else if (specials.special1 === "of Skill") {
+      stats.dexterity -= 3;
+    } else if (specials.special1 === "of Perfection") {
+      stats.strength -= 1;
+      stats.dexterity -= 1;
+    } else if (specials.special1 === "of Brilliance") {
+      stats.intelligence -= 3;
+    } else if (specials.special1 === "of Enlightenment") {
+      stats.wisdom -= 3;
+    } else if (specials.special1 === "of Protection") {
+      stats.dexterity -= 1;
+    } else if (specials.special1 === "of Anger") {
+      stats.strength -= 2;
+      stats.dexterity -= 1;
+    } else if (specials.special1 === "of Rage") {
+      stats.strength -= 1;
+      stats.wisdom -= 1;
+    } else if (specials.special1 === "of Fury") {
+      stats.intelligence -= 1;
+    } else if (specials.special1 === "of Vitriol") {
+      stats.intelligence -= 2;
+      stats.wisdom -= 1;
+    } else if (specials.special1 === "of the Fox") {
+      stats.dexterity -= 2;
+    } else if (specials.special1 === "of Detection") {
+      stats.wisdom -= 2;
+      stats.dexterity -= 1;
+    } else if (specials.special1 === "of Reflection") {
+      stats.intelligence -= 1;
+      stats.wisdom -= 2;
+    }
+
+    return stats;
+  },
+
+  addItemBoosts: (item: Item, item_specials_seed: number, stats: Stats): Stats => {
+    const level = calculateLevel(item.xp);
+    const specials = ItemUtils.getSpecials(item.id, level, item_specials_seed);
+
+    // Silver ring
+    if (item.id === 4) {
+      stats.luck = Math.min(100, stats.luck + level);
+    }
+
+    if (!specials.special1) {
+      return stats;
+    }
+
+    if (specials.special1 === "of Power") {
+      stats.strength += 3;
+    } else if (specials.special1 === "of Titans") {
+      stats.strength += 2;
+    } else if (specials.special1 === "of Skill") {
+      stats.dexterity += 3;
+    } else if (specials.special1 === "of Perfection") {
+      stats.strength += 1;
+      stats.dexterity += 1;
+    } else if (specials.special1 === "of Brilliance") {
+      stats.intelligence += 3;
+    } else if (specials.special1 === "of Enlightenment") {
+      stats.wisdom += 3;
+    } else if (specials.special1 === "of Protection") {
+      stats.dexterity += 1;
+    } else if (specials.special1 === "of Anger") {
+      stats.strength += 2;
+      stats.dexterity += 1;
+    } else if (specials.special1 === "of Rage") {
+      stats.strength += 1;
+      stats.wisdom += 1;
+    } else if (specials.special1 === "of Fury") {
+      stats.intelligence += 1;
+    } else if (specials.special1 === "of Vitriol") {
+      stats.intelligence += 2;
+      stats.wisdom += 1;
+    } else if (specials.special1 === "of the Fox") {
+      stats.dexterity += 2;
+    } else if (specials.special1 === "of Detection") {
+      stats.wisdom += 2;
+      stats.dexterity += 1;
+    } else if (specials.special1 === "of Reflection") {
+      stats.intelligence += 1;
+      stats.wisdom += 2;
+    }
+
+    return stats;
   }
 };

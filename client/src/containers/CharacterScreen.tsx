@@ -15,6 +15,7 @@ type EquipmentSlot = 'weapon' | 'chest' | 'head' | 'waist' | 'foot' | 'hand' | '
 // Memoized ItemSlot component
 const ItemSlot = memo(({
   item,
+  offset,
   itemSpecialsSeed,
   slot,
   isSelected,
@@ -24,6 +25,7 @@ const ItemSlot = memo(({
   onItemHover
 }: {
   item: Item | null,
+  offset: number,
   itemSpecialsSeed: number,
   slot: string,
   isSelected: boolean,
@@ -48,6 +50,12 @@ const ItemSlot = memo(({
               name: 'preventOverflow',
               enabled: true,
               options: { rootBoundary: 'viewport' },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [-offset, 0], // [x, y] offset in pixels
+              },
             },
           ],
         },
@@ -77,10 +85,10 @@ const ItemSlot = memo(({
                 sx={{
                   width: 14,
                   height: 14,
-                  filter: `brightness(0) saturate(100%) ${ItemUtils.getItemTier(item.id) === 1 ? 'invert(83%) sepia(30%) saturate(638%) hue-rotate(358deg) brightness(103%) contrast(107%)' : 
-                          ItemUtils.getItemTier(item.id) === 2 ? 'invert(43%) sepia(15%) saturate(1234%) hue-rotate(231deg) brightness(110%) contrast(87%)' :
-                          ItemUtils.getItemTier(item.id) === 3 ? 'invert(24%) sepia(98%) saturate(1823%) hue-rotate(209deg) brightness(96%) contrast(101%)' :
-                          ItemUtils.getItemTier(item.id) === 4 ? 'invert(48%) sepia(98%) saturate(1183%) hue-rotate(86deg) brightness(94%) contrast(101%)' :
+                  filter: `brightness(0) saturate(100%) ${ItemUtils.getItemTier(item.id) === 1 ? 'invert(83%) sepia(30%) saturate(638%) hue-rotate(358deg) brightness(103%) contrast(107%)' :
+                    ItemUtils.getItemTier(item.id) === 2 ? 'invert(43%) sepia(15%) saturate(1234%) hue-rotate(231deg) brightness(110%) contrast(87%)' :
+                      ItemUtils.getItemTier(item.id) === 3 ? 'invert(24%) sepia(98%) saturate(1823%) hue-rotate(209deg) brightness(96%) contrast(101%)' :
+                        ItemUtils.getItemTier(item.id) === 4 ? 'invert(48%) sepia(98%) saturate(1183%) hue-rotate(86deg) brightness(94%) contrast(101%)' :
                           'invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%)'}`,
                   opacity: 1,
                 }}
@@ -187,7 +195,7 @@ export default function CharacterScreen() {
             </Box>
 
             <Box sx={styles.itemGrid}>
-              {equipmentOrder.map((slot) => {
+              {equipmentOrder.map((slot, index) => {
                 const item = adventurer?.equipment[slot];
                 const isSelected = item?.id ? itemsToDrop.has(item.id) : false;
                 const isNew = item?.id ? newItems.includes(item.id) : false;
@@ -196,6 +204,7 @@ export default function CharacterScreen() {
                 return (
                   <ItemSlot
                     key={slot}
+                    offset={(index % 5) * 45}
                     itemSpecialsSeed={adventurer?.item_specials_seed || 0}
                     item={item || null}
                     slot={slot}
@@ -216,7 +225,7 @@ export default function CharacterScreen() {
               <Typography variant="h6" sx={styles.sectionTitle}>Bag ({bag?.length || 0}/15)</Typography>
             </Box>
             <Box sx={styles.itemGrid}>
-              {bag?.map((item) => {
+              {bag?.map((item, index) => {
                 const isSelected = itemsToDrop.has(item.id);
                 const isNew = newItems.includes(item.id);
                 const highlight = isDropMode && itemsToDrop.size === 0;
@@ -224,6 +233,7 @@ export default function CharacterScreen() {
                 return (
                   <ItemSlot
                     key={item.id}
+                    offset={(index % 5) * 45}
                     item={item}
                     itemSpecialsSeed={adventurer?.item_specials_seed || 0}
                     slot="bag"
