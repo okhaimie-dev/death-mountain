@@ -35,8 +35,8 @@ const ItemSlot = memo(({
   onItemHover: (id: number) => void
 }) => {
   const metadata = item ? ItemUtils.getMetadata(item.id) : null;
-  const tier = item ? ItemUtils.getItemTier(item.id) : null;
   const level = item ? calculateLevel(item.xp) : null;
+  const xpProgress = item ? Math.min((item.xp / 400) * 100, 100) : 0;
 
   return (
     <Tooltip
@@ -104,6 +104,11 @@ const ItemSlot = memo(({
               />
             </Box>
             <Box sx={styles.itemTypeContainer}>
+              <Box sx={styles.xpBarContainer}>
+                <Box sx={styles.xpBarBackground}>
+                  <Box sx={{ ...styles.xpBarFill, width: `${xpProgress}%` }} />
+                </Box>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                 <Typography sx={styles.itemTypeText}>{ItemUtils.getItemSlot(item.id)}</Typography>
               </Box>
@@ -527,11 +532,14 @@ const styles = {
     textAlign: 'center',
     borderRadius: '0 0 6px 6px',
     background: 'rgba(0, 0, 0, 0.5)',
+    padding: '2px 0',
   },
   itemTypeText: {
     color: 'rgba(255, 255, 255, 0.9)',
     fontSize: '0.8rem',
     fontFamily: 'VT323, monospace',
+    pt: '2px',
+    lineHeight: 1,
   },
   dropButton: {
     backgroundColor: 'rgba(255, 0, 0, 0.2)',
@@ -605,5 +613,19 @@ const styles = {
     '&:hover': {
       backgroundColor: 'rgba(128, 255, 0, 0.15)',
     },
+  },
+  xpBarContainer: {
+    padding: '0 4px',
+  },
+  xpBarBackground: {
+    height: '2px',
+    backgroundColor: 'rgba(237, 207, 51, 0.2)',
+    borderRadius: '1px',
+    overflow: 'hidden',
+  },
+  xpBarFill: {
+    height: '100%',
+    backgroundColor: '#EDCF33',
+    transition: 'width 0.3s ease',
   },
 };
