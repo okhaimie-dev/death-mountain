@@ -126,7 +126,7 @@ export default function CharacterScreen() {
 
   const [dropInProgress, setDropInProgress] = useState(false);
   const [isDropMode, setIsDropMode] = useState(false);
-  const [itemsToDrop, setItemsToDrop] = useState<Set<number>>(new Set());
+  const [itemsToDrop, setItemsToDrop] = useState<number[]>([]);
   const [newItems, setNewItems] = useState<number[]>([]);
 
   // Update newItems when newInventoryItems changes and clear newInventoryItems
@@ -141,7 +141,7 @@ export default function CharacterScreen() {
     if (dropInProgress) {
       setDropInProgress(false);
       setIsDropMode(false);
-      setItemsToDrop(new Set());
+      setItemsToDrop([]);
     }
   }, [adventurer?.equipment, bag]);
 
@@ -154,32 +154,30 @@ export default function CharacterScreen() {
   // Define fixed order for equipment slots
   const equipmentOrder: EquipmentSlot[] = ['head', 'chest', 'hand', 'waist', 'foot', 'weapon', 'ring', 'neck'];
 
-  const handleItemClick = useCallback((item: Item, bag: boolean = false) => {
+  const handleItemClick = (item: Item, bag: boolean = false) => {
     if (isDropMode) {
-      const newItemsToDrop = new Set(itemsToDrop);
-      if (newItemsToDrop.has(item.id)) {
-        newItemsToDrop.delete(item.id);
+      if (itemsToDrop.includes(item.id)) {
+        setItemsToDrop(itemsToDrop.filter(id => id !== item.id));
       } else {
-        newItemsToDrop.add(item.id);
+        setItemsToDrop([...itemsToDrop, item.id]);
       }
-      setItemsToDrop(newItemsToDrop);
     } else if (bag) {
       equipItem(item);
     }
-  }, [isDropMode, itemsToDrop, equipItem]);
+  };
 
-  const handleConfirmDrop = useCallback(() => {
+  const handleConfirmDrop = () => {
     setDropInProgress(true);
     executeGameAction({
       type: 'drop',
-      items: Array.from(itemsToDrop),
+      items: itemsToDrop,
     });
-  }, [itemsToDrop]);
+  };
 
-  const handleCancelDrop = useCallback(() => {
+  const handleCancelDrop = () => {
     setIsDropMode(false);
-    setItemsToDrop(new Set());
-  }, []);
+    setItemsToDrop([]);
+  };
 
   return (
     <Box sx={styles.container}>
@@ -197,9 +195,9 @@ export default function CharacterScreen() {
             <Box sx={styles.itemGrid}>
               {equipmentOrder.map((slot, index) => {
                 const item = adventurer?.equipment[slot];
-                const isSelected = item?.id ? itemsToDrop.has(item.id) : false;
+                const isSelected = item?.id ? itemsToDrop.includes(item.id) : false;
                 const isNew = item?.id ? newItems.includes(item.id) : false;
-                const highlight = item?.id ? (isDropMode && itemsToDrop.size === 0) : false;
+                const highlight = item?.id ? (isDropMode && itemsToDrop.length === 0) : false;
 
                 return (
                   <ItemSlot
@@ -226,9 +224,9 @@ export default function CharacterScreen() {
             </Box>
             <Box sx={styles.itemGrid}>
               {bag?.map((item, index) => {
-                const isSelected = itemsToDrop.has(item.id);
+                const isSelected = itemsToDrop.includes(item.id);
                 const isNew = newItems.includes(item.id);
-                const highlight = isDropMode && itemsToDrop.size === 0;
+                const highlight = isDropMode && itemsToDrop.length === 0;
 
                 return (
                   <ItemSlot
@@ -280,7 +278,7 @@ export default function CharacterScreen() {
                 variant="contained"
                 onClick={handleConfirmDrop}
                 sx={styles.dropControlButton}
-                disabled={dropInProgress || itemsToDrop.size === 0}
+                disabled={dropInProgress || itemsToDrop.length === 0}
               >
                 {dropInProgress
                   ? <Box display={'flex'} alignItems={'baseline'}>

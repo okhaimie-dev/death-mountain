@@ -15,7 +15,7 @@ export const calculateLevel = (xp: number) => {
 };
 
 export const calculateNextLevelXP = (currentLevel: number) => {
-    return Math.pow(currentLevel + 1, 2);
+    return Math.min(400, Math.pow(currentLevel + 1, 2));
 };
 
 export const calculateProgress = (xp: number) => {
@@ -31,11 +31,9 @@ export const getNewItemsEquipped = (newEquipment: Equipment, oldEquipment: Equip
     // Check each equipment slot in the current adventurer
     Object.entries(newEquipment).forEach(([slot, currentItem]) => {
         const initialItem = oldEquipment[slot as keyof Equipment];
-        // Skip if initial slot was empty (id 0 or null)
-        if (!initialItem || initialItem.id === 0) return;
 
         // Only add if there's a current item and it's different from the initial item
-        if (currentItem && currentItem.id !== initialItem.id) {
+        if (currentItem.id !== 0 && currentItem.id !== initialItem.id) {
             newItems.push(currentItem);
         }
     });
