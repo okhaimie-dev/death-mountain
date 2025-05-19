@@ -10,6 +10,7 @@ interface GameState {
   adventurerState: Adventurer | null;
   bag: Item[];
   beast: Beast | null;
+  showBeastRewards: boolean;
   newMarket: boolean;
   marketItemIds: number[];
   newInventoryItems: number[];
@@ -23,6 +24,7 @@ interface GameState {
   setAdventurerState: (data: Adventurer | null) => void;
   setBag: (data: Item[]) => void;
   setBeast: (data: Beast | null) => void;
+  setShowBeastRewards: (data: boolean) => void;
   setMarketItemIds: (data: number[]) => void;
   setNewMarket: (data: boolean) => void;
   setNewInventoryItems: (data: number[]) => void;
@@ -40,6 +42,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   adventurerState: null,
   bag: [],
   beast: null,
+  showBeastRewards: false,
   newMarket: false,
   marketItemIds: [],
   newInventoryItems: [],
@@ -56,6 +59,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       adventurerState: null,
       bag: [],
       beast: null,
+      showBeastRewards: false,
       newMarket: false,
       marketItemIds: [],
       newInventoryItems: [],
@@ -92,6 +96,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setAdventurerState: (data: Adventurer | null) => set({ adventurerState: data }),
   setBag: (data: Item[]) => set({ bag: data }),
   setBeast: (data: Beast | null) => set({ beast: data }),
+  setShowBeastRewards: (data: boolean) => set({ showBeastRewards: data }),
   setMarketItemIds: (data: number[]) => set({ marketItemIds: data }),
   setNewMarket: (data: boolean) => set({ newMarket: data }),
   setMetadata: (data: Metadata | null) => set({ metadata: data }),

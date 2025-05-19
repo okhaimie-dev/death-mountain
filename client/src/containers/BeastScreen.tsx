@@ -13,7 +13,6 @@ import { Box, Button, Checkbox, LinearProgress, Menu, Typography, keyframes } fr
 import { motion } from 'framer-motion';
 import { useLottie } from 'lottie-react';
 import { useEffect, useMemo, useState } from 'react';
-import { byteArray } from "starknet";
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
@@ -21,7 +20,7 @@ const equipMessage = "Equipping items";
 
 export default function BeastScreen() {
   const { executeGameAction } = useGameDirector();
-  const { adventurer, adventurerState, beast, battleEvent, bag, equipItem, undoEquipment } = useGameStore();
+  const { adventurer, adventurerState, beast, battleEvent, bag, equipItem, undoEquipment, setShowBeastRewards } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(false);
   const [attackInProgress, setAttackInProgress] = useState(false);
@@ -44,8 +43,6 @@ export default function BeastScreen() {
       strike.stop();
     }
   });
-
-  console.log(byteArray.byteArrayFromString("test settings"))
 
   const beastStrike = useLottie({
     animationData: strikeAnim,
@@ -97,6 +94,7 @@ export default function BeastScreen() {
   }, [battleEvent]);
 
   const handleAttack = () => {
+    setShowBeastRewards(true);
     setAttackInProgress(true);
     setCombatLog(attackMessage);
     executeGameAction({ type: 'attack', untilDeath });

@@ -1,5 +1,6 @@
 import BottomNav from '@/components/BottomNav';
 import BeastScreen from '@/containers/BeastScreen';
+import BeastSlainScreen from '@/containers/BeastSlainScreen';
 import CharacterScreen from '@/containers/CharacterScreen';
 import DeathScreen from '@/containers/DeathScreen';
 import ExploreScreen from '@/containers/ExploreScreen';
@@ -20,9 +21,10 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, beast } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards } = useGameStore();
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
+
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -66,12 +68,13 @@ export default function GamePage() {
 
   const isLoading = !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;
+  const isBeastDefeated = showBeastRewards && adventurer?.beast_health === 0;
 
   return (
     <Box className="container" sx={styles.container}>
       {isLoading
         ? <LoadingContainer loadingProgress={loadingProgress} />
-        : isDead ? <DeathScreen />
+        : isDead ? <DeathScreen /> : isBeastDefeated ? <BeastSlainScreen />
           : <>
             {adventurer.beast_health > 0 && beast && <BeastScreen />}
             {adventurer.stat_upgrades_available > 0 && <StatSelectionScreen />}
