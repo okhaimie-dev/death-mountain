@@ -6,3 +6,4 @@ contracts/manifests
 contracts/deploy
 contracts/.DS_Store
 .DS_Store
+tsconfig.tsbuildinfo
