@@ -1,9 +1,9 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x6bfa8841647aa448a415a34e6d097b0417143df1fc75b7601265218ead054b2",
-    "seed": "pg_test_ls_8",
-    "name": "Loot Survivor 2",
+    "address": "0x1bfa92665fb815c9ec5f37c562a5c9a06fdf23ce022c1d33d4ac07cef5ad80c",
+    "seed": "DNC",
+    "name": "Provable Games",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1312,7 +1312,7 @@
   },
   "contracts": [
     {
-      "address": "0x2d670ff804738e5100f77cabc50afe0bd9ac6bcae1a01bb4ad6848bae6f41a9",
+      "address": "0x219605f26d9f9a6b795a2feb062f2daad369f48ee4933f31c2f33a79cba4029",
       "class_hash": "0x4b0420f3eab09c3a62acc8f96640e35daf3dd58503a30c4c15584d0bd7032a5",
       "abi": [
         {
@@ -2061,7 +2061,7 @@
       ]
     },
     {
-      "address": "0x52b485c58758ef85c60cb66691489fc9ce51dfd5a9f43e204d6918d323800a0",
+      "address": "0x1a2571d696efb983ece3fec882eada022396cf675775654cc652a58aff6e9dc",
       "class_hash": "0x3e0ac1ec037991279ebb9b6d7abe5668b0a099023075d5527a182d6e231e4a1",
       "abi": [
         {
@@ -2480,7 +2480,7 @@
       ]
     },
     {
-      "address": "0x6339e54b4ecf0ddf2ff6f7ef2b864ed11b06b85f88c6daebf4f4354d9b2ff1d",
+      "address": "0x1d03a513f463fef71ecbce4fe10ca16f38f7bbd664b41d05eb034df4461dd90",
       "class_hash": "0x9abed4b6c593c4e3583f26d0cd0f54c2085f1980b46f99ce2e24633f2ddad1",
       "abi": [
         {
@@ -3054,7 +3054,7 @@
       ]
     },
     {
-      "address": "0x49efcd3f2feb2ca6c02aacd71b15f74b247ff8f0e71b6cff69c334597c2b318",
+      "address": "0x7558be95a2e1e1420de3b7ff54bcff24cf3d716ba988f21b0755ced33523e6f",
       "class_hash": "0x2d4f15c03be19d434f701e5db7aa9ab49fc432d6f7e565fd902977cef160f81",
       "abi": [
         {
@@ -4075,7 +4075,7 @@
       ]
     },
     {
-      "address": "0x67c362939c558bfa9b01cf3884c38175668c4a24210714d287cded854d85e7e",
+      "address": "0x340c145ad6cf6b944632bf19beb5d4312f2f7fa53cbe7da00ff280c4ae6ab1d",
       "class_hash": "0x55bda7b44bf6f0ab4df0c492b219ecb5bab307b17e06cf7da452fe1c228dd72",
       "abi": [
         {
@@ -4582,7 +4582,7 @@
       ]
     },
     {
-      "address": "0x2679b5c8949889331b08cbdfcaa823a251f3225bc6306a529150daa30572cfa",
+      "address": "0x459c40f18ba916a2b7dba51007b7069054580b1814760021b53336c4394652e",
       "class_hash": "0x28fd7fa6b94ee3eba4d48e64de7a818773f073fca2c8a58899293c92f99bae6",
       "abi": [
         {

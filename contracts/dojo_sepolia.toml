@@ -1,10 +1,11 @@
 [world]
-name = "Loot Survivor 2"
-description = "Slay The Beasts"
-seed = "pg_test_ls_8"
+name = "Provable Games"
+description = "DNC"
+seed = "DNC"
 
 [env]
 rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+world_address = "0x1bfa92665fb815c9ec5f37c562a5c9a06fdf23ce022c1d33d4ac07cef5ad80c"
 
 [namespace]
 default = "ls_0_0_1"
@@ -14,5 +15,5 @@ default = "ls_0_0_1"
 
 [init_call_args]
 "ls_0_0_1-game_token_systems" = [
-    "0x0238df9Efd27Aba2ccB0bdC97a4cf440caA403e9ed3f1883294Ab6CDBA6C5282",
+    "0x7558be95a2e1e1420de3b7ff54bcff24cf3d716ba988f21b0755ced33523e6f",
 ]
