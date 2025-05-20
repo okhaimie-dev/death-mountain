@@ -31,13 +31,17 @@ export const useSystemCalls = () => {
    * @param includeVRF Whether to include VRF in the transaction
    * @returns {Promise<any>} The result of the execution
    */
-  const executeAction = async (calls: any[]) => {
+  const executeAction = async (calls: any[], forceResetAction: () => void) => {
     try {
       let tx = await account!.execute(calls, { version: 3 });
       let receipt: any = await account!.waitForTransaction(tx.transaction_hash, { retryInterval: 500 })
-      console.log(receipt)
+
+      if (receipt.execution_status === "REVERTED") {
+        forceResetAction();
+      }
     } catch (error) {
       console.error("Error executing action:", error);
+      forceResetAction();
       throw error;
     }
   };
@@ -90,7 +94,7 @@ export const useSystemCalls = () => {
         entrypoint: 'start_game',
         calldata: [gameId, weapon]
       }
-    ]);
+    ], () => { });
   };
 
   /**

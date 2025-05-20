@@ -126,7 +126,7 @@ const ItemSlot = memo(({
 });
 
 export default function CharacterScreen() {
-  const { executeGameAction } = useGameDirector();
+  const { executeGameAction, actionFailed } = useGameDirector();
   const { adventurer, bag, newInventoryItems, setNewInventoryItems, equipItem } = useGameStore();
 
   const [dropInProgress, setDropInProgress] = useState(false);
@@ -148,7 +148,7 @@ export default function CharacterScreen() {
       setIsDropMode(false);
       setItemsToDrop([]);
     }
-  }, [adventurer?.equipment, bag]);
+  }, [adventurer?.equipment, bag, actionFailed]);
 
   const handleItemHover = useCallback((itemId: number) => {
     if (newItems.includes(itemId)) {

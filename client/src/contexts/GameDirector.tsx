@@ -7,10 +7,11 @@ import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
 
 const GameDirectorContext = createContext({
   executeGameAction: (action: GameAction) => { },
+  actionFailed: 0
 });
 
 /**
@@ -39,6 +40,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<any[]>([]);
+  const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
     if (gameId) {
@@ -166,12 +168,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       txs.push(drop(gameId!, action.items!));
     }
 
-    executeAction(txs);
+    executeAction(txs, setActionFailed);
   }
 
   return (
     <GameDirectorContext.Provider value={{
       executeGameAction,
+      actionFailed
     }}>
       {children}
     </GameDirectorContext.Provider>

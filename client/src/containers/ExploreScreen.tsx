@@ -6,8 +6,8 @@ import { Box, Button, Typography, keyframes } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 export default function ExploreScreen() {
-  const { executeGameAction } = useGameDirector();
-  const { exploreLog, gameId } = useGameStore();
+  const { executeGameAction, actionFailed } = useGameDirector();
+  const { exploreLog } = useGameStore();
 
   const [untilBeast, setUntilBeast] = useState(false);
   const [isExploring, setIsExploring] = useState(false);
@@ -23,7 +23,7 @@ export default function ExploreScreen() {
   useEffect(() => {
     scrollToTop();
     setIsExploring(false);
-  }, [exploreLog]);
+  }, [exploreLog, actionFailed]);
 
   const handleExplore = async () => {
     setIsExploring(true);

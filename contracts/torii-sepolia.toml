@@ -6,5 +6,5 @@ historical = ["ls_0_0_1-GameEvent"]
 
 [indexing]
 contracts = [
-    "erc721:0x49efcd3f2feb2ca6c02aacd71b15f74b247ff8f0e71b6cff69c334597c2b318"
+    "erc721:0x7558be95a2e1e1420de3b7ff54bcff24cf3d716ba988f21b0755ced33523e6f"
 ]

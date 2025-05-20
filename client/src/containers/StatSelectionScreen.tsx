@@ -13,7 +13,7 @@ import { ability_based_percentage, calculateLevel } from '@/utils/game';
 import { potionPrice } from '@/utils/market';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MAX_STAT_VALUE } from '@/constants/game';
 
 const STAT_DESCRIPTIONS = {
@@ -37,7 +37,7 @@ const STAT_ICONS = {
 
 export default function StatSelectionScreen() {
   const { adventurer } = useGameStore();
-  const { executeGameAction } = useGameDirector();
+  const { executeGameAction, actionFailed } = useGameDirector();
 
   const [isSelectingStats, setIsSelectingStats] = useState(false);
   const [selectedStats, setSelectedStats] = useState<Stats>({
@@ -49,6 +49,10 @@ export default function StatSelectionScreen() {
     charisma: 0,
     luck: 0
   });
+
+  useEffect(() => {
+    setIsSelectingStats(false);
+  }, [actionFailed]);
 
   const handleStatIncrement = (stat: keyof Stats) => {
     if (pointsRemaining > 0 && (selectedStats[stat] + adventurer!.stats[stat]) < MAX_STAT_VALUE) {

@@ -19,7 +19,7 @@ const fleeMessage = "Attempting to flee";
 const equipMessage = "Equipping items";
 
 export default function BeastScreen() {
-  const { executeGameAction } = useGameDirector();
+  const { executeGameAction, actionFailed } = useGameDirector();
   const { adventurer, adventurerState, beast, battleEvent, bag, equipItem, undoEquipment, setShowBeastRewards } = useGameStore();
 
   const [untilDeath, setUntilDeath] = useState(false);
@@ -92,6 +92,12 @@ export default function BeastScreen() {
       }
     }
   }, [battleEvent]);
+
+  useEffect(() => {
+    setAttackInProgress(false);
+    setFleeInProgress(false);
+    setEquipInProgress(false);
+  }, [actionFailed]);
 
   const handleAttack = () => {
     setShowBeastRewards(true);
