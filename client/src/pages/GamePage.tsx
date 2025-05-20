@@ -7,6 +7,7 @@ import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
+import SettingsScreen from '@/containers/SettingsScreen';
 import { useController } from '@/contexts/controller';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -23,7 +24,7 @@ export default function GamePage() {
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards } = useGameStore();
 
-  const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET'>('GAME');
+  const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET' | 'SETTINGS'>('GAME');
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
@@ -84,6 +85,7 @@ export default function GamePage() {
 
       {activeNavItem === 'CHARACTER' && <CharacterScreen />}
       {activeNavItem === 'MARKET' && <MarketScreen />}
+      {activeNavItem === 'SETTINGS' && <SettingsScreen />}
 
       {!isLoading && (
         <BottomNav

@@ -4,11 +4,12 @@ import { BrowserRouter, Route, Routes, } from "react-router-dom";
 import Box from '@mui/material/Box';
 import { SnackbarProvider } from 'notistack';
 
+import Header from './components/Header';
+import { ControllerProvider } from './contexts/controller';
+import { GameDirector } from './contexts/GameDirector';
+import { SoundProvider } from './contexts/Sound';
 import { routes } from './utils/routes';
 import { mainTheme } from './utils/themes';
-import { ControllerProvider } from './contexts/controller';
-import Header from './components/Header';
-import { GameDirector } from './contexts/GameDirector';
 
 function App() {
   return (
@@ -17,21 +18,21 @@ function App() {
         <StyledEngineProvider injectFirst>
           <ThemeProvider theme={mainTheme}>
             <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
-              <ControllerProvider>
-                <GameDirector>
+              <SoundProvider>
+                <ControllerProvider>
+                  <GameDirector>
+                    <Box className='main'>
+                      <Header />
 
-                  <Box className='main'>
-                    <Header />
-
-                    <Routes>
-                      {routes.map((route, index) => {
-                        return <Route key={index} path={route.path} element={route.content} />
-                      })}
-                    </Routes>
-                  </Box>
-
-                </GameDirector>
-              </ControllerProvider>
+                      <Routes>
+                        {routes.map((route, index) => {
+                          return <Route key={index} path={route.path} element={route.content} />
+                        })}
+                      </Routes>
+                    </Box>
+                  </GameDirector>
+                </ControllerProvider>
+              </SoundProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </StyledEngineProvider>

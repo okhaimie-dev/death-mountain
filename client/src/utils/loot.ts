@@ -130,7 +130,16 @@ export const ItemUtils = {
   getItemTier: (id: number): Tier => {
     if (id <= 0) return Tier.None;
 
-    // Jewelry items (1-8) are all T1
+    // Necklace items (1-3) are all T1
+    if (id <= 3) return Tier.T1;
+
+    // silver ring (4) is T2
+    if (id === 4) return Tier.T2;
+
+    // bronze ring (5) is T3
+    if (id === 5) return Tier.T2;
+
+    // other rings are T1
     if (id <= 8) return Tier.T1;
 
     // Magic/Cloth items (9-41)
