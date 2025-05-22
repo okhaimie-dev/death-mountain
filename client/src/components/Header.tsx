@@ -1,14 +1,23 @@
 import { useSound } from '@/contexts/Sound';
 import { useGameStore } from '@/stores/gameStore';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import MusicOffIcon from '@mui/icons-material/MusicOff';
-import { Box } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Box, IconButton } from '@mui/material';
+import { useState } from 'react';
 import { isMobile } from 'react-device-detect';
+import SettingsMenu from './HeaderMenu';
 import WalletConnect from './WalletConnect';
 
 function Header() {
   const { gameId, adventurer } = useGameStore();
-  const { playing, setPlaying } = useSound();
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setAnchorEl(null);
+  };
 
   if (gameId && adventurer && isMobile) return null;
 
@@ -18,20 +27,17 @@ function Header() {
       </Box>
 
       <Box sx={styles.headerButtons}>
-        <Box
-          sx={{
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            '&:hover': { opacity: 0.8 }
-          }}
-          onClick={() => setPlaying(!playing)}
+        <IconButton
+          onClick={handleSettingsClick}
+          sx={{ color: 'white' }}
         >
-          {playing ?
-            <MusicNoteIcon fontSize='medium' htmlColor='white' /> :
-            <MusicOffIcon fontSize='medium' htmlColor='white' />
-          }
-        </Box>
+          <SettingsIcon />
+        </IconButton>
+
+        <SettingsMenu
+          anchorEl={anchorEl}
+          handleClose={handleSettingsClose}
+        />
 
         <WalletConnect />
       </Box>
