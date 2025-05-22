@@ -65,7 +65,7 @@ pub struct SettingsCounter {
 // ------------ Events ---------------------- //
 // ------------------------------------------ //
 #[derive(Introspect, Copy, Drop, Serde)]
-#[dojo::event(historical: true)]
+#[dojo::event]
 pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,

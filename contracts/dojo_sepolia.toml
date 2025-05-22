@@ -1,11 +1,10 @@
 [world]
 name = "Provable Games"
 description = "DNC"
-seed = "DNC"
+seed = "test_ls_0_1"
 
 [env]
 rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
-world_address = "0x1bfa92665fb815c9ec5f37c562a5c9a06fdf23ce022c1d33d4ac07cef5ad80c"
 
 [namespace]
 default = "ls_0_0_1"

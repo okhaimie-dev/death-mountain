@@ -1,8 +1,8 @@
 {
   "world": {
-    "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x1bfa92665fb815c9ec5f37c562a5c9a06fdf23ce022c1d33d4ac07cef5ad80c",
-    "seed": "DNC",
+    "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
+    "address": "0x322c5eeb5c91b55f620984b9938b07dfe2d8695bc807a7471a19f5b52cd1db0",
+    "seed": "test_ls_0_1",
     "name": "Provable Games",
     "entrypoints": [
       "uuid",
@@ -693,6 +693,22 @@
           },
           {
             "type": "function",
+            "name": "owners_count",
+            "inputs": [
+              {
+                "name": "resource",
+                "type": "core::felt252"
+              }
+            ],
+            "outputs": [
+              {
+                "type": "core::integer::u64"
+              }
+            ],
+            "state_mutability": "view"
+          },
+          {
+            "type": "function",
             "name": "is_writer",
             "inputs": [
               {
@@ -1312,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x219605f26d9f9a6b795a2feb062f2daad369f48ee4933f31c2f33a79cba4029",
-      "class_hash": "0x4b0420f3eab09c3a62acc8f96640e35daf3dd58503a30c4c15584d0bd7032a5",
+      "address": "0x4ea1b9694becd352f485362b3f21814df02b0a386bf11b8e7208dd8aff8e6cc",
+      "class_hash": "0x6d10653764bcd1178af99a19fb0f2076af16584d15691be1194dc5840c5a356",
       "abi": [
         {
           "type": "impl",
@@ -2061,8 +2077,8 @@
       ]
     },
     {
-      "address": "0x1a2571d696efb983ece3fec882eada022396cf675775654cc652a58aff6e9dc",
-      "class_hash": "0x3e0ac1ec037991279ebb9b6d7abe5668b0a099023075d5527a182d6e231e4a1",
+      "address": "0x3d39021bd4c9ae5772e565a909603095c31137bcf1789c95b522e5e539ccb42",
+      "class_hash": "0x583f95cd3dac90f31e127a4f57693254f4fa62a0a88b2487d607b60ad848f1b",
       "abi": [
         {
           "type": "impl",
@@ -2480,8 +2496,8 @@
       ]
     },
     {
-      "address": "0x1d03a513f463fef71ecbce4fe10ca16f38f7bbd664b41d05eb034df4461dd90",
-      "class_hash": "0x9abed4b6c593c4e3583f26d0cd0f54c2085f1980b46f99ce2e24633f2ddad1",
+      "address": "0x61ba0c8563f947de7be527203d829770567cdea027d7d386dff3a232bb4d6ff",
+      "class_hash": "0x840e120d3aec7f05098a027bcffebc4f98afd3ef298d3de8fd6600b0d7cbf7",
       "abi": [
         {
           "type": "impl",
@@ -3054,8 +3070,8 @@
       ]
     },
     {
-      "address": "0x7558be95a2e1e1420de3b7ff54bcff24cf3d716ba988f21b0755ced33523e6f",
-      "class_hash": "0x2d4f15c03be19d434f701e5db7aa9ab49fc432d6f7e565fd902977cef160f81",
+      "address": "0x164ac04a3da597baa1b1f0916ec419b5e9776c0e239594629c6f6dacb990dc9",
+      "class_hash": "0x7ea80c5cb7d204dca2c4c6eb04995224d16d90275fc3842fa34bd2095ff30e5",
       "abi": [
         {
           "type": "impl",
@@ -4075,8 +4091,8 @@
       ]
     },
     {
-      "address": "0x340c145ad6cf6b944632bf19beb5d4312f2f7fa53cbe7da00ff280c4ae6ab1d",
-      "class_hash": "0x55bda7b44bf6f0ab4df0c492b219ecb5bab307b17e06cf7da452fe1c228dd72",
+      "address": "0x21daaf023c6099daf1756445817d4edcba2ede78f2f3e511cc943949954e763",
+      "class_hash": "0x5cdf1657b5f1a819c446069e6a51ab19d209ee4ae842d6168da8895a90bb6ff",
       "abi": [
         {
           "type": "impl",
@@ -4582,8 +4598,8 @@
       ]
     },
     {
-      "address": "0x459c40f18ba916a2b7dba51007b7069054580b1814760021b53336c4394652e",
-      "class_hash": "0x28fd7fa6b94ee3eba4d48e64de7a818773f073fca2c8a58899293c92f99bae6",
+      "address": "0x11c2e8dc8223dd051ca0b5e6e4d36e61bfc06bce7a247e92e49f3daa2f2cdb9",
+      "class_hash": "0x4801a0eda3a2836d01adf320662d302a7647164053ea4e2efa0c46e6b3cae71",
       "abi": [
         {
           "type": "impl",
@@ -4789,73 +4805,73 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x695d823dfbfbad4fc30965f9ae715dcf77811141886639bd093084fc0560785",
+      "class_hash": "0x36e073f57e35772e2b59f74a37fafbcc004d7d9e7b41646d43d0c12ea049ba3",
       "tag": "ls_0_0_1-AdventurerEntropy",
       "selector": "0x369ce532fa31b6549abc44fb7a6d333084daf0978c7b5e95ca78407fef17453"
     },
     {
       "members": [],
-      "class_hash": "0x929de9a9e5224dafae447e624b61f68e2d143cb50aca79974538fa4e0cca4e",
+      "class_hash": "0x4dfc271be295406f7da99e8e76f16d12abf77f5d477c80fdc261f80e02b4237",
       "tag": "ls_0_0_1-AdventurerPacked",
       "selector": "0xa5c361de35b1a9acbabf8dd9eead845c7302c15602ce4be7b221568434f2b3"
     },
     {
       "members": [],
-      "class_hash": "0x22bb3c09baf2f1637fc40ffc07e46d2a958c95dc538446598c536905dfe7520",
+      "class_hash": "0x48c6db8ac242ce05f2d747797de4d00e533c8b82f2213bc7374543e481f7578",
       "tag": "ls_0_0_1-BagPacked",
       "selector": "0x2775a303d6e4b7050633a53726b7f0b470d335dcd09a10a265d5c4ba453767e"
     },
     {
       "members": [],
-      "class_hash": "0xdc2e5bb9a031c39c331e7452da6001f874a496eedab97472fa7f5c911a8ec2",
+      "class_hash": "0x4c9aa5cf3f03bd208fcfc809bbefd59074e319870fd54e699df593d2df01b4d",
       "tag": "ls_0_0_1-GameCounter",
       "selector": "0xf9d664d45cf0ce7f86c2ff1313ba577752a416b01d4f3902597609f7cf5d3"
     },
     {
       "members": [],
-      "class_hash": "0x32268509eabc1bd319688f1fca9d8151159dbb09b9cf26734dc23e0afffafe4",
+      "class_hash": "0x2184a8d33905eed66c3a80bd753a579aadd0b8dd0652f9f513dc7f1949f53c4",
       "tag": "ls_0_0_1-GameMetadata",
       "selector": "0x4e75ab55ed734711b399c7fc6dd5311dc051b565d5f383e5f2f690a9a0c8f82"
     },
     {
       "members": [],
-      "class_hash": "0x54d97cb2a6779733668a96d23adab068094f92d99600b37f6cba9673a041156",
+      "class_hash": "0x70bc1bdb7a3c425a910caba30e5b11452ed105cabd7c0559744b73f428141e9",
       "tag": "ls_0_0_1-GameSettings",
       "selector": "0x2b4e78e32ea8503f2dc7123211b672ce9712a014664c3a4d955eefda8371ab6"
     },
     {
       "members": [],
-      "class_hash": "0x7b1c2c1e3846f26024ea56ef80cab2361a08f7acc3ff29cfb5493e13c37495c",
+      "class_hash": "0x303efd2717ebe9fbb6425471d4955026a55ec39522f7580f3648d63d88a7409",
       "tag": "ls_0_0_1-GameSettingsMetadata",
       "selector": "0x625c0bd4f129262bf06ae31dce0790db319e6dc1ebf8b6a7f996dccfd27a03b"
     },
     {
       "members": [],
-      "class_hash": "0x18fc1c720db350bed92a902bee4a63a7df92b49569eabfcf5d46fc6bb73628a",
+      "class_hash": "0x7538cc093e191e767f1caf8ea3f1c4818e319db41d8f760e48753cb2e420156",
       "tag": "ls_0_0_1-Score",
       "selector": "0x17768bbe9b110e47f39164d7c6cbc2be5e8a146a4a6d321e3f36877c5b62e1d"
     },
     {
       "members": [],
-      "class_hash": "0xfe76028a63cb7cb179e39108da14dfc7a2a0b86ee2d32363dd9cf796d81fe7",
+      "class_hash": "0x1209baf4f84faefa02c38ae721ddc691755ff4ea5993861fa22d822c913ab5b",
       "tag": "ls_0_0_1-Settings",
       "selector": "0x65aea8914867efd68abcd493ef62cd558714808a78da321c26cfb239691c15a"
     },
     {
       "members": [],
-      "class_hash": "0x1540d593f7b6d0ec355e68e7d066ad39cbb99c32c96a46d572c758c70f40c02",
+      "class_hash": "0x4e0c7a60762ca47580e47d2d2dcb27dd5ad33262075cb9b126d670e97c67837",
       "tag": "ls_0_0_1-SettingsCounter",
       "selector": "0x4ce54354ad90c2baef50e7f5db05727087d6565f8522dbeb36d2e5893ef06da"
     },
     {
       "members": [],
-      "class_hash": "0x7289d1d56a6e92ff99925fdfac1f70d7829a991211281fdda7e6f4bb15b4453",
+      "class_hash": "0x5a1e9671225dd42b4085d3fb27a7543ee87f0cb687514002e7b4d9fa77c78a1",
       "tag": "ls_0_0_1-SettingsDetails",
       "selector": "0x434abaa931311266f75d76fdfaa250fb42fb549b1b04a1c015009ddfd90132"
     },
     {
       "members": [],
-      "class_hash": "0x33d1fab3b617046a970045ee9e236a70a7585a8938b9c54eddd2b1ef9979b9a",
+      "class_hash": "0x336f9d3953c032d579de6675aa25e2903ea50708399ca5ec3312ee3480e7cca",
       "tag": "ls_0_0_1-TokenMetadata",
       "selector": "0x544af3859f7a1b523d0b5fac02a2f7b424a1fd6f145470fdca7003a637e28cb"
     }
@@ -4863,7 +4879,7 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x392559c98fe523e4bf993cc24248ea0d80cea0615f03aaf63965e8bd339ab5",
+      "class_hash": "0x109fdaf1573076be974eaee0b2e19a52f77bc2a34d7d5608e95f701755a4c3",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }

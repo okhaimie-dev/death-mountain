@@ -1,3 +1,4 @@
+import { fetchAdventurer } from '@/api/starknet';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -9,10 +10,19 @@ import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
 
-const GameDirectorContext = createContext({
-  executeGameAction: (action: GameAction) => { },
-  actionFailed: 0
-});
+export interface GameDirectorContext {
+  executeGameAction: (action: GameAction) => void;
+  actionFailed: number;
+  watch: {
+    setSpectating: (spectating: boolean) => void;
+    spectating: boolean;
+    replayEvents: any[];
+    processEvent: (event: any, reconnecting: boolean) => void;
+    setEventQueue: (events: any[]) => void;
+  }
+}
+
+const GameDirectorContext = createContext<GameDirectorContext>({} as GameDirectorContext);
 
 /**
  * Wait times for events in milliseconds
@@ -34,9 +44,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
-    setMarketItemIds, setNewMarket, setNewInventoryItems } = useGameStore();
+    setMarketItemIds, setNewMarket, setNewInventoryItems, exitGame } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
+  const [replayEvents, setReplayEvents] = useState<any[]>([]);
+
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<any[]>([]);
@@ -78,13 +90,33 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       }
     });
 
-    if (initialData?.getItems() && initialData.getItems().length === 0) {
+    if (spectating) {
+      handleSpectating(initialData?.getItems() || []);
+    } else if (initialData?.getItems() && initialData.getItems().length === 0) {
       startGame(gameId);
     } else {
       reconnectGameEvents(initialData.getItems());
     }
 
     setSubscription(sub);
+  }
+
+  const handleSpectating = async (entities: any[]) => {
+    if (entities.length === 0) {
+      return exitGame();
+    }
+
+    // Fetch adventurer state
+    const adventurer = await fetchAdventurer(gameId!);
+    if (!adventurer) {
+      return exitGame();
+    }
+
+    if (adventurer.health > 0) {
+      reconnectGameEvents(entities);
+    } else {
+      setReplayEvents(entities);
+    }
   }
 
   const reconnectGameEvents = async (entities: any[]) => {
@@ -174,7 +206,15 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   return (
     <GameDirectorContext.Provider value={{
       executeGameAction,
-      actionFailed
+      actionFailed,
+
+      watch: {
+        setSpectating,
+        spectating,
+        replayEvents,
+        processEvent,
+        setEventQueue
+      }
     }}>
       {children}
     </GameDirectorContext.Provider>

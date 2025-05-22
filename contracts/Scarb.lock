@@ -50,8 +50,8 @@ dependencies = [
 
 [[package]]
 name = "dojo"
-version = "1.4.0"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
+version = "1.5.0"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.5.0#812f17c9c57fd057d0bf1e648a591ea0ca9ea718"
 dependencies = [
  "dojo_plugin",
 ]
@@ -59,24 +59,24 @@ dependencies = [
 [[package]]
 name = "dojo_cairo_test"
 version = "1.0.12"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.5.0#812f17c9c57fd057d0bf1e648a591ea0ca9ea718"
 dependencies = [
  "dojo",
 ]
 
 [[package]]
 name = "dojo_plugin"
-version = "2.9.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
+version = "2.10.1"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.5.0#812f17c9c57fd057d0bf1e648a591ea0ca9ea718"
 
 [[package]]
 name = "graffiti"
 version = "0.1.0"
-source = "git+https://github.com/ponderingdemocritus/graffiti?rev=bc569531791dbc71c6cd8d9bc154c34eedad31fe#bc569531791dbc71c6cd8d9bc154c34eedad31fe"
+source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea299ed556900564ff2"
 
 [[package]]
 name = "lootsurvivor"
-version = "1.2.2"
+version = "1.5.0"
 dependencies = [
  "alexandria_encoding",
  "dojo",
@@ -129,7 +129,7 @@ source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v1.0.0#755
 [[package]]
 name = "tournaments"
 version = "0.0.1"
-source = "git+https://github.com/Provable-Games/tournaments.git#6adb53fdc9b9514dce0e4d08efce47a47a84796f"
+source = "git+https://github.com/Provable-Games/tournaments.git#2a07f35026fbf06fc38b602715d6d14dcd71e96b"
 dependencies = [
  "dojo",
  "openzeppelin_introspection",
