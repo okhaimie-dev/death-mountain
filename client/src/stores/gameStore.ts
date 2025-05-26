@@ -30,6 +30,7 @@ interface GameState {
   setNewInventoryItems: (data: number[]) => void;
   setMetadata: (data: Metadata | null) => void;
   setExploreLog: (data: GameEvent) => void;
+  popExploreLog: () => void;
   setBattleEvent: (data: GameEvent | null) => void;
   equipItem: (data: Item) => void;
   undoEquipment: () => void;
@@ -102,6 +103,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setMetadata: (data: Metadata | null) => set({ metadata: data }),
   setNewInventoryItems: (data: number[]) => set({ newInventoryItems: data }),
   setExploreLog: (data: GameEvent) => set((state) => ({ exploreLog: [data, ...state.exploreLog] })),
+  popExploreLog: () => set((state) => ({ exploreLog: state.exploreLog.slice(1) })),
   setBattleEvent: (data: GameEvent | null) => set({ battleEvent: data }),
 
   equipItem: (data: Item) => {
