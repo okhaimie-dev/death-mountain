@@ -1,23 +1,25 @@
 import { create } from 'zustand'
 
 interface UIState {
-  isGameSettingsOpen: boolean
-  setGameSettingsOpen: (isOpen: boolean) => void
-  isGameSettingsDialogOpen: boolean
+  // Game settings
+  setGameSettingsListOpen: (isOpen: boolean) => void
   setGameSettingsDialogOpen: (isOpen: boolean) => void
-  gameSettingsMode: 'create' | 'view' | false
-  setGameSettingsMode: (mode: 'create' | 'view' | false) => void
-  selectedSettingsId?: number
-  setSelectedSettingsId: (id?: number) => void
+  setGameSettingsEdit: (edit: boolean) => void
+  setSelectedSettingsId: (id: number | null) => void
+  isGameSettingsListOpen: boolean
+  isGameSettingsDialogOpen: boolean
+  gameSettingsEdit: boolean
+  selectedSettingsId: number | null
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  isGameSettingsOpen: false,
-  setGameSettingsOpen: (isOpen) => set({ isGameSettingsOpen: isOpen }),
-  isGameSettingsDialogOpen: false,
+  // Game settings
+  setGameSettingsListOpen: (isOpen) => set({ isGameSettingsListOpen: isOpen }),
   setGameSettingsDialogOpen: (isOpen) => set({ isGameSettingsDialogOpen: isOpen }),
-  gameSettingsMode: false,
-  setGameSettingsMode: (mode) => set({ gameSettingsMode: mode }),
-  selectedSettingsId: undefined,
-  setSelectedSettingsId: (id) => set({ selectedSettingsId: id })
+  setGameSettingsEdit: (edit) => set({ gameSettingsEdit: edit }),
+  setSelectedSettingsId: (id) => set({ selectedSettingsId: id }),
+  isGameSettingsListOpen: false,
+  isGameSettingsDialogOpen: false,
+  gameSettingsEdit: false,
+  selectedSettingsId: null,
 }))

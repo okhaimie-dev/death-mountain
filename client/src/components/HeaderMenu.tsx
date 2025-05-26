@@ -15,7 +15,7 @@ interface HeaderMenuProps {
 
 function HeaderMenu({ anchorEl, handleClose }: HeaderMenuProps) {
   const { playing, setPlaying, volume, setVolume } = useSound();
-  const { setGameSettingsOpen } = useUIStore();
+  const { setGameSettingsListOpen } = useUIStore();
 
   const handleVolumeChange = (_: Event, newValue: number | number[]) => {
     setVolume((newValue as number) / 100);
@@ -93,7 +93,7 @@ function HeaderMenu({ anchorEl, handleClose }: HeaderMenuProps) {
 
       <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
-      <MenuItem onClick={() => { setGameSettingsOpen(true); handleClose() }}>
+      <MenuItem onClick={() => { setGameSettingsListOpen(true); handleClose() }}>
         <ListItemIcon>
           <SettingsIcon fontSize="small" sx={{ color: '#80FF00' }} />
         </ListItemIcon>

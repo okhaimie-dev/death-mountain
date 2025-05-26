@@ -1,6 +1,7 @@
 import { hexToAscii } from "@dojoengine/utils";
 import { dojoConfig } from "../../dojoConfig";
 import { Adventurer, Equipment, Item, Stats } from "@/types/game";
+import { addAddressPadding } from "starknet";
 
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 let SQL_ENDPOINT = dojoConfig.toriiUrl + "/sql"
@@ -45,7 +46,7 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
   let whereClause: string[] = [];
 
   if (address) {
-    whereClause.push(`metadata.created_by = "${address}"`);
+    whereClause.push(`metadata.created_by = "${addAddressPadding(address)}"`);
   }
 
   if (!address && ids && ids.length > 0) {
@@ -68,6 +69,7 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
       ${whereStatement}
       ORDER BY settings_id ASC
       LIMIT 1000`;
+  console
   try {
     const response = await fetch(url, {
       method: "GET",

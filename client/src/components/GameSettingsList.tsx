@@ -1,14 +1,14 @@
+import { getRecommendedSettings, getSettingsList } from '@/dojo/useGameSettings';
+import { useUIStore } from '@/stores/uiStore';
+import { Adventurer, Item } from '@/types/game';
+import AddIcon from '@mui/icons-material/Add';
 import { LoadingButton } from '@mui/lab';
 import { Box, Button, CircularProgress, Dialog, Divider, TextField, Typography } from '@mui/material';
-import { useAccount, useConnect } from '@starknet-react/core';
+import { useAccount } from '@starknet-react/core';
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fadeVariant } from "../utils/animations";
-import GameSettings from './GameSettings';
-import { useUIStore } from '@/stores/uiStore';
-import AddIcon from '@mui/icons-material/Add';
-import { getRecommendedSettings, getSettingsList } from '@/dojo/useGameSettings';
-import { Adventurer, Item } from '@/types/game';
 
 interface Settings {
   settings_id: number;
@@ -19,20 +19,19 @@ interface Settings {
 }
 
 function GameSettingsList() {
+  const navigate = useNavigate();
   const { account } = useAccount();
-  const { connect, connectors } = useConnect();
   const {
-    isGameSettingsOpen,
-    setGameSettingsOpen,
+    isGameSettingsListOpen,
+    setGameSettingsListOpen,
     setGameSettingsDialogOpen,
-    setGameSettingsMode,
+    setGameSettingsEdit,
     setSelectedSettingsId
   } = useUIStore();
 
   const [selectedSettings, setSelectedSettings] = useState<Settings>();
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('recommended');
-  const [gameSettings, setGameSettings] = useState<string | false>(false);
   const [settingsList, setSettingsList] = useState<Settings[]>([]);
   const [search, setSearch] = useState('');
 
@@ -62,30 +61,26 @@ function GameSettingsList() {
   }, [settingsList]);
 
   useEffect(() => {
-    if (isGameSettingsOpen) {
+    if (isGameSettingsListOpen) {
       fetchSettings();
     }
-  }, [isGameSettingsOpen, tab, search]);
+  }, [isGameSettingsListOpen, tab, search]);
 
   const startNewGame = async () => {
-    if (!account) {
-      connect({ connector: connectors.find(conn => conn.id === "controller") });
-      return;
-    }
-
-    setGameSettingsOpen(false);
+    navigate(`/play?settingsId=${selectedSettings?.settings_id}`)
+    setGameSettingsListOpen(false);
   };
 
   const handleViewSettings = () => {
     if (selectedSettings) {
       setSelectedSettingsId(selectedSettings.settings_id);
-      setGameSettingsMode('view');
+      setGameSettingsEdit(false);
       setGameSettingsDialogOpen(true);
     }
   };
 
   const handleCreateSettings = () => {
-    setGameSettingsMode('create');
+    setGameSettingsEdit(true);
     setGameSettingsDialogOpen(true);
   };
 
@@ -114,8 +109,8 @@ function GameSettingsList() {
 
   return (
     <Dialog
-      open={isGameSettingsOpen}
-      onClose={() => setGameSettingsOpen(false)}
+      open={isGameSettingsListOpen}
+      onClose={() => setGameSettingsListOpen(false)}
       maxWidth='lg'
       slotProps={{
         paper: {
@@ -256,10 +251,6 @@ function GameSettingsList() {
           </Box>
         </motion.div>
       </Box>
-
-      {gameSettings && (
-        <GameSettings />
-      )}
     </Dialog>
   );
 }
