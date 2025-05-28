@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Adventurer, Beast, Item, Metadata } from '../types/game';
+import { Adventurer, Beast, Item, Metadata, Quest } from '../types/game';
 import { GameEvent } from '@/utils/events';
 import { ItemUtils } from '@/utils/loot';
 import { getNewItemsEquipped } from '@/utils/game';
@@ -17,6 +17,7 @@ interface GameState {
   metadata: Metadata | null;
   exploreLog: GameEvent[];
   battleEvent: GameEvent | null;
+  quest: Quest | null;
 
   setGameId: (gameId: number) => void;
   exitGame: () => void;
@@ -32,6 +33,7 @@ interface GameState {
   setExploreLog: (data: GameEvent) => void;
   popExploreLog: () => void;
   setBattleEvent: (data: GameEvent | null) => void;
+  setQuest: (data: Quest | null) => void;
   equipItem: (data: Item) => void;
   undoEquipment: () => void;
 }
@@ -49,6 +51,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   newInventoryItems: [],
   exploreLog: [],
   battleEvent: null,
+  quest: null,
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -67,6 +70,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       metadata: null,
       exploreLog: [],
       battleEvent: null,
+      quest: null,
     });
   },
 
@@ -105,6 +109,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setExploreLog: (data: GameEvent) => set((state) => ({ exploreLog: [data, ...state.exploreLog] })),
   popExploreLog: () => set((state) => ({ exploreLog: state.exploreLog.slice(1) })),
   setBattleEvent: (data: GameEvent | null) => set({ battleEvent: data }),
+  setQuest: (data: Quest | null) => set({ quest: data }),
 
   equipItem: (data: Item) => {
     let itemSlot = ItemUtils.getItemSlot(data.id).toLowerCase() as keyof Adventurer['equipment'];
