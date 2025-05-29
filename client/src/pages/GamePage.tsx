@@ -6,6 +6,7 @@ import DeathScreen from '@/containers/DeathScreen';
 import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
+import QuestCompletedScreen from '@/containers/QuestCompletedScreen';
 import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import SettingsScreen from '@/containers/SettingsScreen';
 import { useController } from '@/contexts/controller';
@@ -22,7 +23,7 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards, quest } = useGameStore();
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET' | 'SETTINGS'>('GAME');
 
@@ -71,12 +72,13 @@ export default function GamePage() {
   const isLoading = !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;
   const isBeastDefeated = showBeastRewards && adventurer?.beast_health === 0;
+  const isQuestCompleted = quest && adventurer && adventurer.xp >= quest.targetScore;
 
   return (
     <Box className="container" sx={styles.container}>
       {isLoading
         ? <LoadingContainer loadingProgress={loadingProgress} />
-        : isDead ? <DeathScreen /> : isBeastDefeated ? <BeastSlainScreen />
+        : isDead ? <DeathScreen /> : isQuestCompleted ? <QuestCompletedScreen /> : isBeastDefeated ? <BeastSlainScreen />
           : <>
             {adventurer.beast_health > 0 && beast && <BeastScreen />}
             {adventurer.stat_upgrades_available > 0 && <StatSelectionScreen />}

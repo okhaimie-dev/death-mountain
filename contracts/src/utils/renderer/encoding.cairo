@@ -75,15 +75,6 @@ pub fn bytes_base64_encode(_bytes: ByteArray) -> ByteArray {
     encode_bytes(_bytes, get_base64_char_set())
 }
 
-fn u128_to_u64(input: u128) -> u64 {
-    input.try_into().unwrap()
-}
-
-fn u128_split(input: u128) -> (u64, u64) {
-    let (high, low) = core::integer::u128_safe_divmod(input, 0x10000000000000000_u128.try_into().unwrap());
-
-    (u128_to_u64(high), u128_to_u64(low))
-}
 
 fn encode_bytes(mut bytes: ByteArray, base64_chars: Span<u8>) -> ByteArray {
     let mut result: ByteArray = "";
@@ -142,10 +133,8 @@ fn encode_bytes(mut bytes: ByteArray, base64_chars: Span<u8>) -> ByteArray {
 
         i += 3;
     };
-
     result
 }
-
 
 trait BytesUsedTrait<T> {
     /// Returns the number of bytes used to represent a `T` value.
@@ -192,8 +181,8 @@ impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
             return BytesUsedTrait::<u32>::bytes_used(self.try_into().unwrap());
         } else {
             if self < 0x1000000000000 { // 256^6
-                if self < 0x10000000000 {
-                    if self < 0x100000000 {
+                if self < 0x10000000000 { // 256^5
+                    if self < 0x100000000 { // 256^4
                         return 4;
                     }
                     return 5;
@@ -211,13 +200,35 @@ impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
 }
 
 
-pub impl U128BytesTraitUsedImpl of BytesUsedTrait<u128> {
+impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
     fn bytes_used(self: u128) -> u8 {
-        let (u64high, u64low) = u128_split(self);
-        if u64high == 0 {
-            return BytesUsedTrait::<u64>::bytes_used(u64low.try_into().unwrap());
+        if self <= Bounded::<u64>::MAX.into() { // 256^8
+            return BytesUsedTrait::<u64>::bytes_used(self.try_into().unwrap());
         } else {
-            return BytesUsedTrait::<u64>::bytes_used(u64high.try_into().unwrap()) + 8;
+            if self < 0x1000000000000000000000000 { // 256^12
+                if self < 0x100000000000000000000 { // 256^10
+                    if self < 0x1000000000000000000 { // 256^9
+                        return 9;
+                    }
+                    return 10;
+                }
+                if self < 0x10000000000000000000000 { // 256^11
+                    return 11;
+                }
+                return 12;
+            } else {
+                if self < 0x10000000000000000000000000000 { // 256^14
+                    if self < 0x100000000000000000000000000 { // 256^13
+                        return 13;
+                    }
+                    return 14;
+                } else {
+                    if self < 0x1000000000000000000000000000000 { // 256^15
+                        return 15;
+                    }
+                    return 16;
+                }
+            }
         }
     }
 }

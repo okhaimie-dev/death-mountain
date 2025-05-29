@@ -3,7 +3,7 @@ import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
-import { BattleEvents, ExplorerLogEvents, formatGameEvent } from '@/utils/events';
+import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
@@ -34,6 +34,21 @@ const delayTimes: any = {
   'attack': 2000,
   'beast_attack': 2000,
   'flee': 1000,
+}
+
+const replayDelayTimes: any = {
+  'level_up': 1000,
+  'discovery': 1000,
+  'obstacle': 1000,
+  'attack': 2000,
+  'beast_attack': 2000,
+  'flee': 1000,
+  'fled_beast': 1000,
+  'defeated_beast': 1000,
+  'stat_upgrade': 1000,
+  'buy_items': 1000,
+  'equip': 1000,
+  'drop': 1000,
 }
 
 const VRF_ENABLED = true;
@@ -147,7 +162,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setNewMarket(true);
     }
 
-    if (ExplorerLogEvents.includes(event.type)) {
+    if (!spectating && ExplorerLogEvents.includes(event.type)) {
       if (!reconnecting && event.type === 'discovery') {
         if (event.discovery?.type === 'Loot') {
           setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
@@ -157,12 +172,16 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setExploreLog(event);
     }
 
+    if (spectating && ExplorerReplayEvents.includes(event.type)) {
+      setExploreLog(event);
+    }
+
     if (!reconnecting && BattleEvents.includes(event.type)) {
       setBattleEvent(event);
     }
 
-    if (!reconnecting && delayTimes[event.type]) {
-      await delay(delayTimes[event.type]);
+    if (!reconnecting && (delayTimes[event.type] || replayDelayTimes[event.type])) {
+      await delay(reconnecting ? replayDelayTimes[event.type] : delayTimes[event.type]);
     }
   }
 

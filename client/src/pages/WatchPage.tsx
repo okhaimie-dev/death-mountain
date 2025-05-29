@@ -42,6 +42,21 @@ export default function WatchPage() {
     }
   }, [replayEvents]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isPlaying) return; // Don't handle keyboard events while playing
+      
+      if (event.key === 'ArrowRight') {
+        replayForward();
+      } else if (event.key === 'ArrowLeft') {
+        replayBackward();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [replayIndex, isPlaying]); // Add dependencies
+
   const handleEndWatching = () => {
     exitGame();
     setSpectating(false);
@@ -77,9 +92,21 @@ export default function WatchPage() {
   }
 
   const replayBackward = () => {
-    if (replayIndex > 0) {
-      setReplayIndex(replayIndex - 1);
+    if (replayIndex < 1) return;
+
+    let currentIndex = replayIndex;
+    while (currentIndex > 0) {
+      let currentEntity = replayEvents[currentIndex];
+      processEvent(currentEntity, true);
+      currentIndex--;
+
+      let event = formatGameEvent(currentEntity);
+      if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
+        break;
+      }
     }
+
+    setReplayIndex(currentIndex);
   }
 
   if (!spectating) return null;

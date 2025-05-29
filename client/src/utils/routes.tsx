@@ -1,6 +1,7 @@
 import LandingPage from "../pages/StartPage";
 import GamePage from "../pages/GamePage";
 import WatchPage from "../pages/WatchPage";
+import CampaignPage from "../pages/CampaignPage";
 
 export const routes = [
   {
@@ -14,5 +15,9 @@ export const routes = [
   {
     path: '/watch',
     content: <WatchPage />
+  },
+  {
+    path: '/campaign',
+    content: <CampaignPage />
   }
 ]

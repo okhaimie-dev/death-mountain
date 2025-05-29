@@ -105,6 +105,12 @@ export interface Metadata {
   available_at: number;
 }
 
+export interface Quest {
+  id: number;
+  chapterId: number;
+  targetScore: number;
+}
+
 export type GameSchemaType = SchemaType;
 export type GameSchemaModels = GameSchemaType['lootsurvivor'];
 export type GameComponentModels = GameSchemaType['tournaments'];

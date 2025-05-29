@@ -231,6 +231,18 @@ export const BattleEvents = [
   'ambush'
 ]
 
+export const ExplorerReplayEvents = [
+  'discovery',
+  'obstacle',
+  'defeated_beast',
+  'fled_beast',
+  'stat_upgrade',
+  'buy_items',
+  'level_up',
+  'equip',
+  'drop',
+]
+
 export const getEventIcon = (event: GameEvent) => {
   switch (event.type) {
     case 'discovery':
