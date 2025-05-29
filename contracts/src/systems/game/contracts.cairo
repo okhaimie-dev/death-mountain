@@ -1,5 +1,3 @@
-use lootsurvivor::models::adventurer::adventurer::{Adventurer};
-use lootsurvivor::models::adventurer::bag::{Bag};
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
@@ -16,8 +14,6 @@ pub trait IGameSystems<T> {
     fn drop(ref self: T, adventurer_id: u64, items: Array<u8>);
     fn buy_items(ref self: T, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>);
     fn select_stat_upgrades(ref self: T, adventurer_id: u64, stat_upgrades: Stats);
-    // ------ Game Settings ------
-    fn add_settings(ref self: T, name: felt252, adventurer: Adventurer, bag: Bag) -> u32;
 }
 
 
@@ -36,7 +32,7 @@ mod game_systems {
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
     use lootsurvivor::constants::game::{MAINNET_CHAIN_ID, SEPOLIA_CHAIN_ID, STARTER_BEAST_ATTACK_DAMAGE, messages};
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
-    use lootsurvivor::constants::world::{DEFAULT_NS, VERSION};
+    use lootsurvivor::constants::world::{DEFAULT_NS};
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
@@ -47,7 +43,7 @@ mod game_systems {
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
     use lootsurvivor::models::game::{
-        AdventurerEntropy, AdventurerPacked, BagPacked, GameSettings, GameSettingsMetadata, SettingsCounter,
+        AdventurerEntropy, AdventurerPacked, BagPacked, GameSettings,
     };
     use lootsurvivor::models::game::{
         AttackEvent, BeastEvent, BuyItemsEvent, DefeatedBeastEvent, DiscoveryEvent, FledBeastEvent, GameEvent,
@@ -636,32 +632,6 @@ mod game_systems {
             );
 
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-        }
-
-        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool) -> u32 {
-            let mut world: WorldStorage = self.world(@DEFAULT_NS());
-            // increment settings counter
-            let mut settings_count: SettingsCounter = world.read_model(VERSION);
-            settings_count.count += 1;
-
-            world
-                .write_model(
-                    @GameSettings {
-                        settings_id: settings_count.count, adventurer, bag, game_seed, in_battle,
-                    },
-                );
-            world
-                .write_model(
-                    @GameSettingsMetadata {
-                        settings_id: settings_count.count,
-                        name,
-                        created_by: starknet::get_caller_address(),
-                        created_at: starknet::get_block_timestamp(),
-                    },
-                );
-            world.write_model(@settings_count);
-
-            settings_count.count
         }
     }
 

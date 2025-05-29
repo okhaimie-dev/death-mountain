@@ -18,6 +18,9 @@ pub mod systems {
     pub mod game_token {
         pub mod contracts;
     }
+    pub mod settings {
+        pub mod contracts;
+    }
 }
 
 pub mod models {
