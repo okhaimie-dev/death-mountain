@@ -37,26 +37,26 @@ export const fetchCampaign = async (id: number) => {
   const chapters: Chapter[] = [
     {
       id: 1,
-      title: "Chapter 1: Life After Death",
-      description: "Start your journey in the realm of the undead. Learn the basics of survival and combat in this forsaken land.",
+      title: "Chapter 1: First Steps",
+      description: "Start your journey as an adventurer. Learn the basics of survival and combat in this first chapter.",
       isLocked: false,
-      chapterImage: phoenixImg,
+      chapterImage: wyvernImg,
       chapterBeast: "Phoenix",
       quests: [
         {
           id: 1,
-          title: "First Breath",
-          description: "Learn the basics of movement and combat in your new form",
+          title: "Basic Combat",
+          description: "A wild beast approaches. What will you do?",
           isLocked: false,
           beastImage: griffinImg,
           beastName: "Griffin",
           settingsId: 1,
-          targetScore: 1
+          targetScore: 4
         },
         {
           id: 2,
-          title: "The First Hunt",
-          description: "Face your first challenge against a wild beast",
+          title: "Survival Instinct",
+          description: "A powerful beast emerges from the shadows. Fight or flight?",
           isLocked: true,
           requiredQuestId: 1,
           beastImage: wyvernImg,
@@ -66,8 +66,8 @@ export const fetchCampaign = async (id: number) => {
         },
         {
           id: 3,
-          title: "The Undead Village",
-          description: "Visit the local village and learn about trading with the living",
+          title: "The Right Gear",
+          description: "Your current gear feels inadequate. Perhaps there's something in your inventory that could help.",
           isLocked: true,
           requiredQuestId: 2,
           beastImage: phoenixImg,
@@ -77,8 +77,8 @@ export const fetchCampaign = async (id: number) => {
         },
         {
           id: 4,
-          title: "The Necromancer's Apprentice",
-          description: "Learn the basics of dark magic from a local necromancer",
+          title: "Power Within",
+          description: "Choose your stat upgrades wisely, for each choice shapes your path.",
           isLocked: true,
           requiredQuestId: 3,
           beastImage: basiliskImg,
@@ -88,8 +88,8 @@ export const fetchCampaign = async (id: number) => {
         },
         {
           id: 5,
-          title: "The First Ritual",
-          description: "Perform your first dark ritual to strengthen your connection to the realm",
+          title: "The Marketplace",
+          description: "The marketplace teems with fine loot. A well-equipped adventurer is a living adventurer.",
           isLocked: true,
           requiredQuestId: 4,
           beastImage: chimeraImg,

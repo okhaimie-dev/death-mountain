@@ -91,7 +91,7 @@ mod game_systems {
             _assert_valid_starter_weapon(weapon, game_libs);
 
             // get random seed
-            let (_, market_seed) = _get_random_seed(world, adventurer_id, 1);
+            let (beast_seed, market_seed) = _get_random_seed(world, adventurer_id, 1, game_settings.game_seed);
 
             if (game_settings.adventurer.xp == 0) {
                 // generate a new adventurer using the provided started weapon
@@ -120,7 +120,6 @@ mod game_systems {
             } else {
                 let mut adventurer = game_settings.adventurer;
 
-                _save_market_seed(ref world, adventurer_id, market_seed);
                 _emit_game_event(
                     ref world,
                     adventurer_id,
@@ -133,7 +132,32 @@ mod game_systems {
                         MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
                     ),
                 );
-
+                
+                if game_settings.in_battle {
+                    let (beast, _, _) = _get_beast(ref adventurer, beast_seed, game_libs);
+                    adventurer.beast_health = beast.starting_health;
+                    
+                    // save seed to get correct beast
+                    _save_beast_seed(ref world, adventurer_id, beast_seed);
+                    
+                    // emit beast event
+                    _emit_game_event(
+                        ref world,
+                        adventurer_id,
+                        GameEventDetails::beast(
+                            BeastEvent {
+                                id: beast.id,
+                                seed: beast_seed,
+                                health: beast.starting_health,
+                                level: beast.combat_spec.level,
+                                specials: beast.combat_spec.specials,
+                            },
+                        ),
+                    );
+                }
+                
+                _save_market_seed(ref world, adventurer_id, market_seed);
+                _save_bag(ref world, adventurer_id, game_settings.bag, game_libs);
                 _save_adventurer(ref world, ref adventurer, game_settings.bag, adventurer_id, game_libs);
             }
         }
@@ -166,8 +190,13 @@ mod game_systems {
             _assert_no_stat_upgrades_available(immutable_adventurer);
             _assert_not_in_battle(immutable_adventurer);
 
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
+
             // get random seed
-            let (explore_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            let (explore_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed,
+            );
 
             // go explore
             _explore(ref world, ref adventurer, ref bag, adventurer_id, explore_seed, till_beast, game_libs);
@@ -236,24 +265,8 @@ mod game_systems {
             // get previous entropy to fetch correct beast
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-            // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                game_libs
-                .adventurer
-                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
-
-            // get beast based on entropy seeds
-            let beast = game_libs
-                .beast
-                .get_beast(
-                    adventurer.get_level(),
-                    game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                    beast_seed,
-                    beast_health_rnd,
-                    beast_level_rnd,
-                    beast_specials1_rnd,
-                    beast_specials2_rnd,
-                );
+            // get beast
+            let (beast, beast_seed, beast_level_rnd) = _get_beast(ref adventurer, adventurer_entropy.beast_seed, game_libs);
 
             // get weapon details
             let weapon = game_libs.loot.get_item(adventurer.equipment.weapon.id);
@@ -264,7 +277,12 @@ mod game_systems {
                 specials: weapon_specials,
             };
 
-            let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
+
+            let (level_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed,
+            );
 
             let mut game_events: Array<GameEventDetails> = array![];
             let mut battle_count = 0;
@@ -353,27 +371,16 @@ mod game_systems {
             // get previous entropy to fetch correct beast
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-            // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                game_libs
-                .adventurer
-                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+            // get beast
+            let (beast, beast_seed, _) = _get_beast(ref adventurer, adventurer_entropy.beast_seed, game_libs);
 
-            // get beast based on entropy seeds
-            let beast = game_libs
-                .beast
-                .get_beast(
-                    adventurer.get_level(),
-                    game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                    beast_seed,
-                    beast_health_rnd,
-                    beast_level_rnd,
-                    beast_specials1_rnd,
-                    beast_specials2_rnd,
-                );
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
 
             // get random seed
-            let (flee_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            let (flee_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed,
+            );
 
             // attempt to flee
             let mut game_events: Array<GameEventDetails> = array![];
@@ -460,27 +467,14 @@ mod game_systems {
                 // get previous entropy to fetch correct beast
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-                // generate xp based randomness seeds
-                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                    game_libs
-                    .adventurer
-                    .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+                // get beast
+                let (beast, beast_seed, _) = _get_beast(ref adventurer, adventurer_entropy.beast_seed, game_libs);
 
-                // get beast based on entropy seeds
-                let beast = game_libs
-                    .beast
-                    .get_beast(
-                        adventurer.get_level(),
-                        game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                        beast_seed,
-                        beast_health_rnd,
-                        beast_level_rnd,
-                        beast_specials1_rnd,
-                        beast_specials2_rnd,
-                    );
+                // get game settings
+                let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
 
                 // get random seed
-                let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp);
+                let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp, game_settings.game_seed);
 
                 // get randomness for combat
                 let (_, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs
@@ -644,13 +638,18 @@ mod game_systems {
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
         }
 
-        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag) -> u32 {
+        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool) -> u32 {
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
             // increment settings counter
             let mut settings_count: SettingsCounter = world.read_model(VERSION);
             settings_count.count += 1;
 
-            world.write_model(@GameSettings { settings_id: settings_count.count, adventurer, bag });
+            world
+                .write_model(
+                    @GameSettings {
+                        settings_id: settings_count.count, adventurer, bag, game_seed, in_battle,
+                    },
+                );
             world
                 .write_model(
                     @GameSettingsMetadata {
@@ -676,6 +675,36 @@ mod game_systems {
 
         // increase adventurer's health for any vitality they received
         adventurer.health += adventurer.stats.get_max_health() - STARTING_HEALTH.into();
+    }
+
+    /// @title Get Beast
+    /// @notice Gets a beast based on the adventurer's xp and beast seed.
+    /// @dev This function is called when a beast is encountered.
+    /// @param adventurer A reference to the adventurer.
+    /// @param beast_seed A u64 representing the seed of the beast.
+    /// @param game_libs A reference to the game libraries.
+    /// @return A tuple containing the beast and the beast seed.
+    fn _get_beast(ref adventurer: Adventurer, beast_seed: u64, game_libs: GameLibs) -> (Beast, u32, u16) {
+        // generate xp based randomness seeds
+        let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+            game_libs
+            .adventurer
+            .get_randomness(adventurer.xp, beast_seed);
+
+        // get beast based on entropy seeds
+        let beast = game_libs
+            .beast
+            .get_beast(
+                adventurer.get_level(),
+                game_libs.loot.get_type(adventurer.equipment.weapon.id),
+                beast_seed,
+                beast_health_rnd,
+                beast_level_rnd,
+                beast_specials1_rnd,
+                beast_specials2_rnd,
+            );
+
+        (beast, beast_seed, beast_level_rnd)
     }
 
     /// @title Process Beast Death
@@ -1652,10 +1681,12 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param adventurer_xp A u16 representing the adventurer's XP.
     /// @return A felt252 representing the random seed.
-    fn _get_random_seed(world: WorldStorage, adventurer_id: u64, adventurer_xp: u16) -> (u64, u64) {
+    fn _get_random_seed(world: WorldStorage, adventurer_id: u64, adventurer_xp: u16, game_seed: u64) -> (u64, u64) {
         let mut seed: felt252 = 0;
 
-        if _network_supports_vrf() {
+        if game_seed != 0 {
+            seed = ImplAdventurer::get_simple_entropy(adventurer_xp, game_seed);
+        } else if _network_supports_vrf() {
             seed = VRFImpl::seed();
         } else {
             seed = ImplAdventurer::get_simple_entropy(adventurer_xp, adventurer_id);

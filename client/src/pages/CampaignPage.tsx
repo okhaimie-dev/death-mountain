@@ -4,14 +4,16 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockIcon from '@mui/icons-material/Lock';
 import BookIcon from '@mui/icons-material/MenuBook';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Box, Button, CircularProgress, IconButton, Paper, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function CampaignPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setQuest } = useGameStore();
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
@@ -36,6 +38,16 @@ export default function CampaignPage() {
         }));
 
         setChapters(updatedCampaign);
+        
+        // Check for chapter parameter in URL
+        const chapterId = searchParams.get('chapter');
+        if (chapterId) {
+          const chapter = updatedCampaign.find(c => c.id === parseInt(chapterId));
+          if (chapter && !chapter.isLocked) {
+            setSelectedChapter(chapter);
+          }
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching campaign:', error);
@@ -44,7 +56,7 @@ export default function CampaignPage() {
     };
 
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const updateTimers = () => {
@@ -54,11 +66,16 @@ export default function CampaignPage() {
       chapters.forEach(chapter => {
         if (chapter.unlockTime && chapter.unlockTime > now) {
           const remaining = chapter.unlockTime - now;
-          const hours = Math.floor(remaining / 3600000);
+          const days = Math.floor(remaining / (24 * 3600000));
+          const hours = Math.floor((remaining % (24 * 3600000)) / 3600000);
           const minutes = Math.floor((remaining % 3600000) / 60000);
           const seconds = Math.floor((remaining % 60000) / 1000);
 
-          newTimeRemaining[chapter.id] = `${hours}h ${minutes}m ${seconds}s`;
+          if (days > 0) {
+            newTimeRemaining[chapter.id] = `${days}d ${hours}h ${minutes}m`;
+          } else {
+            newTimeRemaining[chapter.id] = `${hours}h ${minutes}m ${seconds}s`;
+          }
         }
       });
 
@@ -75,6 +92,8 @@ export default function CampaignPage() {
     if (!chapter.isLocked) {
       setSelectedChapter(chapter);
       setSelectedQuest(null);
+      // Update URL with selected chapter
+      navigate(`/campaign?chapter=${chapter.id}`, { replace: true });
     }
   };
 
@@ -84,6 +103,11 @@ export default function CampaignPage() {
     }
   };
 
+  const isQuestCompleted = (questId: number) => {
+    const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '[]');
+    return completedQuests.includes(questId);
+  };
+
   const handleStartQuest = () => {
     if (selectedQuest) {
       setQuest({
@@ -91,13 +115,15 @@ export default function CampaignPage() {
         chapterId: selectedChapter!.id,
         targetScore: selectedQuest.targetScore,
       });
-      navigate(`/play?quest=${selectedQuest.id}`);
+      navigate(`/play?settingsId=${selectedQuest.settingsId}`);
     }
   };
 
   const handleBackToChapters = () => {
     setSelectedChapter(null);
     setSelectedQuest(null);
+    // Remove chapter parameter from URL
+    navigate('/campaign', { replace: true });
   };
 
   const renderChapterStatus = (chapter: Chapter) => {
@@ -224,15 +250,20 @@ export default function CampaignPage() {
                           sx={{
                             ...styles.questCard,
                             ...(selectedQuest?.id === quest.id && styles.selectedQuest),
-                            ...(quest.isLocked && styles.lockedQuest)
+                            ...(quest.isLocked && styles.lockedQuest),
                           }}
                           onClick={() => handleQuestSelect(quest)}
                         >
                           <Box sx={styles.questContent}>
                             <Box sx={styles.questHeader}>
-                              <Typography variant="h6" sx={styles.questTitle}>
-                                Quest {quest.id}: {quest.title}
-                              </Typography>
+                              <Box sx={styles.questTitleContainer}>
+                                <Typography variant="h6" sx={styles.questTitle}>
+                                  Quest {quest.id}: {quest.title}
+                                </Typography>
+                                {isQuestCompleted(quest.id) && (
+                                  <CheckCircleIcon sx={styles.checkIcon} />
+                                )}
+                              </Box>
                               {quest.isLocked && (
                                 <Box sx={styles.lockContainer}>
                                   <LockIcon sx={styles.lockIcon} />
@@ -471,10 +502,9 @@ const styles = {
   },
   questHeader: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     marginBottom: 1,
-    flexWrap: 'wrap',
     gap: 1,
   },
   questTitle: {
@@ -539,11 +569,12 @@ const styles = {
     borderRadius: '8px',
     border: '1px solid rgba(128, 255, 0, 0.2)',
     overflow: 'hidden',
+    flexShrink: 0,
   },
   beastImage: {
     width: '100%',
     height: '100%',
-    objectFit: 'contain' as const,
+    objectFit: 'cover' as const,
     filter: 'drop-shadow(0 0 8px rgba(128, 255, 0, 0.3))',
   },
   selectedQuest: {
@@ -639,4 +670,28 @@ const styles = {
     },
     zIndex: 2,
   },
+  questTitleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  checkIcon: {
+    color: '#80FF00',
+    fontSize: '1.5rem',
+  },
+  completedContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 0.5,
+    padding: '2px 6px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '6px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+  },
+  completedText: {
+    color: '#80FF00',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+  }
 };

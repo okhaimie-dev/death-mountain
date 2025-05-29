@@ -52,6 +52,8 @@ pub struct GameSettings {
     pub settings_id: u32,
     pub adventurer: Adventurer,
     pub bag: Bag,
+    pub game_seed: u64,
+    pub in_battle: bool,
 }
 
 #[derive(IntrospectPacked, Copy, Drop, Serde)]

@@ -1037,12 +1037,12 @@ pub impl ImplAdventurer of IAdventurer {
 
     /// @notice Gets simple entropy for adventurer
     /// @param adventurer_xp: adventurer xp
-    /// @param adventurer_id: adventurer id
+    /// @param seed: seed
     /// @return felt252: poseidon hash based on xp and adventurer id
-    fn get_simple_entropy(adventurer_xp: u16, adventurer_id: u64) -> felt252 {
+    fn get_simple_entropy(adventurer_xp: u16, seed: u64) -> felt252 {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(adventurer_xp.into());
-        hash_span.append(adventurer_id.into());
+        hash_span.append(seed.into());
         poseidon_hash_span(hash_span.span()).into()
     }
 

@@ -20,7 +20,7 @@ export default function QuestCompletedScreen() {
       }
     }
     exitGame();
-    navigate('/campaign');
+    navigate(`/campaign?chapter=${quest?.chapterId}`);
   }
 
   return (

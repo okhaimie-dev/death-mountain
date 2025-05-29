@@ -32,10 +32,11 @@ export default function GamePage() {
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
+  const settings_id = Number(searchParams.get('settingsId'));
 
   async function mint() {
     setLoadingProgress(45)
-    let tokenId = await mintGame(account, playerName);
+    let tokenId = await mintGame(account, playerName, settings_id);
     navigate(`/play?id=${tokenId}`);
   }
 
@@ -77,7 +78,7 @@ export default function GamePage() {
     <Box className="container" sx={styles.container}>
       {isLoading
         ? <LoadingContainer loadingProgress={loadingProgress} />
-        : isDead ? <DeathScreen /> : isBeastDefeated ? <BeastSlainScreen /> : isQuestCompleted ? <QuestCompletedScreen />
+        : isDead ? <DeathScreen /> : isQuestCompleted ? <QuestCompletedScreen /> : isBeastDefeated ? <BeastSlainScreen />
           : <>
             {adventurer.beast_health > 0 && beast && <BeastScreen />}
             {adventurer.stat_upgrades_available > 0 && <StatSelectionScreen />}
