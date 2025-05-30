@@ -17,6 +17,7 @@ import { Box } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useGameDirector } from '@/contexts/GameDirector';
 
 export default function GamePage() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function GamePage() {
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards, quest } = useGameStore();
+  const { subscription } = useGameDirector();
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET' | 'SETTINGS'>('GAME');
 
@@ -68,6 +70,13 @@ export default function GamePage() {
   useEffect(() => {
     setActiveNavItem('GAME');
   }, [adventurer?.stat_upgrades_available, adventurer?.beast_health]);
+
+  useEffect(() => {
+    return () => {
+      subscription?.cancel();
+      exitGame();
+    };
+  }, []);
 
   const isLoading = !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;

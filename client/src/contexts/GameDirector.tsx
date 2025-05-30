@@ -1,6 +1,5 @@
 import { fetchAdventurer } from '@/api/starknet';
-import { getSettingsList } from '@/dojo/useGameSettings';
-import { Settings } from '@/dojo/useGameSettings';
+import { getSettingsList, Settings } from '@/dojo/useGameSettings';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -15,6 +14,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useReducer, us
 export interface GameDirectorContext {
   executeGameAction: (action: GameAction) => void;
   actionFailed: number;
+  subscription: any;
   watch: {
     setSpectating: (spectating: boolean) => void;
     spectating: boolean;
@@ -75,8 +75,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (gameId) {
       fetchMetadata(sdk, gameId);
-    } else if (subscription) {
-      subscription.cancel();
     }
   }, [gameId]);
 
@@ -240,6 +238,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     <GameDirectorContext.Provider value={{
       executeGameAction,
       actionFailed,
+      subscription,
 
       watch: {
         setSpectating,
