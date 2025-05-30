@@ -419,7 +419,7 @@ mod tests {
 
 
     #[test]
-    fn test_metadata() {
+    fn metadata() {
         let adventurer = Adventurer {
             health: 1023,
             xp: 10000,

@@ -261,19 +261,19 @@ mod tests {
 
     #[test]
     #[available_gas(70000)]
-    fn test_get_tier_unknown_id() {
+    fn get_tier_unknown_id() {
         assert(ImplBeast::get_tier(MAX_ID + 1) == Tier::T5(()), 'unknown id gets T5');
     }
 
     #[test]
     #[available_gas(70000)]
-    fn test_get_tier_max_value() {
+    fn get_tier_max_value() {
         assert(ImplBeast::get_tier(255) == Tier::T5(()), 'should be unknown / T5');
     }
 
     #[test]
     #[available_gas(400000)]
-    fn test_get_tier() {
+    fn get_tier() {
         let warlock = Warlock;
         let warlock_tier = ImplBeast::get_tier(warlock);
         assert(warlock_tier == Tier::T1(()), 'Warlock should be T1');
@@ -297,25 +297,25 @@ mod tests {
 
     #[test]
     #[available_gas(7750)]
-    fn test_get_type_invalid_id() {
+    fn get_type_invalid_id() {
         assert(ImplBeast::get_type(MAX_ID + 1) == Type::None(()), 'unknown id is Type None');
     }
 
     #[test]
     #[available_gas(7750)]
-    fn test_get_type_zero() {
+    fn get_type_zero() {
         assert(ImplBeast::get_type(MAX_ID + 1) == Type::None(()), 'zero is unknown / Type None');
     }
 
     #[test]
     #[available_gas(4880)]
-    fn test_get_type_max_value() {
+    fn get_type_max_value() {
         assert(ImplBeast::get_type(255) == Type::None(()), 'max is unknown / Type None');
     }
 
     #[test]
     #[available_gas(21600)]
-    fn test_get_type() {
+    fn get_type() {
         let warlock_type = ImplBeast::get_type(Warlock);
         assert(warlock_type == Type::Magic_or_Cloth(()), 'Warlock is magical');
 
@@ -334,7 +334,7 @@ mod tests {
 
     #[test]
     #[available_gas(500000)]
-    fn test_get_level() {
+    fn get_level() {
         let mut adventurer_level = 1;
 
         // at level 1, we'll get a beast with level 1 or 2
@@ -364,7 +364,7 @@ mod tests {
 
     #[test]
     #[available_gas(200000)]
-    fn test_get_starting_health() {
+    fn get_starting_health() {
         let adventurer_level = 1;
 
         // test level 1 adventurer
@@ -385,7 +385,7 @@ mod tests {
 
     #[test]
     #[available_gas(50000)]
-    fn test_get_beast_id() {
+    fn get_beast_id() {
         let zero_check = 0;
         let beast_id = ImplBeast::get_beast_id(zero_check);
         assert(beast_id != 0, 'beast should not be zero');
@@ -403,7 +403,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_gold_reward() {
+    fn get_gold_reward() {
         let mut beast = Beast {
             id: 1,
             starting_health: 100,
@@ -434,7 +434,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_critical_hit_chance_no_ambush() {
+    fn get_critical_hit_chance_no_ambush() {
         let adventurer_level = 10;
         let is_ambush = false;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
@@ -445,7 +445,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_critical_hit_chance_with_ambush() {
+    fn get_critical_hit_chance_with_ambush() {
         let adventurer_level = 10;
         let is_ambush = true;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
@@ -456,7 +456,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_critical_hit_chance_cap() {
+    fn get_critical_hit_chance_cap() {
         let adventurer_level = 105;
         let is_ambush = true;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
@@ -464,7 +464,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_critical_hit_chance_no_ambush_cap() {
+    fn get_critical_hit_chance_no_ambush_cap() {
         let adventurer_level = 105;
         let is_ambush = false;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
@@ -472,7 +472,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_critical_hit_chance_mul_overflow() {
+    fn get_critical_hit_chance_mul_overflow() {
         let adventurer_level = 255;
         let is_ambush = false;
         let chance = ImplBeast::get_critical_hit_chance(adventurer_level, is_ambush);
@@ -480,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_beast_from_seed() {
+    fn get_beast_from_seed() {
         let xp = 4;
         let seed = 9972942310244935680;
         let adventurer_level = 2;

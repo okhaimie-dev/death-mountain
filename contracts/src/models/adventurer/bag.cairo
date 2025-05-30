@@ -550,7 +550,7 @@ mod tests {
 
     #[test]
     #[available_gas(97530)]
-    fn test_get_jewelry_greatness() {
+    fn get_jewelry_greatness() {
         let katana = Item { id: ItemId::Katana, xp: 1 };
         let demon_crown = Item { id: ItemId::DemonCrown, xp: 2 };
         let silk_robe = Item { id: ItemId::SilkRobe, xp: 3 };
@@ -586,7 +586,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_jewelry() {
+    fn get_jewelry() {
         let katana = Item { id: ItemId::Katana, xp: 1 };
         let demon_crown = Item { id: ItemId::DemonCrown, xp: 2 };
         let silk_robe = Item { id: ItemId::SilkRobe, xp: 3 };
@@ -627,7 +627,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item ID cannot be 0',))]
     #[available_gas(7500)]
-    fn test_contains_invalid_zero() {
+    fn contains_invalid_zero() {
         let katana = Item { id: ItemId::Katana, xp: 1 };
         let demon_crown = Item { id: ItemId::DemonCrown, xp: 2 };
         let silk_robe = Item { id: ItemId::SilkRobe, xp: 3 };
@@ -660,7 +660,7 @@ mod tests {
 
     #[test]
     #[available_gas(84500)]
-    fn test_contains() {
+    fn contains() {
         let katana = Item { id: ItemId::Katana, xp: 1 };
         let demon_crown = Item { id: ItemId::DemonCrown, xp: 2 };
         let silk_robe = Item { id: ItemId::SilkRobe, xp: 3 };
@@ -741,7 +741,7 @@ mod tests {
     }
 
     #[test]
-    fn test_save_bag() {
+    fn save_bag() {
         let mut bag = Bag {
             item_1: Item { id: 127, xp: 511 },
             item_2: Item { id: 127, xp: 511 },
@@ -811,7 +811,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item ID cannot be 0',))]
     #[available_gas(7920)]
-    fn test_add_item_blank_item() {
+    fn add_item_blank_item() {
         // start with full bag
         let mut bag = Bag {
             item_1: Item { id: 1, xp: 1 },
@@ -841,7 +841,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Bag is full',))]
     #[available_gas(7920)]
-    fn test_add_item_full_bag() {
+    fn add_item_full_bag() {
         // start with full bag
         let mut bag = Bag {
             item_1: Item { id: 1, xp: 1 },
@@ -869,7 +869,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_item() {
+    fn add_item() {
         // start with empty bag
         let mut bag = Bag {
             item_1: Item { id: 0, xp: 0 },
@@ -931,7 +931,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_full() {
+    fn is_full() {
         // start with full bag
         let mut bag = Bag {
             item_1: Item { id: 1, xp: 0 },
@@ -971,7 +971,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Item not in bag',))]
-    fn test_get_item_not_in_bag() {
+    fn get_item_not_in_bag() {
         let item_1 = Item { id: 11, xp: 0 };
         let item_2 = Item { id: 12, xp: 0 };
         let item_3 = Item { id: 13, xp: 0 };
@@ -1011,7 +1011,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_item() {
+    fn get_item() {
         let item_1 = Item { id: 11, xp: 0 };
         let item_2 = Item { id: 12, xp: 0 };
         let item_3 = Item { id: 13, xp: 0 };
@@ -1094,7 +1094,7 @@ mod tests {
     }
 
     #[test]
-    fn test_remove_item() {
+    fn remove_item() {
         let mut bag = Bag {
             item_1: Item { id: 1, xp: 0 },
             item_2: Item { id: 2, xp: 0 },
@@ -1125,7 +1125,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Item not in bag',))]
-    fn test_remove_item_not_in_bag() {
+    fn remove_item_not_in_bag() {
         // initialize bag
         let mut bag = Bag {
             item_1: Item { id: 1, xp: 0 },
@@ -1153,7 +1153,7 @@ mod tests {
     }
 
     #[test]
-    fn test_has_specials() {
+    fn has_specials() {
         let suffix_unlock_xp = (SUFFIX_UNLOCK_GREATNESS * SUFFIX_UNLOCK_GREATNESS).into();
         let special_item = Item { id: 1, xp: suffix_unlock_xp };
         let normal_item = Item { id: 2, xp: suffix_unlock_xp - 1 };
@@ -1201,7 +1201,7 @@ mod tests {
     }
 
     #[test]
-    fn test_has_specials_empty_bag() {
+    fn has_specials_empty_bag() {
         let empty_bag = Bag {
             item_1: Item { id: 0, xp: 0 },
             item_2: Item { id: 0, xp: 0 },

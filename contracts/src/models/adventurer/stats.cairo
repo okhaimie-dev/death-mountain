@@ -419,7 +419,7 @@ mod tests {
 
     #[test]
     #[available_gas(1039260)]
-    fn test_stats_packing() {
+    fn stats_packing() {
         // zero case
         let stats = Stats { strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0 };
 
@@ -452,7 +452,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('strength pack overflow',))]
     #[available_gas(142010)]
-    fn test_pack_protection_overflow_strength() {
+    fn pack_protection_overflow_strength() {
         let stats = Stats {
             strength: MAX_STAT_VALUE + 1, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -463,7 +463,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('dexterity pack overflow',))]
     #[available_gas(142010)]
-    fn test_pack_protection_overflow_dexterity() {
+    fn pack_protection_overflow_dexterity() {
         let stats = Stats {
             strength: 0, dexterity: MAX_STAT_VALUE + 1, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -474,7 +474,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('vitality pack overflow',))]
     #[available_gas(142010)]
-    fn test_pack_protection_overflow_vitality() {
+    fn pack_protection_overflow_vitality() {
         let stats = Stats {
             strength: 0, dexterity: 0, vitality: MAX_STAT_VALUE + 1, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -485,7 +485,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('intelligence pack overflow',))]
     #[available_gas(142010)]
-    fn test_pack_protection_overflow_intelligence() {
+    fn pack_protection_overflow_intelligence() {
         let stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: MAX_STAT_VALUE + 1, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -496,7 +496,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('wisdom pack overflow',))]
     #[available_gas(142010)]
-    fn test_pack_protection_overflow_wisdom() {
+    fn pack_protection_overflow_wisdom() {
         let stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: MAX_STAT_VALUE + 1, charisma: 0, luck: 0,
         };
@@ -505,7 +505,7 @@ mod tests {
     }
 
     #[test]
-    fn test_apply_stats_all_positive() {
+    fn apply_stats_all_positive() {
         let mut base_stats = Stats {
             strength: 5, dexterity: 5, vitality: 5, intelligence: 5, wisdom: 5, charisma: 5, luck: 0,
         };
@@ -525,7 +525,7 @@ mod tests {
     }
 
     #[test]
-    fn test_apply_stats_some_zero() {
+    fn apply_stats_some_zero() {
         let mut base_stats = Stats {
             strength: 5, dexterity: 5, vitality: 5, intelligence: 5, wisdom: 5, charisma: 5, luck: 0,
         };
@@ -545,7 +545,7 @@ mod tests {
     }
 
     #[test]
-    fn test_apply_stats_all_zero() {
+    fn apply_stats_all_zero() {
         let mut base_stats = Stats {
             strength: 5, dexterity: 5, vitality: 5, intelligence: 5, wisdom: 5, charisma: 5, luck: 0,
         };
@@ -565,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_strength() {
+    fn increase_strength() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -578,7 +578,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_dexterity() {
+    fn increase_dexterity() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -591,7 +591,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_vitality() {
+    fn increase_vitality() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -604,7 +604,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_intelligence() {
+    fn increase_intelligence() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -617,7 +617,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_wisdom() {
+    fn increase_wisdom() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -630,7 +630,7 @@ mod tests {
     }
 
     #[test]
-    fn test_increase_charisma() {
+    fn increase_charisma() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -643,7 +643,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decrease_strength() {
+    fn decrease_strength() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -655,7 +655,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('strength underflow',))]
-    fn test_decrease_strength_underflow() {
+    fn decrease_strength_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -664,7 +664,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decrease_dexterity() {
+    fn decrease_dexterity() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -676,7 +676,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('dexterity underflow',))]
-    fn test_decrease_dexterity_underflow() {
+    fn decrease_dexterity_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -685,7 +685,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decrease_vitality() {
+    fn decrease_vitality() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -697,7 +697,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('vitality underflow',))]
-    fn test_decrease_vitality_underflow() {
+    fn decrease_vitality_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -706,7 +706,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decrease_intelligence() {
+    fn decrease_intelligence() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -718,7 +718,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('intelligence underflow',))]
-    fn test_decrease_intelligence_underflow() {
+    fn decrease_intelligence_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -728,7 +728,7 @@ mod tests {
 
 
     #[test]
-    fn test_decrease_wisdom() {
+    fn decrease_wisdom() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -740,7 +740,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('wisdom underflow',))]
-    fn test_decrease_wisdom_underflow() {
+    fn decrease_wisdom_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -750,7 +750,7 @@ mod tests {
 
 
     #[test]
-    fn test_decrease_charisma() {
+    fn decrease_charisma() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };
@@ -762,7 +762,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('charisma underflow',))]
-    fn test_decrease_charisma_underflow() {
+    fn decrease_charisma_underflow() {
         let mut stats = Stats {
             strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
         };

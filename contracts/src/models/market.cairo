@@ -221,7 +221,7 @@ mod tests {
     const TEST_OFFSET: u8 = 3;
 
     #[test]
-    fn test_is_item_available() {
+    fn is_item_available() {
         let mut market_inventory = ArrayTrait::<u8>::new();
         market_inventory.append(ItemId::Wand);
         market_inventory.append(ItemId::Book);
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     #[available_gas(34000000)]
-    fn test_get_id() {
+    fn get_id() {
         // test lower end of u64
         let mut i: u64 = 0;
         loop {
@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     #[available_gas(50000)]
-    fn test_get_price() {
+    fn get_price() {
         let t1_price = ImplMarket::get_price(Tier::T1(()));
         assert(t1_price == (6 - 1) * TIER_PRICE, 't1 price');
 
@@ -287,7 +287,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_available_items_check_duplicates() {
+    fn get_available_items_check_duplicates() {
         let market_seed = 12345;
         let market_size = 100;
 
@@ -318,7 +318,7 @@ mod tests {
 
     #[test]
     #[available_gas(4500000)]
-    fn test_get_available_items_count() {
+    fn get_available_items_count() {
         let market_seed = 12345;
         let mut market_size = 1;
 
@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     #[available_gas(15500000)]
-    fn test_get_available_items_ownership() {
+    fn get_available_items_ownership() {
         let market_seed = 12345;
         let market_size = 21;
 
@@ -375,7 +375,7 @@ mod tests {
 
     #[test]
     #[available_gas(8000000)]
-    fn test_get_available_items_ownership_multi_level8() {
+    fn get_available_items_ownership_multi_level8() {
         let market_seed = 12345;
         let market_size = 255;
 
@@ -404,7 +404,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_market_seed_and_offset() {
+    fn get_market_seed_and_offset() {
         let mut i: u8 = 1;
         loop {
             if (i == 255) {
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_all_items() {
+    fn get_all_items() {
         let items = ImplMarket::get_all_items();
         assert(items.len() == NUM_ITEMS.into(), 'incorrect number of items');
         // verify item array contains numbers 1 through 101
@@ -437,7 +437,7 @@ mod tests {
     }
 
     #[test]
-    fn test_unique_market() {
+    fn unique_market() {
         // loop from 0 to 255 and get the market seed and offset
         let mut i: u64 = 0;
         loop {

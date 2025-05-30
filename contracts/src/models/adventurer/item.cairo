@@ -119,7 +119,7 @@ mod tests {
     use lootsurvivor::models::adventurer::item::{IItemPrimitive, ImplItem, Item, MAX_PACKABLE_ITEM_ID, MAX_PACKABLE_XP};
 
     #[test]
-    fn test_item_packing() {
+    fn item_packing() {
         // zero case
         let item = Item { id: 0, xp: 0 };
         let unpacked = ImplItem::unpack(item.pack());
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('item id pack overflow',))]
-    fn test_item_packing_id_overflow() {
+    fn item_packing_id_overflow() {
         // attempt to save item with id above pack limit
         let item = Item { id: MAX_PACKABLE_ITEM_ID + 1, xp: MAX_PACKABLE_XP };
         ImplItem::unpack(item.pack());
@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
-    fn test_item_packing_xp_overflow() {
+    fn item_packing_xp_overflow() {
         // attempt to save item with xp above pack limit
         let item = Item { id: MAX_PACKABLE_ITEM_ID, xp: MAX_PACKABLE_XP + 1 };
         ImplItem::unpack(item.pack());
@@ -156,12 +156,12 @@ mod tests {
 
     #[test]
     #[available_gas(2900)]
-    fn test_is_jewlery_simple() {
+    fn is_jewlery_simple() {
         assert(!ImplItem::new(ItemId::Book).is_jewlery(), 'should not be jewlery');
     }
 
     #[test]
-    fn test_is_jewlery() {
+    fn is_jewlery() {
         let mut item_index = 1;
         loop {
             if item_index == 102 {
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     #[available_gas(9000)]
-    fn test_new_item() {
+    fn new_item() {
         // zero case
         let item = IItemPrimitive::new(0);
         assert(item.id == 0, 'id should be 0');
@@ -206,7 +206,7 @@ mod tests {
 
     #[test]
     #[available_gas(70320)]
-    fn test_get_greatness() {
+    fn get_greatness() {
         let mut item = Item { id: 1, xp: 0 };
         // test 0 case (should be level 1)
         let greatness = item.get_greatness();

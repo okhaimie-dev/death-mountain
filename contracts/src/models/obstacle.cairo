@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     #[available_gas(1666510)]
-    fn test_get_obstacle_tier_range_check() {
+    fn get_obstacle_tier_range_check() {
         // iterate over all obstacles and make sure we aren't missing any
         let mut obstacle_id = 1;
         loop {
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     #[available_gas(531070)]
-    fn test_get_obstacle_type_range_check() {
+    fn get_obstacle_type_range_check() {
         // iterate over all obstacles and make sure we aren't missing any
         let mut obstacle_id = 1;
         loop {
@@ -122,14 +122,14 @@ mod tests {
     }
 
     #[test]
-    fn test_get_obstacle_tier_simple() {
+    fn get_obstacle_tier_simple() {
         let demonic_alter = ObstacleId::DemonicAlter;
         let demonic_alter_tier = ImplObstacle::get_tier(demonic_alter);
         assert(demonic_alter_tier == Tier::T1, 'demonic_alter should be T1');
     }
 
     #[test]
-    fn test_get_obstacle_tier_extended() {
+    fn get_obstacle_tier_extended() {
         let demonic_alter = ObstacleId::DemonicAlter;
         let demonic_alter_tier = ImplObstacle::get_tier(demonic_alter);
         assert(demonic_alter_tier == Tier::T1, 'demonic_alter should be T1');
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     #[available_gas(46300)]
-    fn test_get_obstacle_type() {
+    fn get_obstacle_type() {
         let demonic_alter = ObstacleId::DemonicAlter;
         let demonic_alter_type = ImplObstacle::get_type(demonic_alter);
         assert(demonic_alter_type == Type::Magic_or_Cloth, 'demonic_alter should be magic');
