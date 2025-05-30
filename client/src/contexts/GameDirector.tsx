@@ -75,11 +75,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (gameId) {
       fetchMetadata(sdk, gameId);
+    } else if (subscription) {
+      subscription.cancel();
     }
   }, [gameId]);
 
   useEffect(() => {
-    if (metadata && !gameSettings) {
+    if (gameId && metadata && !gameSettings) {
       getSettingsList(null, [metadata.settings_id]).then((settings: Settings[]) => {
         setGameSettings(settings[0])
         setVRFEnabled(settings[0].game_seed === 0);

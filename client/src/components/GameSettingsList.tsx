@@ -189,7 +189,12 @@ function GameSettingsList() {
                 </Button>
               </Box>
 
-              <Box style={{ width: '100%', height: '340px' }}>
+              <Box sx={{ 
+                width: '100%', 
+                height: '340px',
+                overflowY: 'auto',
+                pr: 0.5
+              }}>
                 {tab === 'search' && (
                   <Box mb={2}>
                     <TextField
@@ -261,7 +266,8 @@ const styles = {
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: 2
+    gap: 2,
+    height: '100%'
   },
   logoContainer: {
     width: '100%',
@@ -284,10 +290,11 @@ const styles = {
   },
   settingsListContainer: {
     width: '100%',
-    minHeight: '200px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 1
+    gap: 1,
+    flex: 1,
+    minHeight: 0
   }
 };
 
