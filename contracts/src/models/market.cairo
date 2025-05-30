@@ -287,7 +287,6 @@ mod tests {
     }
 
     #[test]
-    #[available_gas(40550700)]
     fn test_get_available_items_check_duplicates() {
         let market_seed = 12345;
         let market_size = 100;

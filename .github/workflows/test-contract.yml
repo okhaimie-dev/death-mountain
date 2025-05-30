@@ -48,7 +48,7 @@ jobs:
           cd contracts && sozo build
       - name: Run Tests
         run: |
-          cd contracts && sozo test --print-resource-usage
+          cd contracts && sozo test
 
   scarb-fmt:
     needs: [setup-environment]
