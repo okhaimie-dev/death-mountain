@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export default function DeathScreen() {
-  const { gameId, exitGame, adventurer, exploreLog, battleEvent, beast } = useGameStore();
+  const { gameId, exitGame, adventurer, exploreLog, battleEvent, beast, quest } = useGameStore();
   const navigate = useNavigate();
 
   const deathEvent = battleEvent || exploreLog.find(event => event.type === 'obstacle')
@@ -25,7 +25,11 @@ export default function DeathScreen() {
 
   const backToMenu = () => {
     exitGame();
-    navigate('/')
+    if (quest) {
+      navigate(`/campaign?chapter=${quest.chapterId}`, { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
   }
 
   return (

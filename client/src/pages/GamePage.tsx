@@ -37,7 +37,7 @@ export default function GamePage() {
   async function mint() {
     setLoadingProgress(45)
     let tokenId = await mintGame(account, playerName, settings_id);
-    navigate(`/play?id=${tokenId}`);
+    navigate(`/play?id=${tokenId}`, { replace: true });
   }
 
   useEffect(() => {

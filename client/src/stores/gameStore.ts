@@ -3,9 +3,11 @@ import { Adventurer, Beast, Item, Metadata, Quest } from '../types/game';
 import { GameEvent } from '@/utils/events';
 import { ItemUtils } from '@/utils/loot';
 import { getNewItemsEquipped } from '@/utils/game';
+import { Settings } from '@/dojo/useGameSettings';
 
 interface GameState {
   gameId: number | null;
+  gameSettings: Settings | null;
   adventurer: Adventurer | null;
   adventurerState: Adventurer | null;
   bag: Item[];
@@ -21,6 +23,7 @@ interface GameState {
 
   setGameId: (gameId: number) => void;
   exitGame: () => void;
+  setGameSettings: (data: Settings | null) => void;
   setAdventurer: (data: Adventurer | null) => void;
   setAdventurerState: (data: Adventurer | null) => void;
   setBag: (data: Item[]) => void;
@@ -40,6 +43,7 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set, get) => ({
   gameId: null,
+  gameSettings: null,
   metadata: null,
   adventurer: null,
   adventurerState: null,
@@ -59,6 +63,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   exitGame: () => {
     set({
       gameId: null,
+      gameSettings: null,
       adventurer: null,
       adventurerState: null,
       bag: [],
@@ -73,6 +78,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       quest: null,
     });
   },
+
+  setGameSettings: (data: Settings | null) => set({ gameSettings: data }),
 
   setAdventurer: (data: Adventurer | null) => set((state) => {
     if (!data || !state.adventurer) {

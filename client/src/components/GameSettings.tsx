@@ -2,31 +2,39 @@ import { MAX_BAG_SIZE } from '@/constants/game';
 import { getSettingsList, Settings } from '@/dojo/useGameSettings';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useUIStore } from '@/stores/uiStore';
-import { Adventurer, Equipment, Item } from '@/types/game';
+import { Adventurer, Beast, Equipment, Item } from '@/types/game';
+import { getBeastImageById } from '@/utils/beast';
 import { calculateLevel } from '@/utils/game';
 import { ItemUtils, slotIcons } from '@/utils/loot';
+import { getBeastFromSeed, listAllEncounters } from '@/utils/processFutures';
 import DiceIcon from '@mui/icons-material/Casino';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, Button, Dialog, Divider, Input, TextField, Typography } from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import TableViewIcon from '@mui/icons-material/TableView';
+import { Box, Button, Dialog, Divider, Input, LinearProgress, TextField, Typography } from '@mui/material';
 import { motion } from "framer-motion";
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fadeVariant } from "../utils/animations";
 import ItemList from './ItemList';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { useNavigate } from 'react-router-dom';
+import EncountersDialog from './EncountersDialog';
 
 export interface GameSettingsData {
   name: string;
+  in_battle: boolean;
+  game_seed: number;
   adventurer: Adventurer;
   bag: Item[];
 }
 
 const DEFAULT_SETTINGS: GameSettingsData = {
   name: '',
+  in_battle: false,
+  game_seed: 0,
   adventurer: {
     health: 100,
-    xp: 0,
+    xp: 1,
     gold: 35,
     beast_health: 0,
     stat_upgrades_available: 0,
@@ -64,9 +72,12 @@ function GameSettings() {
   const [creating, setCreating] = useState(false)
   const [gameSettings, setGameSettings] = useState<GameSettingsData>(DEFAULT_SETTINGS);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [beast, setBeast] = useState<Beast | null>(null);
 
   const [isBag, setIsBag] = useState(false);
   const [isItemListOpen, setIsItemListOpen] = useState(false);
+  const [isEncountersDialogOpen, setIsEncountersDialogOpen] = useState(false);
+  const [futureEncounters, setFutureEncounters] = useState<any[]>([]);
 
   useEffect(() => {
     if (selectedSettingsId !== null) {
@@ -75,6 +86,14 @@ function GameSettings() {
       })
     }
   }, [selectedSettingsId])
+
+  useEffect(() => {
+    if (gameSettings.in_battle && gameSettings.game_seed !== 0 && gameSettings.adventurer.xp !== 0) {
+      setBeast(getBeastFromSeed(gameSettings.adventurer.xp, gameSettings.game_seed));
+    } else {
+      setBeast(null);
+    }
+  }, [gameSettings.in_battle, gameSettings.adventurer.xp, gameSettings.game_seed]);
 
   const handlePlay = () => {
     navigate(`/play?settingsId=${selectedSettingsId}`)
@@ -156,6 +175,19 @@ function GameSettings() {
     }));
   };
 
+  const handleViewEncounters = () => {
+    if (gameSettings.game_seed !== 0) {
+      const encounters = listAllEncounters(
+        gameSettings.adventurer.xp,
+        gameSettings.game_seed,
+        calculateLevel(gameSettings.adventurer.xp),
+        gameSettings.in_battle
+      );
+      setFutureEncounters(encounters);
+      setIsEncountersDialogOpen(true);
+    }
+  };
+
   const renderSettingItem = (label: string, field: string, type: string, range?: [number, number]) => {
     const getValue = (path: string) => {
       const parts = path.split('.');
@@ -166,7 +198,7 @@ function GameSettings() {
       return value;
     };
 
-    const setValue = (path: string, value: number) => {
+    const setValue = (path: string, value: any) => {
       const parts = path.split('.');
       setGameSettings(prev => {
         const newSettings = { ...prev };
@@ -178,6 +210,76 @@ function GameSettings() {
         return newSettings;
       });
     };
+
+    if (type === 'boolean') {
+      return (
+        <Box sx={styles.settingContainer}>
+          <Typography color='primary'>
+            {label}
+          </Typography>
+
+          <Box
+            sx={styles.settingValueContainer}
+            onClick={() => {
+              if (gameSettingsEdit) {
+                const newValue = !getValue(field);
+                setValue(field, newValue);
+              }
+            }}
+          >
+            <Typography color='primary' sx={{ cursor: gameSettingsEdit ? 'pointer' : 'default' }}>
+              {getValue(field) ? 'Yes' : 'No'}
+            </Typography>
+          </Box>
+        </Box>
+      );
+    }
+
+    if (type === 'seed') {
+      return (
+        <Box sx={styles.settingContainer}>
+          <Typography color='primary'>
+            {label}
+          </Typography>
+
+          <Box sx={styles.settingValueContainer}>
+            {field === 'game_seed' && getValue(field) !== 0 && (
+              <Box mr={1} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={handleViewEncounters}>
+                <TableViewIcon color='primary' fontSize='small' />
+              </Box>
+            )}
+
+            <Input
+              disableUnderline={true}
+              sx={{ color: '#80FF00', width: '120px' }}
+              inputProps={{
+                style: {
+                  textAlign: 'center',
+                  border: '1px solid #ffffff50',
+                  padding: '0',
+                  fontSize: '14px'
+                }
+              }}
+              value={getValue(field)}
+              disabled={!gameSettingsEdit}
+              onChange={(e) => {
+                const newValue = Number(e.target.value);
+                if (newValue >= 0) {
+                  setValue(field, newValue);
+                }
+              }}
+            />
+
+            <Box ml={0.5} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => {
+              const newValue = Math.floor(Math.random() * 65534) + 1;
+              setValue(field, newValue);
+            }}>
+              <DiceIcon color='primary' fontSize='small' />
+            </Box>
+          </Box>
+        </Box>
+      );
+    }
 
     if (type === 'stats') {
       return (
@@ -217,7 +319,7 @@ function GameSettings() {
         <Box sx={styles.settingValueContainer}>
           {label === 'XP' && (
             <Typography color='primary' sx={{ pr: '4px' }}>
-              {`(${calculateLevel(getValue(field))})`}
+              {`(lvl ${calculateLevel(getValue(field))})`}
             </Typography>
           )}
 
@@ -328,14 +430,14 @@ function GameSettings() {
           </Box>
 
           <Box sx={styles.contentContainer}>
-            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
 
             <Box sx={styles.settingsGrid}>
               <Typography variant='h6' color='primary'>Adventurer</Typography>
 
               <Box sx={styles.settingsColumn}>
                 {renderSettingItem('Health', 'adventurer.health', 'number', [1, 200])}
-                {renderSettingItem('XP', 'adventurer.xp', 'number', [0, 1000])}
+                {renderSettingItem('XP', 'adventurer.xp', 'number', [1, 1000])}
                 {renderSettingItem('Gold', 'adventurer.gold', 'number', [0, 1000])}
                 {renderSettingItem('Stat Upgrades', 'adventurer.stat_upgrades_available', 'number', [0, 10])}
               </Box>
@@ -448,7 +550,7 @@ function GameSettings() {
               </Box>
             </Box>
 
-            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: '4px' }} />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', my: '4px' }} />
 
             <Box>
               <Box sx={styles.sectionHeader}>
@@ -526,7 +628,68 @@ function GameSettings() {
             </Box>
           </Box>
 
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mt: 1 }} />
+          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
+
+          <Box sx={styles.settingsGrid}>
+            <Typography variant='h6' color='primary'>Game</Typography>
+
+            <Box sx={{ width: '100%', mt: 1 }}>
+              {renderSettingItem('In Battle', 'in_battle', 'boolean')}
+            </Box>
+            <Box sx={{ width: '100%', mt: 1 }}>
+              {renderSettingItem('Game Seed', 'game_seed', 'seed')}
+            </Box>
+
+            {(gameSettings.in_battle && beast !== null) &&
+              <Box sx={styles.topSection} mt={1}>
+                <Box sx={styles.beastInfo}>
+                  <Box sx={styles.beastHeader}>
+                    <Typography
+                      variant={beast.name.length > 28 ? "h5" : "h4"}
+                      sx={styles.beastName}
+                    >
+                      {beast.name}
+                    </Typography>
+                    <Box sx={styles.beastType}>
+                      <Box sx={styles.statBox}>
+                        <Typography sx={styles.statLabel}>Type</Typography>
+                        <Typography sx={styles.statValue}>{beast.type}</Typography>
+                      </Box>
+                      <Box sx={styles.statBox}>
+                        <Typography sx={styles.statLabel}>Power</Typography>
+                        <Typography sx={styles.statValue}>{(6 - beast.tier) * beast.level}</Typography>
+                      </Box>
+                      <Box sx={styles.levelBox}>
+                        <Typography sx={styles.levelLabel}>Level</Typography>
+                        <Typography sx={styles.levelValue}>{beast.level}</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Box sx={styles.healthContainer} mt={2} mb={1}>
+                    <Box sx={styles.healthRow}>
+                      <Typography sx={styles.healthLabel}>Health</Typography>
+                      <Typography sx={styles.healthValue}>
+                        {beast.health}/{beast.health}
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={100}
+                      sx={styles.healthBar}
+                    />
+                  </Box>
+                </Box>
+                <Box sx={styles.beastImageContainer}>
+                  <img
+                    src={getBeastImageById(beast.id)}
+                    alt={beast.name}
+                    style={styles.beastImage}
+                  />
+                </Box>
+              </Box>}
+          </Box>
+
+          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', mt: 2 }} />
 
           {gameSettingsEdit && (
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
@@ -568,18 +731,26 @@ function GameSettings() {
             }}
           />
 
+          {/* Replace the old encounters dialog with the new component */}
+          <EncountersDialog
+            open={isEncountersDialogOpen}
+            onClose={() => setIsEncountersDialogOpen(false)}
+            encounters={futureEncounters}
+          />
+
         </motion.div >
       </Box >
     </Dialog >
   );
 }
 
-const styles = {
+const styles: Record<string, any> = {
   dialogContainer: {
     display: 'flex',
     flexDirection: 'column',
     boxSizing: 'border-box',
     p: 2,
+    pt: 0,
     width: '400px',
     maxWidth: '100%',
     minHeight: '80vh',
@@ -595,6 +766,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: '8px',
+    pt: '12px',
   },
   contentContainer: {
     boxSizing: 'border-box',
@@ -630,7 +802,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: '50px'
+    minWidth: '50px',
   },
   statsGrid: {
     display: 'grid',
@@ -645,12 +817,6 @@ const styles = {
     borderRadius: '4px',
     p: '6px',
     gap: '2px',
-  },
-  statLabel: {
-    color: 'rgba(128, 255, 0, 0.9)',
-    fontSize: '0.85rem',
-    fontFamily: 'VT323, monospace',
-    lineHeight: 1,
   },
   sectionHeader: {
     display: 'flex',
@@ -789,6 +955,135 @@ const styles = {
     width: '24px',
     height: '24px',
     objectFit: 'contain',
+  },
+  topSection: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    boxSizing: 'border-box',
+    alignItems: 'flex-start',
+    padding: '12px',
+    background: 'rgba(128, 255, 0, 0.05)',
+    borderRadius: '10px',
+    border: '1px solid rgba(128, 255, 0, 0.1)',
+    gap: 2
+  },
+  beastInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  beastHeader: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  beastName: {
+    color: '#80FF00',
+    fontWeight: 'bold',
+    textShadow: '0 0 10px rgba(128, 255, 0, 0.3)',
+  },
+  beastType: {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '8px',
+  },
+  levelBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    p: '2px 6px',
+    background: 'rgba(237, 207, 51, 0.1)',
+    borderRadius: '4px',
+    border: '1px solid rgba(237, 207, 51, 0.2)',
+    minWidth: '50px',
+    gap: '1px'
+  },
+  statBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    p: '2px 6px',
+    background: 'rgba(128, 255, 0, 0.1)',
+    borderRadius: '4px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+    minWidth: '50px',
+    gap: '1px'
+  },
+  levelLabel: {
+    color: 'rgba(237, 207, 51, 0.7)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    lineHeight: '1',
+  },
+  statLabel: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.7rem',
+    fontFamily: 'VT323, monospace',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    lineHeight: '1',
+  },
+  statValue: {
+    color: '#80FF00',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    lineHeight: '1',
+  },
+  levelValue: {
+    color: '#EDCF33',
+    fontSize: '0.8rem',
+    fontFamily: 'VT323, monospace',
+    fontWeight: 'bold',
+    lineHeight: '1',
+  },
+  healthContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  healthRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '4px',
+  },
+  healthLabel: {
+    color: 'rgba(128, 255, 0, 0.7)',
+    fontSize: '0.875rem',
+    lineHeight: '1',
+    fontFamily: 'VT323, monospace',
+  },
+  healthValue: {
+    color: '#80FF00',
+    fontWeight: 'bold',
+  },
+  healthBar: {
+    height: '6px',
+    borderRadius: '3px',
+    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: '#80FF00',
+    },
+  },
+  beastImageContainer: {
+    width: '130px',
+    height: '130px',
+    maxWidth: '35vw',
+    maxHeight: '35vw',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  beastImage: {
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain' as const,
   },
 };
 

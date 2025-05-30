@@ -1,4 +1,6 @@
 import { fetchAdventurer } from '@/api/starknet';
+import { getSettingsList } from '@/dojo/useGameSettings';
+import { Settings } from '@/dojo/useGameSettings';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
@@ -59,10 +61,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
-    setMarketItemIds, setNewMarket, setNewInventoryItems, exitGame } = useGameStore();
+    setMarketItemIds, setNewMarket, setNewInventoryItems, exitGame, metadata, gameSettings, setGameSettings } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
   const [replayEvents, setReplayEvents] = useState<any[]>([]);
+  const [VRFEnabled, setVRFEnabled] = useState(VRF_ENABLED);
 
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,10 +74,19 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     if (gameId) {
-      subscribeEvents(gameId);
       fetchMetadata(sdk, gameId);
     }
   }, [gameId]);
+
+  useEffect(() => {
+    if (metadata && !gameSettings) {
+      getSettingsList(null, [metadata.settings_id]).then((settings: Settings[]) => {
+        setGameSettings(settings[0])
+        setVRFEnabled(settings[0].game_seed === 0);
+        subscribeEvents(gameId!, settings[0]);
+      })
+    }
+  }, [metadata, gameId]);
 
   useEffect(() => {
     const processNextEvent = async () => {
@@ -90,7 +102,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     processNextEvent();
   }, [eventQueue, isProcessing]);
 
-  const subscribeEvents = async (gameId: number) => {
+  const subscribeEvents = async (gameId: number, settings: Settings) => {
     if (subscription) {
       subscription.cancel();
     }
@@ -108,7 +120,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     if (spectating) {
       handleSpectating(initialData?.getItems() || []);
     } else if (initialData?.getItems() && initialData.getItems().length === 0) {
-      startGame(gameId);
+      startGame(gameId, (settings.game_seed === 0 && settings.adventurer.xp !== 0));
     } else {
       reconnectGameEvents(initialData.getItems());
     }
@@ -190,11 +202,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
     let txs: any[] = [];
 
-    if (VRF_ENABLED && ['explore', 'attack', 'flee'].includes(action.type)) {
+    if (VRFEnabled && ['explore', 'attack', 'flee'].includes(action.type)) {
       txs.push(requestRandom());
     }
 
-    if (VRF_ENABLED && action.type === 'equip' && adventurer?.beast_health! > 0) {
+    if (VRFEnabled && action.type === 'equip' && adventurer?.beast_health! > 0) {
       txs.push(requestRandom());
     }
 

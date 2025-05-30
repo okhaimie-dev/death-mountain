@@ -19,8 +19,9 @@ export default function QuestCompletedScreen() {
         localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
       }
     }
+
     exitGame();
-    navigate(`/campaign?chapter=${quest?.chapterId}`);
+    navigate(`/campaign?chapter=${quest?.chapterId}`, { replace: true });
   }
 
   return (

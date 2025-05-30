@@ -86,9 +86,6 @@ mod game_systems {
             // assert provided weapon
             _assert_valid_starter_weapon(weapon, game_libs);
 
-            // get random seed
-            let (beast_seed, market_seed) = _get_random_seed(world, adventurer_id, 1, game_settings.game_seed);
-
             if (game_settings.adventurer.xp == 0) {
                 // generate a new adventurer using the provided started weapon
                 let mut adventurer = ImplAdventurer::new(weapon);
@@ -115,6 +112,9 @@ mod game_systems {
                 _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
             } else {
                 let mut adventurer = game_settings.adventurer;
+
+                // get random seed
+                let (beast_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp, game_settings.game_seed);
 
                 _emit_game_event(
                     ref world,

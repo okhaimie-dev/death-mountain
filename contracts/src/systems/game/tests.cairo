@@ -27,6 +27,7 @@ mod tests {
     use lootsurvivor::systems::game_token::contracts::{game_token_systems};
     use lootsurvivor::systems::loot::contracts::{ILootSystemsDispatcherTrait, loot_systems};
     use lootsurvivor::systems::renderer::contracts::{renderer_systems};
+    use lootsurvivor::systems::settings::contracts::{settings_systems};
     use starknet::{contract_address_const};
     use tournaments::components::interfaces::{IGameTokenDispatcher, IGameTokenDispatcherTrait};
 
@@ -56,6 +57,7 @@ mod tests {
                 TestResource::Contract(adventurer_systems::TEST_CLASS_HASH),
                 TestResource::Contract(beast_systems::TEST_CLASS_HASH),
                 TestResource::Contract(game_token_systems::TEST_CLASS_HASH),
+                TestResource::Contract(settings_systems::TEST_CLASS_HASH),
                 TestResource::Event(e_GameEvent::TEST_CLASS_HASH.try_into().unwrap()),
             ]
                 .span(),
@@ -76,8 +78,9 @@ mod tests {
             ContractDefTrait::new(@DEFAULT_NS(), @"beast_systems")
                 .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
             ContractDefTrait::new(@DEFAULT_NS(), @"game_token_systems")
-                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span())
-                .with_init_calldata(array![contract_address_const::<'player1'>().into()].span()),
+                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
+            ContractDefTrait::new(@DEFAULT_NS(), @"settings_systems")
+                .with_writer_of([dojo::utils::bytearray_hash(@DEFAULT_NS())].span()),
         ]
             .span()
     }

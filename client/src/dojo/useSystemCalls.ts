@@ -4,10 +4,12 @@ import { CallData } from 'starknet';
 import { dojoConfig } from "../../dojoConfig";
 import { ItemPurchase, Stats } from "../types/game";
 import { GameSettingsData } from "@/components/GameSettings";
+
 const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
 const VRF_PROVIDER_ADDRESS = import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS;
 const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
 const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
+const SETTINGS_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "settings_systems")?.address
 
 /**
  * Custom hook to handle system calls and state management in the Dojo application.
@@ -86,18 +88,23 @@ export const useSystemCalls = () => {
    * @param gameId The ID of the game to start
    * @returns {Promise<void>}
    */
-  const startGame = async (gameId: number) => {
+  const startGame = async (gameId: number, use_vrf: boolean) => {
     let starterWeapons = [12, 16, 46, 76]
     let weapon = starterWeapons[Math.floor(Math.random() * starterWeapons.length)]
 
-    await executeAction([
-      requestRandom(),
+    let calls: any[] = [
       {
         contractAddress: GAME_ADDRESS,
         entrypoint: 'start_game',
         calldata: [gameId, weapon]
       }
-    ], () => { });
+    ]
+
+    if (use_vrf) {
+      calls.unshift(requestRandom());
+    }
+
+    await executeAction(calls, () => { });
   };
 
   /**
@@ -224,12 +231,14 @@ export const useSystemCalls = () => {
 
     return await executeAction([
       {
-        contractAddress: GAME_ADDRESS,
+        contractAddress: SETTINGS_ADDRESS,
         entrypoint: 'add_settings',
         calldata: [
           settings.name,
           settings.adventurer,
-          bag
+          bag,
+          settings.game_seed,
+          settings.in_battle
         ]
       }
     ], () => { });

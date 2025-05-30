@@ -91,7 +91,7 @@ function HeaderMenu({ anchorEl, handleClose }: HeaderMenuProps) {
         </Box>
       </Box>
 
-      <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+      {/* <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
       <MenuItem onClick={() => { setGameSettingsListOpen(true); handleClose() }}>
         <ListItemIcon>
@@ -100,7 +100,7 @@ function HeaderMenu({ anchorEl, handleClose }: HeaderMenuProps) {
         <ListItemText>
           <Typography variant="h6">Game Settings</Typography>
         </ListItemText>
-      </MenuItem>
+      </MenuItem> */}
 
       <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 

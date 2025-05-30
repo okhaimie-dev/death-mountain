@@ -1,6 +1,5 @@
-import { getRecommendedSettings, getSettingsList } from '@/dojo/useGameSettings';
+import { getRecommendedSettings, getSettingsList, Settings } from '@/dojo/useGameSettings';
 import { useUIStore } from '@/stores/uiStore';
-import { Adventurer, Item } from '@/types/game';
 import AddIcon from '@mui/icons-material/Add';
 import { LoadingButton } from '@mui/lab';
 import { Box, Button, CircularProgress, Dialog, Divider, TextField, Typography } from '@mui/material';
@@ -9,14 +8,6 @@ import { motion } from "framer-motion";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fadeVariant } from "../utils/animations";
-
-interface Settings {
-  settings_id: number;
-  name: string;
-  created_by: string;
-  adventurer: Adventurer;
-  bag: Item[];
-}
 
 function GameSettingsList() {
   const navigate = useNavigate();

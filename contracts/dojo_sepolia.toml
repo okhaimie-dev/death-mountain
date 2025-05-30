@@ -10,7 +10,7 @@ rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 default = "ls_0_0_1"
 
 [writers]
-"ls_0_0_1" = ["ls_0_0_1-game_systems", "ls_0_0_1-game_token_systems"]
+"ls_0_0_1" = ["ls_0_0_1-game_systems", "ls_0_0_1-game_token_systems", "ls_0_0_1-settings_systems"]
 
 [init_call_args]
 "ls_0_0_1-game_token_systems" = [

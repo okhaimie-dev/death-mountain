@@ -12,6 +12,8 @@ export interface Settings {
   created_by: string;
   adventurer: Adventurer;
   bag: Item[];
+  game_seed: number;
+  in_battle: boolean;
 }
 
 export async function getRecommendedSettings(): Promise<Settings[]> {
@@ -69,7 +71,7 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
       ${whereStatement}
       ORDER BY settings_id ASC
       LIMIT 1000`;
-  console
+
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -79,13 +81,14 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
     });
 
     const data = await response.json();
-    console.log("getSettingsList data", data);
     let results: Settings[] = data.map((item: any) => ({
       settings_id: item.settings_id,
       name: hexToAscii(item.name).replace(/^\0+/, ''),
       created_by: item.created_by,
       adventurer: formatAdventurer(item),
-      bag: formatBag(item)
+      bag: formatBag(item),
+      in_battle: item.in_battle,
+      game_seed: parseInt(item.game_seed, 16)
     }));
 
     // Sort by the order of input IDs if provided
@@ -93,7 +96,6 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
       results.sort((a: any, b: any) => ids.indexOf(a.settings_id) - ids.indexOf(b.settings_id));
     }
 
-    console.log("getSettingsList results", results);
     return results;
   } catch (error) {
     console.error("Error fetching settings list:", error);

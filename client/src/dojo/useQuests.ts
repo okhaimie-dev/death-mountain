@@ -6,6 +6,9 @@ import griffinImg from '@/assets/beasts/griffin.png';
 import hydraImg from '@/assets/beasts/hydra.png';
 import phoenixImg from '@/assets/beasts/phoenix.png';
 import wyvernImg from '@/assets/beasts/wyvern.png';
+import leviathanImg from '@/assets/beasts/leviathan.png';
+import ghoulImg from '@/assets/beasts/ghoul.png';
+import trollImg from '@/assets/beasts/troll.png';
 
 export interface Quest {
   id: number;
@@ -48,9 +51,9 @@ export const fetchCampaign = async (id: number) => {
           title: "Basic Combat",
           description: "A wild beast approaches. What will you do?",
           isLocked: false,
-          beastImage: griffinImg,
+          beastImage: trollImg,
           beastName: "Griffin",
-          settingsId: 1,
+          settingsId: 0,
           targetScore: 4
         },
         {
@@ -59,10 +62,10 @@ export const fetchCampaign = async (id: number) => {
           description: "A powerful beast emerges from the shadows. Fight or flight?",
           isLocked: true,
           requiredQuestId: 1,
-          beastImage: wyvernImg,
+          beastImage: leviathanImg,
           beastName: "Wyvern",
           settingsId: 2,
-          targetScore: 200
+          targetScore: 11
         },
         {
           id: 3,
@@ -70,10 +73,10 @@ export const fetchCampaign = async (id: number) => {
           description: "Your current gear feels inadequate. Perhaps there's something in your inventory that could help.",
           isLocked: true,
           requiredQuestId: 2,
-          beastImage: phoenixImg,
+          beastImage: ghoulImg,
           beastName: "Phoenix",
-          settingsId: 3,
-          targetScore: 300
+          settingsId: 4,
+          targetScore: 50
         },
         {
           id: 4,
@@ -83,8 +86,8 @@ export const fetchCampaign = async (id: number) => {
           requiredQuestId: 3,
           beastImage: basiliskImg,
           beastName: "Basilisk",
-          settingsId: 4,
-          targetScore: 400
+          settingsId: 6,
+          targetScore: 53
         },
         {
           id: 5,
@@ -94,8 +97,8 @@ export const fetchCampaign = async (id: number) => {
           requiredQuestId: 4,
           beastImage: chimeraImg,
           beastName: "Chimera",
-          settingsId: 5,
-          targetScore: 500
+          settingsId: 7,
+          targetScore: 81
         }
       ]
     },
