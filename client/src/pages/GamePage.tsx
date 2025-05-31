@@ -73,7 +73,9 @@ export default function GamePage() {
 
   useEffect(() => {
     return () => {
-      subscription?.cancel();
+      if (subscription) {
+        subscription.cancel();
+      }
       exitGame();
     };
   }, []);
