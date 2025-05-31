@@ -264,13 +264,10 @@ export function listAllEncounters(
     xp = 4;
   }
 
-  const felt = get_simple_entropy(xp, entropy);
-  const { u64_1 } = felt_to_two_u64(felt);
-
   encounters = recurseEncounters(
     encounters,
     [xp],
-    u64_1,
+    entropy,
     adventurerLevel,
     hasBeast
   );
@@ -281,7 +278,7 @@ export function listAllEncounters(
 function recurseEncounters(
   encounters: Encounter[],
   xpList: number[],
-  adventurerEntropy: bigint,
+  entropy: number,
   adventurerLevel: number,
   hasBeast: boolean
 ): Encounter[] {
@@ -291,8 +288,11 @@ function recurseEncounters(
 
   let xp = xpList.sort((a, b) => a - b).shift()!;
 
+  const felt = get_simple_entropy(xp, entropy);
+  const { u64_1 } = felt_to_two_u64(felt);
+
   let nextEncounter = {
-    ...getNextEncounter(xp, adventurerEntropy, hasBeast),
+    ...getNextEncounter(xp, u64_1, hasBeast),
     adventurerLevel: Math.floor(Math.sqrt(xp)),
     xp: xp,
   };
@@ -311,7 +311,7 @@ function recurseEncounters(
   return recurseEncounters(
     encounters,
     xpList,
-    adventurerEntropy,
+    entropy,
     adventurerLevel,
     false
   );

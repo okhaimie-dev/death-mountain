@@ -17,8 +17,8 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fadeVariant } from "../utils/animations";
-import ItemList from './ItemList';
 import EncountersDialog from './EncountersDialog';
+import ItemList from './ItemList';
 
 export interface GameSettingsData {
   name: string;
@@ -112,6 +112,7 @@ function GameSettings() {
 
     await createSettings(gameSettings)
 
+    setGameSettingsDialogOpen(false)
     setCreating(false)
   };
 
@@ -640,7 +641,7 @@ function GameSettings() {
               {renderSettingItem('Game Seed', 'game_seed', 'seed')}
             </Box>
 
-            {(gameSettings.in_battle && beast !== null) &&
+            {gameSettings.in_battle && beast !== null ? (
               <Box sx={styles.topSection} mt={1}>
                 <Box sx={styles.beastInfo}>
                   <Box sx={styles.beastHeader}>
@@ -686,7 +687,8 @@ function GameSettings() {
                     style={styles.beastImage}
                   />
                 </Box>
-              </Box>}
+              </Box>
+            ) : null}
           </Box>
 
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', mt: 2 }} />
