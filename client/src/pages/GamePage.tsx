@@ -45,7 +45,6 @@ export default function GamePage() {
   useEffect(() => {
     if (!account && gameId && adventurer) {
       navigate('/');
-      exitGame()
     }
   }, [account]);
 
@@ -74,8 +73,11 @@ export default function GamePage() {
   useEffect(() => {
     return () => {
       if (subscription) {
-        subscription.cancel();
+        try {
+          subscription.cancel();
+        } catch (error) { }
       }
+
       exitGame();
     };
   }, []);

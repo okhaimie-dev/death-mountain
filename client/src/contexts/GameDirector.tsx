@@ -10,6 +10,7 @@ import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface GameDirectorContext {
   executeGameAction: (action: GameAction) => void;
@@ -56,12 +57,13 @@ const replayDelayTimes: any = {
 const VRF_ENABLED = true;
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
+  const navigate = useNavigate();
   const { sdk } = useDojoSDK();
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
-    setMarketItemIds, setNewMarket, setNewInventoryItems, exitGame, metadata, gameSettings, setGameSettings } = useGameStore();
+    setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
   const [replayEvents, setReplayEvents] = useState<any[]>([]);
@@ -130,13 +132,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const handleSpectating = async (entities: any[]) => {
     if (entities.length === 0) {
-      return exitGame();
+      return navigate('/');
     }
 
     // Fetch adventurer state
     const adventurer = await fetchAdventurer(gameId!);
     if (!adventurer) {
-      return exitGame();
+      return navigate('/');
     }
 
     if (adventurer.health > 0) {

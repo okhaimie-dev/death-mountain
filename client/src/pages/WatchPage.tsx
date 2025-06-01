@@ -58,7 +58,6 @@ export default function WatchPage() {
   }, [replayIndex, isPlaying]); // Add dependencies
 
   const handleEndWatching = () => {
-    exitGame();
     setSpectating(false);
     navigate('/');
   };

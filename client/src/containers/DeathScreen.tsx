@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export default function DeathScreen() {
-  const { gameId, exitGame, adventurer, exploreLog, battleEvent, beast, quest } = useGameStore();
+  const { gameId, adventurer, exploreLog, battleEvent, beast, quest } = useGameStore();
   const navigate = useNavigate();
 
   const deathEvent = battleEvent || exploreLog.find(event => event.type === 'obstacle')
@@ -24,7 +24,6 @@ export default function DeathScreen() {
   const shareMessage = `I fell to the mist in Loot Survivor after reaching ${adventurer?.xp || 0} XP. Want to see how I did it? Watch my replay here: lootsurvivor.io/watch/${gameId} 🗡️⚔️ @provablegames @lootsurvivor`;
 
   const backToMenu = () => {
-    exitGame();
     if (quest) {
       navigate(`/campaign?chapter=${quest.chapterId}`, { replace: true });
     } else {
