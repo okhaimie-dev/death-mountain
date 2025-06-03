@@ -7,9 +7,10 @@ import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
 import QuestCompletedScreen from '@/containers/QuestCompletedScreen';
-import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import SettingsScreen from '@/containers/SettingsScreen';
+import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import { useController } from '@/contexts/controller';
+import { useGameDirector } from '@/contexts/GameDirector';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
@@ -17,7 +18,6 @@ import { Box } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useGameDirector } from '@/contexts/GameDirector';
 
 export default function GamePage() {
   const navigate = useNavigate();

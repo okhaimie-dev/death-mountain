@@ -4,7 +4,9 @@ use lootsurvivor::models::game::GameSettings;
 
 #[starknet::interface]
 pub trait ISettingsSystems<T> {
-    fn add_settings(ref self: T, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool) -> u32;
+    fn add_settings(
+        ref self: T, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool,
+    ) -> u32;
     fn setting_details(self: @T, settings_id: u32) -> GameSettings;
     fn game_settings(self: @T, game_id: u64) -> GameSettings;
     fn settings_count(self: @T) -> u32;
@@ -17,13 +19,15 @@ mod settings_systems {
     use lootsurvivor::constants::world::{DEFAULT_NS, VERSION};
     use lootsurvivor::models::adventurer::adventurer::Adventurer;
     use lootsurvivor::models::adventurer::bag::Bag;
-    use lootsurvivor::models::game::{GameSettings, SettingsCounter, GameSettingsMetadata};
-    use tournaments::components::models::game::TokenMetadata;
+    use lootsurvivor::models::game::{GameSettings, GameSettingsMetadata, SettingsCounter};
     use super::ISettingsSystems;
+    use tournaments::components::models::game::TokenMetadata;
 
     #[abi(embed_v0)]
     impl SettingsSystemsImpl of ISettingsSystems<ContractState> {
-        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool) -> u32 {
+        fn add_settings(
+            ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag, game_seed: u64, in_battle: bool,
+        ) -> u32 {
             let mut world: WorldStorage = self.world(@DEFAULT_NS());
             // increment settings counter
             let mut settings_count: SettingsCounter = world.read_model(VERSION);
@@ -31,9 +35,7 @@ mod settings_systems {
 
             world
                 .write_model(
-                    @GameSettings {
-                        settings_id: settings_count.count, adventurer, bag, game_seed, in_battle,
-                    },
+                    @GameSettings { settings_id: settings_count.count, adventurer, bag, game_seed, in_battle },
                 );
             world
                 .write_model(

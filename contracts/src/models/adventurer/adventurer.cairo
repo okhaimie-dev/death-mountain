@@ -39,7 +39,8 @@ pub struct Adventurer {
     pub stat_upgrades_available: u8, // 4 bits
     pub stats: Stats, // 30 bits
     pub equipment: Equipment, // 128 bits
-    pub item_specials_seed: u16,
+    pub item_specials_seed: u16, // 16 bits
+    pub action_count: u16 // 16 bits
 }
 
 #[derive(Drop, Serde)]
@@ -73,6 +74,7 @@ pub impl ImplAdventurer of IAdventurer {
             },
             beast_health: BeastSettings::STARTER_BEAST_HEALTH.into(),
             stat_upgrades_available: 0,
+            action_count: 0,
             item_specials_seed: 0,
         }
     }
@@ -94,7 +96,8 @@ pub impl ImplAdventurer of IAdventurer {
             + adventurer.stat_upgrades_available.into() * TWO_POW_44
             + adventurer.stats.pack().into() * TWO_POW_48
             + adventurer.equipment.pack().into() * TWO_POW_78
-            + adventurer.item_specials_seed.into() * TWO_POW_206)
+            + adventurer.item_specials_seed.into() * TWO_POW_206
+            + adventurer.action_count.into() * TWO_POW_222)
             .try_into()
             .unwrap()
     }
@@ -111,7 +114,8 @@ pub impl ImplAdventurer of IAdventurer {
         let (packed, stat_upgrades_available) = DivRem::div_rem(packed, TWO_POW_4_NZ);
         let (packed, stats) = DivRem::div_rem(packed, TWO_POW_30_NZ);
         let (packed, equipment) = DivRem::div_rem(packed, TWO_POW_128_NZ);
-        let (_, item_specials_seed) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
+        let (packed, item_specials_seed) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
+        let (_, action_count) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
 
         Adventurer {
             health: health.try_into().unwrap(),
@@ -122,6 +126,7 @@ pub impl ImplAdventurer of IAdventurer {
             stats: ImplStats::unpack(stats.try_into().unwrap()),
             equipment: ImplEquipment::unpack(equipment.try_into().unwrap()),
             item_specials_seed: item_specials_seed.try_into().unwrap(),
+            action_count: action_count.try_into().unwrap(),
         }
     }
 
@@ -860,6 +865,17 @@ pub impl ImplAdventurer of IAdventurer {
         }
     }
 
+    /// @notice Increment the action count
+    /// @param self: The adventurer
+    #[inline(always)]
+    fn increment_action_count(ref self: Adventurer) {
+        let (result, overflow) = self.action_count.overflowing_add(1);
+        if (!overflow) {
+            self.action_count = result;
+        } else {
+            self.action_count = 0;
+        }
+    }
 
     /// @title get_random_explore
     /// @notice gets random explore based on provided entropy
@@ -1073,6 +1089,7 @@ const TWO_POW_44: u256 = 0x100000000000;
 const TWO_POW_48: u256 = 0x1000000000000;
 const TWO_POW_78: u256 = 0x40000000000000000000;
 const TWO_POW_206: u256 = 0x4000000000000000000000000000000000000000000000000000;
+const TWO_POW_222: u256 = 0x40000000000000000000000000000000000000000000000000000000;
 const TWO_POW_128_NZ: NonZero<u256> = 0x100000000000000000000000000000000;
 
 // ---------------------------
@@ -1084,9 +1101,9 @@ mod tests {
     use lootsurvivor::constants::adventurer::{
         BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS,
         JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD,
-        MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED, MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE,
-        MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS, SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS,
-        STARTING_GOLD, STARTING_HEALTH,
+        MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
+        MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
+        SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
     };
     use lootsurvivor::constants::beast::{BeastId, BeastSettings};
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
@@ -1133,6 +1150,7 @@ mod tests {
             equipment,
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
+            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -1144,6 +1162,7 @@ mod tests {
         assert(adventurer.stat_upgrades_available == unpacked.stat_upgrades_available, 'stat_upgrades_available');
         assert(adventurer.stats == unpacked.stats, 'wrong unpacked stats');
         assert(adventurer.equipment == unpacked.equipment, 'equipment mistmatch');
+        assert(adventurer.action_count == unpacked.action_count, 'action_count');
         assert(adventurer.item_specials_seed == unpacked.item_specials_seed, 'item_specials_seed');
 
         let adventurer = Adventurer {
@@ -1171,6 +1190,7 @@ mod tests {
             },
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
+            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -3487,6 +3507,7 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
+            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -3579,6 +3600,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {
@@ -3616,6 +3638,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {
@@ -3654,6 +3677,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {

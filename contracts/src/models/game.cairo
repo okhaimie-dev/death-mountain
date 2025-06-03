@@ -71,6 +71,7 @@ pub struct SettingsCounter {
 pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,
+    pub action_count: u16,
     pub details: GameEventDetails,
 }
 
