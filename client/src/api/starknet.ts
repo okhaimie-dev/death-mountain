@@ -79,6 +79,7 @@ export const fetchAdventurer = async (adventurerId: number): Promise<Adventurer 
         },
       },
       item_specials_seed: parseInt(data?.result[28], 16),
+      action_count: parseInt(data?.result[28], 16),
     }
 
     return adventurer;

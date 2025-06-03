@@ -26,6 +26,7 @@ export interface Adventurer {
   stats: Stats;
   equipment: Equipment;
   item_specials_seed: number;
+  action_count: number;
 }
 
 export interface Bag {

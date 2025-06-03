@@ -157,7 +157,8 @@ function formatAdventurer(data: any): Adventurer {
     stat_upgrades_available: data["adventurer.stat_upgrades_available"],
     stats: stats,
     equipment: equipment,
-    item_specials_seed: data["adventurer.item_specials_seed"]
+    item_specials_seed: data["adventurer.item_specials_seed"],
+    action_count: data["adventurer.action_count"]
   }
 
   return adventurer;

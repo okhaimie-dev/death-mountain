@@ -57,7 +57,8 @@ const DEFAULT_SETTINGS: GameSettingsData = {
       neck: { id: 0, xp: 0 },
       ring: { id: 0, xp: 0 }
     },
-    item_specials_seed: 0
+    item_specials_seed: 0,
+    action_count: 0
   },
   bag: []
 };

@@ -4,7 +4,7 @@ import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
-import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent } from '@/utils/events';
+import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
@@ -66,12 +66,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
 
   const [spectating, setSpectating] = useState(false);
-  const [replayEvents, setReplayEvents] = useState<any[]>([]);
+  const [replayEvents, setReplayEvents] = useState<GameEvent[]>([]);
   const [VRFEnabled, setVRFEnabled] = useState(VRF_ENABLED);
 
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [eventQueue, setEventQueue] = useState<any[]>([]);
+  const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
@@ -113,25 +113,32 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       query: gameEventsQuery(gameId),
       callback: ({ data, error }: { data?: any[]; error?: Error }) => {
         if (data && data.length > 0) {
-          let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
+          let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
+            .map((entity: any) => formatGameEvent(entity));
+
           setEventQueue(prev => [...prev, ...events]);
         }
       }
     });
 
+    let events = (initialData?.getItems() || [])
+      .filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
+      .map((entity: any) => formatGameEvent(entity))
+      .sort((a: GameEvent, b: GameEvent) => a.action_count - b.action_count);
+
     if (spectating) {
-      handleSpectating(initialData?.getItems() || []);
-    } else if (initialData?.getItems() && initialData.getItems().length === 0) {
+      handleSpectating(events);
+    } else if (!events || events.length === 0) {
       startGame(gameId, (settings.game_seed === 0 && settings.adventurer.xp !== 0));
     } else {
-      reconnectGameEvents(initialData.getItems());
+      reconnectGameEvents(events);
     }
 
     setSubscription(sub);
   }
 
-  const handleSpectating = async (entities: any[]) => {
-    if (entities.length === 0) {
+  const handleSpectating = async (events: GameEvent[]) => {
+    if (events.length === 0) {
       return navigate('/');
     }
 
@@ -142,23 +149,19 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (adventurer.health > 0) {
-      reconnectGameEvents(entities);
+      reconnectGameEvents(events);
     } else {
-      setReplayEvents(entities);
+      setReplayEvents(events);
     }
   }
 
-  const reconnectGameEvents = async (entities: any[]) => {
-    let events = entities.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")));
-
-    events.forEach(entity => {
-      processEvent(entity, true);
+  const reconnectGameEvents = async (events: GameEvent[]) => {
+    events.forEach(event => {
+      processEvent(event, true);
     });
   }
 
-  const processEvent = async (entity: any, reconnecting: boolean) => {
-    let event = formatGameEvent(entity);
-
+  const processEvent = async (event: GameEvent, reconnecting: boolean) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
     }

@@ -122,7 +122,7 @@ export default function ExploreScreen() {
 
                     {event.items && event.items.length > 0 && (
                       <Typography sx={styles.encounterXP}>
-                        Equipped {event.items.length} items
+                        {event.items.length} items
                       </Typography>
                     )}
 

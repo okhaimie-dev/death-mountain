@@ -87,6 +87,7 @@ mod game_systems {
             if (game_settings.adventurer.xp == 0) {
                 // generate a new adventurer using the provided started weapon
                 let mut adventurer = ImplAdventurer::new(weapon);
+                adventurer.increment_action_count();
 
                 // spoof a beast ambush by deducting health from the adventurer
                 adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
@@ -111,6 +112,7 @@ mod game_systems {
                 _save_adventurer_no_boosts(ref world, ref adventurer, adventurer_id, game_libs);
             } else {
                 let mut adventurer = game_settings.adventurer;
+                adventurer.increment_action_count();
 
                 // get random seed
                 let (beast_seed, market_seed) = _get_random_seed(
@@ -181,6 +183,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -247,6 +250,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -370,6 +374,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -473,6 +478,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid
             _assert_not_dead(adventurer);
@@ -548,6 +554,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid (ownership of item is handled in internal function when we
             // iterate over items)
@@ -591,6 +598,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid
             _assert_not_dead(adventurer);
@@ -647,6 +655,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             let immutable_adventurer = adventurer.clone();
 
@@ -1743,7 +1752,6 @@ mod game_systems {
         ref world: WorldStorage, ref adventurer: Adventurer, bag: Bag, adventurer_id: u64, game_libs: GameLibs,
     ) {
         _emit_game_event(ref world, adventurer_id, adventurer.action_count, GameEventDetails::adventurer(adventurer));
-        adventurer.increment_action_count();
         adventurer = game_libs.adventurer.remove_stat_boosts(adventurer, bag);
         let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
@@ -1760,7 +1768,6 @@ mod game_systems {
         ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs,
     ) {
         _emit_game_event(ref world, adventurer_id, adventurer.action_count, GameEventDetails::adventurer(adventurer));
-        adventurer.increment_action_count();
         let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }

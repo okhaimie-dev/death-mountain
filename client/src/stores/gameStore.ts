@@ -86,11 +86,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       return { adventurer: data, adventurerState: data };
     }
 
-    if (data.xp < state.adventurer.xp) {
-      return state;
-    }
-
-    if (data.xp === state.adventurer.xp && data.beast_health === 0 && state.adventurer?.beast_health !== 0) {
+    if (data.action_count < state.adventurer.action_count) {
       return state;
     }
 

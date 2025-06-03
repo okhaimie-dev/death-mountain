@@ -1,18 +1,19 @@
-import { OBSTACLE_NAMES } from "@/constants/obstacle";
-import { Adventurer, Attack, Beast, Item, ItemPurchase, Obstacle, Stats, getEntityModel } from "@/types/game";
 import adventurerImg from '@/assets/images/adventurer.png';
 import barrierImg from '@/assets/images/barrier.png';
 import goldImg from '@/assets/images/gold.png';
 import healthImg from '@/assets/images/health.png';
 import marketImg from '@/assets/images/market.png';
 import upgrade from '@/assets/images/upgrade.png';
+import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_NAMES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
+import { OBSTACLE_NAMES } from "@/constants/obstacle";
+import { Adventurer, Attack, Beast, getEntityModel, Item, ItemPurchase, Obstacle, Stats } from "@/types/game";
 import { getBeastImageById, getBeastName, getBeastTier, getBeastType } from "./beast";
 import { ItemUtils } from "./loot";
-import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_NAMES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
 
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
   'buy_items' | 'equip' | 'drop' | 'level_up' | 'market_items' | 'ambush' | 'attack' | 'beast_attack' | 'flee' | 'unknown';
+  action_count: Number;
   adventurer?: Adventurer;
   bag?: Item[];
   beast?: Beast;
@@ -39,11 +40,12 @@ export interface GameEvent {
 
 export const formatGameEvent = (entity: any): GameEvent => {
   let event = getEntityModel(entity, "GameEvent")
-  const { details } = event;
+  const { action_count, details } = event;
 
   if ('adventurer' in details.variant) {
     return {
       type: 'adventurer',
+      action_count,
       adventurer: details.variant.adventurer
     };
   }
@@ -51,6 +53,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
   else if ('bag' in details.variant) {
     return {
       type: 'bag',
+      action_count,
       bag: Object.values(details.variant.bag)
     };
   }
@@ -59,6 +62,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const beast = details.variant.beast;
     return {
       type: 'beast',
+      action_count,
       beast: {
         id: beast.id,
         baseName: BEAST_NAMES[beast.id],
@@ -77,6 +81,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const discovery = details.variant.discovery;
     return {
       type: 'discovery',
+      action_count,
       discovery: {
         type: Object.keys(discovery.discovery_type.variant)[0] as 'Gold' | 'Health' | 'Loot',
         amount: Object.values(discovery.discovery_type.variant)[0] as number,
@@ -89,6 +94,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const obstacle = details.variant.obstacle;
     return {
       type: 'obstacle',
+      action_count,
       xp_reward: obstacle.xp_reward,
       obstacle: {
         id: obstacle.obstacle_id,
@@ -104,6 +110,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const beast = details.variant.defeated_beast;
     return {
       type: 'defeated_beast',
+      action_count,
       beast_id: beast.beast_id,
       gold_reward: beast.gold_reward,
       xp_reward: beast.xp_reward
@@ -114,6 +121,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const beast = details.variant.fled_beast;
     return {
       type: 'fled_beast',
+      action_count,
       beast_id: beast.beast_id,
       xp_reward: beast.xp_reward
     };
@@ -123,6 +131,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const upgrade = details.variant.stat_upgrade;
     return {
       type: 'stat_upgrade',
+      action_count,
       stats: upgrade.stats
     };
   }
@@ -131,6 +140,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const buy_items = details.variant.buy_items;
     return {
       type: 'buy_items',
+      action_count,
       potions: buy_items.potions,
       items_purchased: buy_items.items_purchased
     };
@@ -140,6 +150,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const equip = details.variant.equip;
     return {
       type: 'equip',
+      action_count,
       items: equip.items
     };
   }
@@ -148,6 +159,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const drop = details.variant.drop;
     return {
       type: 'drop',
+      action_count,
       items: drop.items
     };
   }
@@ -156,6 +168,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const levelUp = details.variant.level_up;
     return {
       type: 'level_up',
+      action_count,
       level: levelUp.level,
     };
   }
@@ -164,6 +177,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const marketItems = details.variant.market_items;
     return {
       type: 'market_items',
+      action_count,
       items: marketItems.items
     };
   }
@@ -172,6 +186,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const attack = details.variant.attack;
     return {
       type: 'attack',
+      action_count,
       attack: {
         damage: attack.damage,
         location: 'None',
@@ -184,6 +199,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const beastAttack = details.variant.beast_attack;
     return {
       type: 'beast_attack',
+      action_count,
       attack: {
         damage: beastAttack.damage,
         location: beastAttack.location,
@@ -195,6 +211,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
   else if ('flee' in details.variant) {
     return {
       type: 'flee',
+      action_count,
       success: details.variant.flee
     };
   }
@@ -203,6 +220,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     const ambush = details.variant.ambush;
     return {
       type: 'ambush',
+      action_count,
       attack: {
         damage: ambush.damage,
         location: ambush.location,
@@ -211,7 +229,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
     };
   }
 
-  return { type: 'unknown' };
+  return { type: 'unknown', action_count: 0 };
 };
 
 export const ExplorerLogEvents = [
@@ -292,6 +310,10 @@ export const getEventTitle = (event: GameEvent) => {
       return 'Stats Upgraded';
     case 'buy_items':
       return 'Visited Market';
+    case 'equip':
+      return 'Equipped Items';
+    case 'drop':
+      return 'Dropped Items'
     default:
       return 'Unknown Event';
   }

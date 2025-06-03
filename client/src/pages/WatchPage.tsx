@@ -12,13 +12,13 @@ import GamePage from './GamePage';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VideocamIcon from '@mui/icons-material/Videocam';
-import { formatGameEvent } from '@/utils/events';
+import { ExplorerReplayEvents } from '@/utils/events';
 
 export default function WatchPage() {
   const { watch } = useGameDirector();
   const { spectating, setSpectating, replayEvents, processEvent, setEventQueue } = watch;
 
-  const { gameId, adventurer, exitGame } = useGameStore();
+  const { gameId, adventurer, popExploreLog } = useGameStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [replayIndex, setReplayIndex] = useState(0);
 
@@ -45,7 +45,7 @@ export default function WatchPage() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isPlaying) return; // Don't handle keyboard events while playing
-      
+
       if (event.key === 'ArrowRight') {
         replayForward();
       } else if (event.key === 'ArrowLeft') {
@@ -77,12 +77,11 @@ export default function WatchPage() {
 
     let currentIndex = replayIndex;
     while (currentIndex < replayEvents.length - 1) {
-      let currentEntity = replayEvents[currentIndex];
-      processEvent(currentEntity, true);
+      let currentEvent = replayEvents[currentIndex];
+      processEvent(currentEvent, true);
       currentIndex++;
 
-      let event = formatGameEvent(currentEntity);
-      if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
+      if (currentEvent.type === 'adventurer' && currentEvent.adventurer?.stat_upgrades_available === 0) {
         break;
       }
     }
@@ -95,11 +94,16 @@ export default function WatchPage() {
 
     let currentIndex = replayIndex;
     while (currentIndex > 0) {
-      let currentEntity = replayEvents[currentIndex];
-      processEvent(currentEntity, true);
+      let event = replayEvents[currentIndex];
+
+      if (ExplorerReplayEvents.includes(event.type)) {
+        popExploreLog()
+      } else {
+        processEvent(event, true);
+      }
+
       currentIndex--;
 
-      let event = formatGameEvent(currentEntity);
       if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
         break;
       }
