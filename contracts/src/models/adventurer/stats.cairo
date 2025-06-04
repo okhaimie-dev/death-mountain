@@ -71,7 +71,7 @@ pub impl ImplStats of IStat {
     /// @notice applies stat boosts to adventurer
     /// @param self The Adventurer to apply stat boosts to.
     /// @param stats The stat boosts to apply to the adventurer.
-    #[inline(always)]
+
     fn apply_stats(ref self: Stats, stats: Stats) {
         self.increase_strength(stats.strength);
         self.increase_dexterity(stats.dexterity);
@@ -84,7 +84,7 @@ pub impl ImplStats of IStat {
     /// @notice removes stat boosts from adventurer
     /// @param self The Stats to remove stat boosts from.
     /// @param stats The stat boosts to remove from the adventurer.
-    #[inline(always)]
+
     fn remove_stats(ref self: Stats, stats: Stats) {
         self.decrease_strength(stats.strength);
         self.decrease_dexterity(stats.dexterity);
@@ -242,7 +242,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the strength stat
     /// @param self The Stats to increase the strength stat of.
     /// @param amount The amount to increase the strength stat by.
-    #[inline(always)]
+
     fn increase_strength(ref self: Stats, amount: u8) {
         self.strength += amount;
     }
@@ -250,7 +250,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the dexterity stat
     /// @param self The Stats to increase the dexterity stat of.
     /// @param amount The amount to increase the dexterity stat by.
-    #[inline(always)]
+
     fn increase_dexterity(ref self: Stats, amount: u8) {
         self.dexterity += amount;
     }
@@ -258,7 +258,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the vitality stat
     /// @param self The Stats to increase the vitality stat of.
     /// @param amount The amount to increase the vitality stat by.
-    #[inline(always)]
+
     fn increase_vitality(ref self: Stats, amount: u8) {
         self.vitality += amount;
     }
@@ -266,7 +266,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the intelligence stat
     /// @param self The Stats to increase the intelligence stat of.
     /// @param amount The amount to increase the intelligence stat by.
-    #[inline(always)]
+
     fn increase_intelligence(ref self: Stats, amount: u8) {
         self.intelligence += amount;
     }
@@ -274,7 +274,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the wisdom stat
     /// @param self The Stats to increase the wisdom stat of.
     /// @param amount The amount to increase the wisdom stat by.
-    #[inline(always)]
+
     fn increase_wisdom(ref self: Stats, amount: u8) {
         self.wisdom += amount;
     }
@@ -282,7 +282,7 @@ pub impl ImplStats of IStat {
     /// @notice increases the charisma stat
     /// @param self The Stats to increase the charisma stat of.
     /// @param amount The amount to increase the charisma stat by.
-    #[inline(always)]
+
     fn increase_charisma(ref self: Stats, amount: u8) {
         self.charisma += amount;
     }
@@ -290,7 +290,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the strength stat
     /// @param self The Stats to decrease the strength stat of.
     /// @param amount The amount to decrease the strength stat by.
-    #[inline(always)]
+
     fn decrease_strength(ref self: Stats, amount: u8) {
         assert(amount <= self.strength, 'strength underflow');
         self.strength -= amount;
@@ -299,7 +299,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the dexterity stat
     /// @param self The Stats to decrease the dexterity stat of.
     /// @param amount The amount to decrease the dexterity stat by.
-    #[inline(always)]
+
     fn decrease_dexterity(ref self: Stats, amount: u8) {
         assert(amount <= self.dexterity, 'dexterity underflow');
         self.dexterity -= amount;
@@ -308,7 +308,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the vitality stat
     /// @param self The Stats to decrease the vitality stat of.
     /// @param amount The amount to decrease the vitality stat by.
-    #[inline(always)]
+
     fn decrease_vitality(ref self: Stats, amount: u8) {
         assert(amount <= self.vitality, 'vitality underflow');
         self.vitality -= amount;
@@ -317,7 +317,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the intelligence stat
     /// @param self The Stats to decrease the intelligence stat of.
     /// @param amount The amount to decrease the intelligence stat by.
-    #[inline(always)]
+
     fn decrease_intelligence(ref self: Stats, amount: u8) {
         assert(amount <= self.intelligence, 'intelligence underflow');
         self.intelligence -= amount;
@@ -326,7 +326,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the wisdom stat
     /// @param self The Stats to decrease the wisdom stat of.
     /// @param amount The amount to decrease the wisdom stat by.
-    #[inline(always)]
+
     fn decrease_wisdom(ref self: Stats, amount: u8) {
         assert(amount <= self.wisdom, 'wisdom underflow');
         self.wisdom -= amount;
@@ -335,7 +335,7 @@ pub impl ImplStats of IStat {
     /// @notice decreases the charisma stat
     /// @param self The Stats to decrease the charisma stat of.
     /// @param amount The amount to decrease the charisma stat by.
-    #[inline(always)]
+
     fn decrease_charisma(ref self: Stats, amount: u8) {
         assert(amount <= self.charisma, 'charisma underflow');
         self.charisma -= amount;
@@ -372,7 +372,7 @@ pub impl ImplStats of IStat {
     /// @notice applies a stat to the adventurer
     /// @param self The Stats to apply the stat to.
     /// @param stat The stat to apply.
-    #[inline(always)]
+
     fn apply_stat(ref self: Stats, stat: u8) {
         if (stat == 0) {
             self.strength += 1
@@ -391,7 +391,7 @@ pub impl ImplStats of IStat {
         }
     }
 
-    #[inline(always)]
+
     fn count_total_stats(self: Stats) -> u16 {
         self.strength.into()
             + self.dexterity.into()

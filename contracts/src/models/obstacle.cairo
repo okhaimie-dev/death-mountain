@@ -35,19 +35,19 @@ pub impl ImplObstacle of IObstacle {
         }
     }
 
-    #[inline(always)]
+
     fn is_t1(id: u8) -> bool {
         (id >= 1 && id < 6) || (id >= 26 && id < 31) || (id >= 51 && id < 56)
     }
-    #[inline(always)]
+
     fn is_t2(id: u8) -> bool {
         (id >= 6 && id < 11) || (id >= 31 && id < 36) || (id >= 56 && id < 61)
     }
-    #[inline(always)]
+
     fn is_t3(id: u8) -> bool {
         (id >= 11 && id < 16) || (id >= 36 && id < 41) || (id >= 61 && id < 66)
     }
-    #[inline(always)]
+
     fn is_t4(id: u8) -> bool {
         (id >= 16 && id < 21) || (id >= 41 && id < 46) || (id >= 66 && id < 71)
     }

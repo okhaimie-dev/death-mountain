@@ -198,7 +198,7 @@ pub impl ImplCombat of ICombat {
         }
     }
 
-    #[inline(always)]
+
     /// @notice determines if the attack is a critical hit
     /// @param chance: the chance of a critical hit
     /// @param rnd: the random value used to determine if the attack is a critical hit
@@ -320,7 +320,7 @@ pub impl ImplCombat of ICombat {
     /// @notice: gets level from xp
     /// @param xp: the xp to get the level for
     /// @return u8: the level for the given xp
-    #[inline(always)]
+
     fn get_level_from_xp(xp: u16) -> u8 {
         if (xp == 0) {
             1
