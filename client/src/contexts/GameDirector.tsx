@@ -22,6 +22,8 @@ export interface GameDirectorContext {
     replayEvents: any[];
     processEvent: (event: any, reconnecting: boolean) => void;
     setEventQueue: (events: any[]) => void;
+    eventsProcessed: number;
+    setEventsProcessed: (eventsProcessed: number) => void;
   }
 }
 
@@ -40,18 +42,17 @@ const delayTimes: any = {
 }
 
 const replayDelayTimes: any = {
-  'level_up': 1000,
-  'discovery': 1000,
-  'obstacle': 1000,
+  'discovery': 2000,
+  'obstacle': 2000,
   'attack': 2000,
   'beast_attack': 2000,
-  'flee': 1000,
-  'fled_beast': 1000,
+  'beast': 2000,
+  'flee': 2000,
+  'fled_beast': 2000,
   'defeated_beast': 1000,
-  'stat_upgrade': 1000,
-  'buy_items': 1000,
-  'equip': 1000,
-  'drop': 1000,
+  'buy_items': 2000,
+  'equip': 2000,
+  'drop': 2000,
 }
 
 const VRF_ENABLED = true;
@@ -72,6 +73,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
+  const [eventsProcessed, setEventsProcessed] = useState(0);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
@@ -98,6 +100,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         await processEvent(event, false);
         setEventQueue(prev => prev.slice(1));
         setIsProcessing(false);
+        setEventsProcessed(prev => prev + 1);
       }
     };
 
@@ -125,6 +128,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       .filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
       .map((entity: any) => formatGameEvent(entity))
       .sort((a, b) => a.action_count - b.action_count);
+
 
     if (spectating) {
       handleSpectating(events);
@@ -198,7 +202,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!reconnecting && (delayTimes[event.type] || replayDelayTimes[event.type])) {
-      await delay(reconnecting ? replayDelayTimes[event.type] : delayTimes[event.type]);
+      await delay(spectating ? replayDelayTimes[event.type] : delayTimes[event.type]);
     }
   }
 
@@ -250,7 +254,9 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         spectating,
         replayEvents,
         processEvent,
-        setEventQueue
+        setEventQueue,
+        eventsProcessed,
+        setEventsProcessed
       }
     }}>
       {children}

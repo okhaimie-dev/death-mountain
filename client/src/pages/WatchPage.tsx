@@ -16,7 +16,7 @@ import { ExplorerReplayEvents } from '@/utils/events';
 
 export default function WatchPage() {
   const { watch } = useGameDirector();
-  const { spectating, setSpectating, replayEvents, processEvent, setEventQueue } = watch;
+  const { spectating, setSpectating, replayEvents, processEvent, setEventQueue, eventsProcessed, setEventsProcessed } = watch;
 
   const { gameId, adventurer, popExploreLog } = useGameStore();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -38,6 +38,7 @@ export default function WatchPage() {
 
   useEffect(() => {
     if (replayEvents.length > 0 && replayIndex === 0) {
+      processEvent(replayEvents[0], true)
       replayForward();
     }
   }, [replayEvents]);
@@ -66,7 +67,9 @@ export default function WatchPage() {
     if (play) {
       setEventQueue(replayEvents.slice(replayIndex));
     } else {
+      setReplayIndex(prev => prev + eventsProcessed + 1);
       setEventQueue([]);
+      setEventsProcessed(0);
     }
 
     setIsPlaying(play);
@@ -75,15 +78,16 @@ export default function WatchPage() {
   const replayForward = () => {
     if (replayIndex >= replayEvents.length - 1) return;
 
-    let currentIndex = replayIndex;
-    while (currentIndex < replayEvents.length - 1) {
+    let currentIndex = replayIndex + 1;
+    while (currentIndex <= replayEvents.length - 1) {
       let currentEvent = replayEvents[currentIndex];
       processEvent(currentEvent, true);
-      currentIndex++;
 
       if (currentEvent.type === 'adventurer' && currentEvent.adventurer?.stat_upgrades_available === 0) {
         break;
       }
+
+      currentIndex++;
     }
 
     setReplayIndex(currentIndex);
@@ -92,7 +96,7 @@ export default function WatchPage() {
   const replayBackward = () => {
     if (replayIndex < 1) return;
 
-    let currentIndex = replayIndex;
+    let currentIndex = replayIndex - 1;
     while (currentIndex > 0) {
       let event = replayEvents[currentIndex];
 
@@ -102,11 +106,11 @@ export default function WatchPage() {
         processEvent(event, true);
       }
 
-      currentIndex--;
-
       if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
         break;
       }
+
+      currentIndex--;
     }
 
     setReplayIndex(currentIndex);

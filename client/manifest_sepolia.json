@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
-    "address": "0x31b0c7fb0c81dbddc272f5ae7080b213b905f30c0be925cc1174d4e534800ca",
-    "seed": "test_ls_0_2",
+    "address": "0x616b00b9c06bc3045c3e67aa3fb695906330c23b684e551309f967e6b6fa0c8",
+    "seed": "test_ls_0_3",
     "name": "Provable Games",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x40704f0da0312a5e1266355dc49f091b68cfbcff8f6b9a5cef9c7f25d3c902",
-      "class_hash": "0x6d10653764bcd1178af99a19fb0f2076af16584d15691be1194dc5840c5a356",
+      "address": "0x6cdaa4fdaafdedef12073af7670c4def0c291044aaed7dc205116da42a91bfd",
+      "class_hash": "0x113d778b7dd3c32f2f6d45ac0dc2c79ed39b29656eef91b92696f27fd3a6b8c",
       "abi": [
         {
           "type": "impl",
@@ -1506,6 +1506,10 @@
             },
             {
               "name": "item_specials_seed",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "action_count",
               "type": "core::integer::u16"
             }
           ]
@@ -2077,7 +2081,7 @@
       ]
     },
     {
-      "address": "0xf03f6a6fe6fda3e9c4ac4afdf4e3da6d2178e6c8cf629ce680a91635364c11",
+      "address": "0x7b56df9926f558e6584a039fdc3741d6d8913b325ce8f075de21ed3b2d517a9",
       "class_hash": "0x583f95cd3dac90f31e127a4f57693254f4fa62a0a88b2487d607b60ad848f1b",
       "abi": [
         {
@@ -2496,8 +2500,8 @@
       ]
     },
     {
-      "address": "0x5c19f6fb11e26ee99501aef7e218b1878c4f57fd9ea5429df49cb961e229a8e",
-      "class_hash": "0x1cb7104eb6a834b55f95ffffdf53a37abd721b48063c6e801d0c9df303cdab",
+      "address": "0x10c538b600e0bc20ce1f32b58283bc3632fa4c0ca09d0077fb94abdd14b239a",
+      "class_hash": "0x1d24d4b0b0a4dc01971961a86604920bd80ded1fcde01bf2aacd25fe7aa46bd",
       "abi": [
         {
           "type": "impl",
@@ -2885,8 +2889,8 @@
       ]
     },
     {
-      "address": "0x721b602ce6bd374cfd23ae6800066098682c63b19d90c27159d8a28f2fc007",
-      "class_hash": "0x2f5a181374299066eedc9eceaf38b3bc8a9e24d9051980bde6cab48e844f6b1",
+      "address": "0x7d1c664978bad6737f055ea0fb27bff3ec8bd4a9e971a70faed8d4bebfa2163",
+      "class_hash": "0x42fd38157f5cace1ec7c38f2dd066b70080fb1eb9f4841daa26fff1960c1849",
       "abi": [
         {
           "type": "impl",
@@ -3906,7 +3910,7 @@
       ]
     },
     {
-      "address": "0x73c72ca8cf12f9caf265e57faad4ee5585fa5270c8231e387dc9e4bc4d5e4a2",
+      "address": "0x24330e8d020d8de1a55bed63d4c4e72c8a0d3fe89793756ccffb3c8f54785d2",
       "class_hash": "0x5cdf1657b5f1a819c446069e6a51ab19d209ee4ae842d6168da8895a90bb6ff",
       "abi": [
         {
@@ -4413,8 +4417,8 @@
       ]
     },
     {
-      "address": "0xacd8e765ddb9ec1af68f18d9de752f24dfcff8efea6e995ddcff01bf415b8f",
-      "class_hash": "0x4e83d8e46d5a2001aabf6f0b24db41175043c9e787f5a67742f69641d2047fb",
+      "address": "0x37c5fe57bbe6327759a6f231435697475377802ba1505b0836d118cdd293c8e",
+      "class_hash": "0x13e9803640598ac36f27778b3337f1b34a3b0adcb49b135717c288335d989c6",
       "abi": [
         {
           "type": "impl",
@@ -4616,8 +4620,8 @@
       ]
     },
     {
-      "address": "0x3d82a848a86b6ec801abd92e8cb2a600c3aac3ea4b3869d6e753da705638616",
-      "class_hash": "0xecef1e5837548aaa1e639708e69cb92f9959e967404a4a46f2e882ca0200c1",
+      "address": "0x587fc6d9859d8c88337652f799c633a6937f15263b169c9f4cb5215e74764eb",
+      "class_hash": "0x573c96839e1ae34f712de5cf40780e6fe429ed38a333eefc16e916e09d6059c",
       "abi": [
         {
           "type": "impl",
@@ -4794,6 +4798,10 @@
             },
             {
               "name": "item_specials_seed",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "action_count",
               "type": "core::integer::u16"
             }
           ]
@@ -5147,7 +5155,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x625782b7598061edcdcae040fb3efed3f42711086311166e5d4cdc2862c5a10",
+      "class_hash": "0x441f7954e8773898be63e46a9198deda8be4c39cc89612ad65740261ac96f6",
       "tag": "ls_0_0_1-GameSettings",
       "selector": "0x2b4e78e32ea8503f2dc7123211b672ce9712a014664c3a4d955eefda8371ab6"
     },
@@ -5191,7 +5199,7 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x109fdaf1573076be974eaee0b2e19a52f77bc2a34d7d5608e95f701755a4c3",
+      "class_hash": "0x6c6269784fff73e18c54bf400d8062294ed8be1d17e4abcd28f7a68be4e2f4b",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }
