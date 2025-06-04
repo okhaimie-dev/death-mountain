@@ -13,7 +13,7 @@ import { ItemUtils } from "./loot";
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
   'buy_items' | 'equip' | 'drop' | 'level_up' | 'market_items' | 'ambush' | 'attack' | 'beast_attack' | 'flee' | 'unknown';
-  action_count: Number;
+  action_count: number;
   adventurer?: Adventurer;
   bag?: Item[];
   beast?: Beast;

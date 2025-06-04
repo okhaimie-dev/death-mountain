@@ -124,7 +124,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     let events = (initialData?.getItems() || [])
       .filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
       .map((entity: any) => formatGameEvent(entity))
-      .sort((a: GameEvent, b: GameEvent) => a.action_count - b.action_count);
+      .sort((a, b) => a.action_count - b.action_count);
 
     if (spectating) {
       handleSpectating(events);
