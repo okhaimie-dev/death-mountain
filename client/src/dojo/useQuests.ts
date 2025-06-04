@@ -9,6 +9,7 @@ import wyvernImg from '@/assets/beasts/wyvern.png';
 import leviathanImg from '@/assets/beasts/leviathan.png';
 import ghoulImg from '@/assets/beasts/ghoul.png';
 import trollImg from '@/assets/beasts/troll.png';
+import anansiImg from '@/assets/beasts/anansi.png';
 
 export interface Quest {
   id: number;
@@ -80,21 +81,32 @@ export const fetchCampaign = async (id: number) => {
         },
         {
           id: 4,
-          title: "Power Within",
-          description: "Choose your stat upgrades wisely, for each choice shapes your path.",
+          title: "Wisdom of the Hunt",
+          description: "You sense an ambush coming, choose your stats wisely to avoid the beast's surprise attack.",
           isLocked: true,
           requiredQuestId: 3,
           beastImage: basiliskImg,
           beastName: "Basilisk",
           settingsId: 6,
-          targetScore: 53
+          targetScore: 101
         },
         {
           id: 5,
+          title: "Intelligence of the Path",
+          description: "The path ahead is treacherous, use your intellect to navigate through the obstacles.",
+          isLocked: true,
+          requiredQuestId: 4,
+          beastImage: anansiImg,
+          beastName: "Anansi",
+          settingsId: 5,
+          targetScore: 133
+        },
+        {
+          id: 6,
           title: "The Marketplace",
           description: "The marketplace teems with fine loot. A well-equipped adventurer is a living adventurer.",
           isLocked: true,
-          requiredQuestId: 4,
+          requiredQuestId: 5,
           beastImage: chimeraImg,
           beastName: "Chimera",
           settingsId: 3,

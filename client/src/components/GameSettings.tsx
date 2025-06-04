@@ -451,12 +451,12 @@ function GameSettings() {
 
             <Box sx={styles.statsGrid}>
               <Typography variant='h6' color='primary' sx={{ gridColumn: '1 / -1' }}>Stats</Typography>
-              {renderSettingItem('STR', 'adventurer.stats.strength', 'stats', [1, 100])}
-              {renderSettingItem('DEX', 'adventurer.stats.dexterity', 'stats', [1, 100])}
-              {renderSettingItem('VIT', 'adventurer.stats.vitality', 'stats', [1, 100])}
-              {renderSettingItem('INT', 'adventurer.stats.intelligence', 'stats', [1, 100])}
-              {renderSettingItem('WIS', 'adventurer.stats.wisdom', 'stats', [1, 100])}
-              {renderSettingItem('CHA', 'adventurer.stats.charisma', 'stats', [1, 100])}
+              {renderSettingItem('STR', 'adventurer.stats.strength', 'stats', [0, 100])}
+              {renderSettingItem('DEX', 'adventurer.stats.dexterity', 'stats', [0, 100])}
+              {renderSettingItem('VIT', 'adventurer.stats.vitality', 'stats', [0, 100])}
+              {renderSettingItem('INT', 'adventurer.stats.intelligence', 'stats', [0, 100])}
+              {renderSettingItem('WIS', 'adventurer.stats.wisdom', 'stats', [0, 100])}
+              {renderSettingItem('CHA', 'adventurer.stats.charisma', 'stats', [0, 100])}
             </Box>
 
             <Box>
