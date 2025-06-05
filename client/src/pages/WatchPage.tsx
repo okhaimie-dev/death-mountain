@@ -99,7 +99,6 @@ export default function WatchPage() {
     let currentIndex = replayIndex - 1;
     while (currentIndex > 0) {
       let event = replayEvents[currentIndex];
-
       if (ExplorerReplayEvents.includes(event.type)) {
         popExploreLog()
       } else {
@@ -107,6 +106,14 @@ export default function WatchPage() {
       }
 
       if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
+        if (event.adventurer?.beast_health > 0) {
+          if (replayEvents[currentIndex - 1]?.type === 'beast') {
+            processEvent(replayEvents[currentIndex - 1], true);
+          } else if (replayEvents[currentIndex - 1]?.type === 'ambush') {
+            processEvent(replayEvents[currentIndex - 2], true);
+          }
+        }
+
         break;
       }
 

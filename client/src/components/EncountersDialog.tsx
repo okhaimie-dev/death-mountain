@@ -1,4 +1,4 @@
-import { Box, Dialog, Divider, Typography } from '@mui/material';
+import { Box, Dialog, Divider, Typography, Slider, TextField, Switch } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { calculateLevel } from '@/utils/game';
 
@@ -6,9 +6,11 @@ interface EncountersDialogProps {
   open: boolean;
   onClose: () => void;
   encounters: any[];
+  gameSeedLimit: number;
+  setGameSeedLimit: (limit: number) => void;
 }
 
-const EncountersDialog = ({ open, onClose, encounters }: EncountersDialogProps) => {
+const EncountersDialog = ({ open, onClose, encounters, gameSeedLimit, setGameSeedLimit }: EncountersDialogProps) => {
   return (
     <Dialog
       open={open}
@@ -21,7 +23,8 @@ const EncountersDialog = ({ open, onClose, encounters }: EncountersDialogProps) 
             border: '1px solid #80FF00',
             maxWidth: '100dvw',
             borderRadius: '5px',
-            margin: '4px'
+            margin: '4px',
+            minHeight: 'calc(60dvh + 136px)'
           }
         }
       }}
@@ -29,9 +32,59 @@ const EncountersDialog = ({ open, onClose, encounters }: EncountersDialogProps) 
       <Box sx={{ p: 2, width: '800px', maxWidth: '100%', boxSizing: 'border-box' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Typography variant="h5" color="primary">Encounter Table</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography color="primary">Limit Game Seed</Typography>
+            <Switch
+              checked={gameSeedLimit > 0}
+              onChange={(e) => setGameSeedLimit(e.target.checked ? (encounters[0]?.xp || 0) : 0)}
+              sx={{
+                '& .MuiSwitch-switchBase': {
+                  '&.Mui-checked': {
+                    color: '#80FF00',
+                    '& + .MuiSwitch-track': {
+                      backgroundColor: '#80FF00',
+                    },
+                  },
+                },
+                '& .MuiSwitch-track': {
+                  backgroundColor: 'rgba(128, 255, 0, 0.3)',
+                },
+              }}
+            />
+          </Box>
           <CloseIcon htmlColor='#FFF' sx={{ fontSize: '24px', cursor: 'pointer' }} onClick={onClose} />
         </Box>
         <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', mb: 1 }} />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, pl: 1 }}>
+          <Box sx={{ flex: 1 }}>
+            <Slider
+              value={gameSeedLimit}
+              onChange={(_, value) => setGameSeedLimit(value as number)}
+              min={encounters[0]?.xp || 0}
+              max={encounters[encounters.length - 1]?.xp || 200}
+              step={1}
+              disabled={gameSeedLimit === 0}
+              sx={{
+                color: '#80FF00',
+                '& .MuiSlider-thumb': {
+                  '&:hover, &.Mui-focusVisible': {
+                    boxShadow: '0px 0px 0px 8px rgba(128, 255, 0, 0.16)'
+                  }
+                }
+              }}
+            />
+          </Box>
+          {gameSeedLimit > 0 && <TextField
+            type="number"
+            value={gameSeedLimit}
+            onChange={(e) => setGameSeedLimit(Number(e.target.value))}
+            size="small"
+            sx={{
+              width: '80px',
+            }}
+          />}
+        </Box>
 
         <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
@@ -49,7 +102,7 @@ const EncountersDialog = ({ open, onClose, encounters }: EncountersDialogProps) 
               </tr>
             </thead>
             <tbody>
-              {encounters.map((encounter, index) => (
+              {encounters.filter((encounter) => gameSeedLimit === 0 || encounter.xp <= gameSeedLimit).map((encounter, index) => (
                 <tr key={index}>
                   <td style={{ padding: '8px', borderBottom: '1px solid rgba(128, 255, 0, 0.2)' }}>
                     <Typography color="primary">{encounter.xp}</Typography>

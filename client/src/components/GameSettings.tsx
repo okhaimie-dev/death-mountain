@@ -11,7 +11,7 @@ import DiceIcon from '@mui/icons-material/Casino';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import TableViewIcon from '@mui/icons-material/TableView';
+import PreviewIcon from '@mui/icons-material/Preview';
 import { Box, Button, Dialog, Divider, Input, LinearProgress, TextField, Typography } from '@mui/material';
 import { motion } from "framer-motion";
 import { useEffect, useState } from 'react';
@@ -24,6 +24,7 @@ export interface GameSettingsData {
   name: string;
   in_battle: boolean;
   game_seed: number;
+  game_seed_until_xp: number;
   adventurer: Adventurer;
   bag: Item[];
 }
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: GameSettingsData = {
   name: '',
   in_battle: false,
   game_seed: 0,
+  game_seed_until_xp: 0,
   adventurer: {
     health: 100,
     xp: 1,
@@ -244,16 +246,22 @@ function GameSettings() {
             {label}
           </Typography>
 
+          {field === 'game_seed' &&
+            <Typography color='primary' sx={{ fontSize: '12px' }}>
+              {gameSettings.game_seed_until_xp > 0 ? `(Until ${gameSettings.game_seed_until_xp} XP)` : `(No Limit)`}
+            </Typography>
+          }
+
           <Box sx={styles.settingValueContainer}>
             {field === 'game_seed' && getValue(field) !== 0 && (
-              <Box mr={1} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={handleViewEncounters}>
-                <TableViewIcon color='primary' fontSize='small' />
+              <Box mr={0.5} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={handleViewEncounters}>
+                <PreviewIcon color='primary' fontSize='small' />
               </Box>
             )}
 
             <Input
               disableUnderline={true}
-              sx={{ color: '#80FF00', width: '120px' }}
+              sx={{ color: '#80FF00', width: '100px' }}
               inputProps={{
                 style: {
                   textAlign: 'center',
@@ -438,10 +446,10 @@ function GameSettings() {
               <Typography variant='h6' color='primary'>Adventurer</Typography>
 
               <Box sx={styles.settingsColumn}>
-                {renderSettingItem('Health', 'adventurer.health', 'number', [1, 200])}
-                {renderSettingItem('XP', 'adventurer.xp', 'number', [1, 1000])}
-                {renderSettingItem('Gold', 'adventurer.gold', 'number', [0, 1000])}
-                {renderSettingItem('Stat Upgrades', 'adventurer.stat_upgrades_available', 'number', [0, 10])}
+                {renderSettingItem('Health', 'adventurer.health', 'number', [1, 1024])}
+                {renderSettingItem('XP', 'adventurer.xp', 'number', [1, 30000])}
+                {renderSettingItem('Gold', 'adventurer.gold', 'number', [0, 512])}
+                {renderSettingItem('Stat Upgrades', 'adventurer.stat_upgrades_available', 'number', [0, 16])}
               </Box>
 
               <Box sx={{ width: '100%', mt: 1 }}>
@@ -451,12 +459,12 @@ function GameSettings() {
 
             <Box sx={styles.statsGrid}>
               <Typography variant='h6' color='primary' sx={{ gridColumn: '1 / -1' }}>Stats</Typography>
-              {renderSettingItem('STR', 'adventurer.stats.strength', 'stats', [0, 100])}
-              {renderSettingItem('DEX', 'adventurer.stats.dexterity', 'stats', [0, 100])}
-              {renderSettingItem('VIT', 'adventurer.stats.vitality', 'stats', [0, 100])}
-              {renderSettingItem('INT', 'adventurer.stats.intelligence', 'stats', [0, 100])}
-              {renderSettingItem('WIS', 'adventurer.stats.wisdom', 'stats', [0, 100])}
-              {renderSettingItem('CHA', 'adventurer.stats.charisma', 'stats', [0, 100])}
+              {renderSettingItem('STR', 'adventurer.stats.strength', 'stats', [0, 31])}
+              {renderSettingItem('DEX', 'adventurer.stats.dexterity', 'stats', [0, 31])}
+              {renderSettingItem('VIT', 'adventurer.stats.vitality', 'stats', [0, 31])}
+              {renderSettingItem('INT', 'adventurer.stats.intelligence', 'stats', [0, 31])}
+              {renderSettingItem('WIS', 'adventurer.stats.wisdom', 'stats', [0, 31])}
+              {renderSettingItem('CHA', 'adventurer.stats.charisma', 'stats', [0, 31])}
             </Box>
 
             <Box>
@@ -739,6 +747,8 @@ function GameSettings() {
             open={isEncountersDialogOpen}
             onClose={() => setIsEncountersDialogOpen(false)}
             encounters={futureEncounters}
+            gameSeedLimit={gameSettings.game_seed_until_xp}
+            setGameSeedLimit={(limit) => setGameSettings(prev => ({ ...prev, game_seed_until_xp: limit }))}
           />
 
         </motion.div >

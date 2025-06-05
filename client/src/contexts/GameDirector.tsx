@@ -20,7 +20,7 @@ export interface GameDirectorContext {
     setSpectating: (spectating: boolean) => void;
     spectating: boolean;
     replayEvents: any[];
-    processEvent: (event: any, reconnecting: boolean) => void;
+    processEvent: (event: any, skipAnimation: boolean) => void;
     setEventQueue: (events: any[]) => void;
     eventsProcessed: number;
     setEventsProcessed: (eventsProcessed: number) => void;
@@ -165,7 +165,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     });
   }
 
-  const processEvent = async (event: GameEvent, reconnecting: boolean) => {
+  const processEvent = async (event: GameEvent, skipAnimation: boolean) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
     }
@@ -184,7 +184,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!spectating && ExplorerLogEvents.includes(event.type)) {
-      if (!reconnecting && event.type === 'discovery') {
+      if (!skipAnimation && event.type === 'discovery') {
         if (event.discovery?.type === 'Loot') {
           setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
         }
@@ -197,11 +197,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setExploreLog(event);
     }
 
-    if (!reconnecting && BattleEvents.includes(event.type)) {
+    if (!skipAnimation && BattleEvents.includes(event.type)) {
       setBattleEvent(event);
     }
 
-    if (!reconnecting && (delayTimes[event.type] || replayDelayTimes[event.type])) {
+    if (!skipAnimation && (delayTimes[event.type] || replayDelayTimes[event.type])) {
       await delay(spectating ? replayDelayTimes[event.type] : delayTimes[event.type]);
     }
   }

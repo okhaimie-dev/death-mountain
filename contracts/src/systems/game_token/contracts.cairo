@@ -95,6 +95,7 @@ mod game_token_systems {
                     adventurer: ImplAdventurer::new(0),
                     bag: ImplBag::new(),
                     game_seed: 0,
+                    game_seed_until_xp: 0,
                     in_battle: false,
                 },
             );
