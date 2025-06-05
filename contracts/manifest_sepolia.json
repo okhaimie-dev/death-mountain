@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
-    "address": "0x616b00b9c06bc3045c3e67aa3fb695906330c23b684e551309f967e6b6fa0c8",
-    "seed": "test_ls_0_3",
+    "address": "0x5246cbbe2bef7fd190adbf05e47bee876ab2ab0e272c3346e0e760cd26adaa7",
+    "seed": "test_ls_0_4",
     "name": "Provable Games",
     "entrypoints": [
       "uuid",
@@ -1328,7 +1328,7 @@
   },
   "contracts": [
     {
-      "address": "0x6cdaa4fdaafdedef12073af7670c4def0c291044aaed7dc205116da42a91bfd",
+      "address": "0x36a767f7e7f4be4598b81cb61b67b9545e49edd8f4fcb572096ed4b9d0450d3",
       "class_hash": "0x113d778b7dd3c32f2f6d45ac0dc2c79ed39b29656eef91b92696f27fd3a6b8c",
       "abi": [
         {
@@ -2081,7 +2081,7 @@
       ]
     },
     {
-      "address": "0x7b56df9926f558e6584a039fdc3741d6d8913b325ce8f075de21ed3b2d517a9",
+      "address": "0x68a1fa290d8dd5c054ab523cf9db412f6a3e105e3614ecdd332a28e60c5a6ef",
       "class_hash": "0x583f95cd3dac90f31e127a4f57693254f4fa62a0a88b2487d607b60ad848f1b",
       "abi": [
         {
@@ -2500,8 +2500,8 @@
       ]
     },
     {
-      "address": "0x10c538b600e0bc20ce1f32b58283bc3632fa4c0ca09d0077fb94abdd14b239a",
-      "class_hash": "0x1d24d4b0b0a4dc01971961a86604920bd80ded1fcde01bf2aacd25fe7aa46bd",
+      "address": "0x543fdf9d549d514dfe115363f090e67314f789daf1bdb33ca60710a8211f3e2",
+      "class_hash": "0x6a9270948419e6ec567454f7e99f963145a21e8f329ed4a81321290e6091dc2",
       "abi": [
         {
           "type": "impl",
@@ -2889,8 +2889,8 @@
       ]
     },
     {
-      "address": "0x7d1c664978bad6737f055ea0fb27bff3ec8bd4a9e971a70faed8d4bebfa2163",
-      "class_hash": "0x42fd38157f5cace1ec7c38f2dd066b70080fb1eb9f4841daa26fff1960c1849",
+      "address": "0x6f261eba018dda4f60bdc1d0874cb7e97bf424979dda63fcbdf8bdcba1fb644",
+      "class_hash": "0x4168f47735bf74c8c6fcbb5f79061aa2a6e138bef24e3af5a7de0c91ca5cdda",
       "abi": [
         {
           "type": "impl",
@@ -3910,7 +3910,7 @@
       ]
     },
     {
-      "address": "0x24330e8d020d8de1a55bed63d4c4e72c8a0d3fe89793756ccffb3c8f54785d2",
+      "address": "0x513026b65c44bf5843efa2fe925d311ae1593a589bceb74ec0e704df652d770",
       "class_hash": "0x5cdf1657b5f1a819c446069e6a51ab19d209ee4ae842d6168da8895a90bb6ff",
       "abi": [
         {
@@ -4417,7 +4417,7 @@
       ]
     },
     {
-      "address": "0x37c5fe57bbe6327759a6f231435697475377802ba1505b0836d118cdd293c8e",
+      "address": "0x165e98ddaea22ef835a18b01846054d40db39a2f3ec06ce2e6718a44d018680",
       "class_hash": "0x13e9803640598ac36f27778b3337f1b34a3b0adcb49b135717c288335d989c6",
       "abi": [
         {
@@ -4620,8 +4620,8 @@
       ]
     },
     {
-      "address": "0x587fc6d9859d8c88337652f799c633a6937f15263b169c9f4cb5215e74764eb",
-      "class_hash": "0x573c96839e1ae34f712de5cf40780e6fe429ed38a333eefc16e916e09d6059c",
+      "address": "0xefb3cd6b2d70109162ca62e57381db51424d085c930f35ac3e888be10922c2",
+      "class_hash": "0x6fe0ef13d1ba76ada3ddd907b0897c5600d4795b28d32308f50cb0e3f17569d",
       "abi": [
         {
           "type": "impl",
@@ -4911,6 +4911,10 @@
               "type": "core::integer::u64"
             },
             {
+              "name": "game_seed_until_xp",
+              "type": "core::integer::u16"
+            },
+            {
               "name": "in_battle",
               "type": "core::bool"
             }
@@ -4939,6 +4943,10 @@
                 {
                   "name": "game_seed",
                   "type": "core::integer::u64"
+                },
+                {
+                  "name": "game_seed_until_xp",
+                  "type": "core::integer::u16"
                 },
                 {
                   "name": "in_battle",
@@ -5155,7 +5163,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x441f7954e8773898be63e46a9198deda8be4c39cc89612ad65740261ac96f6",
+      "class_hash": "0x35e166c888f48fda40e84274c0fadd91a3a914a29c320461189fa045c1d62ad",
       "tag": "ls_0_0_1-GameSettings",
       "selector": "0x2b4e78e32ea8503f2dc7123211b672ce9712a014664c3a4d955eefda8371ab6"
     },

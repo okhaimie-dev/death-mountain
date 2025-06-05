@@ -238,6 +238,7 @@ export const useSystemCalls = () => {
           settings.adventurer,
           bag,
           settings.game_seed,
+          settings.game_seed_until_xp,
           settings.in_battle
         ]
       }

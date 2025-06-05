@@ -87,7 +87,7 @@ export const fetchCampaign = async (id: number) => {
           requiredQuestId: 3,
           beastImage: basiliskImg,
           beastName: "Basilisk",
-          settingsId: 6,
+          settingsId: 3,
           targetScore: 101
         },
         {
@@ -98,7 +98,7 @@ export const fetchCampaign = async (id: number) => {
           requiredQuestId: 4,
           beastImage: anansiImg,
           beastName: "Anansi",
-          settingsId: 5,
+          settingsId: 4,
           targetScore: 133
         },
         {
@@ -109,7 +109,7 @@ export const fetchCampaign = async (id: number) => {
           requiredQuestId: 5,
           beastImage: chimeraImg,
           beastName: "Chimera",
-          settingsId: 3,
+          settingsId: 5,
           targetScore: 81
         }
       ]
