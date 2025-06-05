@@ -4,13 +4,13 @@ import { calculateLevel } from '@/utils/game';
 
 const tracks: Record<string, string> = {
   Intro: "/audio/Intro.mp3",
-  Death: "/audio/Game-Ending.mp3",
-  Beginning: "/audio/Quest-Journey-Music.mp3",
-  Early: "/audio/Vault-Of-Whispers.mp3",
-  RampUp: "/audio/Torchlit-Passage.mp3",
-  Mid: "/audio/Trap-Door.mp3",
+  Death: "/audio/Game_Over.mp3",
+  Beginning: "/audio/Start_Journey.mp3",
+  Early: "/audio/Vault_Of_Whispers.mp3",
+  RampUp: "/audio/Torchlit_Passage.mp3",
+  Mid: "/audio/Trap_Door.mp3",
   Late: "/audio/Courage.mp3",
-  SuperLate: "/audio/Hall-Of-A-Thousand-Eyes.mp3",
+  SuperLate: "/audio/Hall_Of_A_Thousand_Eyes.mp3",
 };
 
 interface SoundContextType {

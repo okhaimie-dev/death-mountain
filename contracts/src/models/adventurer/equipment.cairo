@@ -325,7 +325,7 @@ mod tests {
 
     #[test]
     #[available_gas(1447420)]
-    fn test_equipment_packing() {
+    fn equipment_packing() {
         let equipment = Equipment {
             weapon: Item { id: MAX_PACKABLE_ITEM_ID, xp: MAX_PACKABLE_XP },
             chest: Item { id: MAX_PACKABLE_ITEM_ID, xp: MAX_PACKABLE_XP },
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_weapon_xp() {
+    fn pack_protection_overflow_weapon_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: MAX_PACKABLE_XP + 1 },
             chest: Item { id: 127, xp: 511 },
@@ -422,7 +422,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_chest_xp() {
+    fn pack_protection_overflow_chest_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: MAX_PACKABLE_XP + 1 },
@@ -440,7 +440,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_head_xp() {
+    fn pack_protection_overflow_head_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -458,7 +458,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_waist_xp() {
+    fn pack_protection_overflow_waist_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -476,7 +476,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_foot_xp() {
+    fn pack_protection_overflow_foot_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -494,7 +494,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_hand_xp() {
+    fn pack_protection_overflow_hand_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -512,7 +512,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_neck_xp() {
+    fn pack_protection_overflow_neck_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -530,7 +530,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item xp pack overflow',))]
     #[available_gas(3000000)]
-    fn test_pack_protection_overflow_ring_xp() {
+    fn pack_protection_overflow_ring_xp() {
         let equipment = Equipment {
             weapon: Item { id: 127, xp: 511 },
             chest: Item { id: 127, xp: 511 },
@@ -548,7 +548,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not weapon',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_weapon() {
+    fn equip_invalid_weapon() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::DemonCrown, xp: 1 };
         // try to equip demon crown as a weapon
@@ -558,7 +558,7 @@ mod tests {
 
     #[test]
     #[available_gas(171984)]
-    fn test_equip_valid_weapon() {
+    fn equip_valid_weapon() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Katana, xp: 1 };
         adventurer.equipment.equip_weapon(item, ImplLoot::get_slot(item.id));
@@ -569,7 +569,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not chest armor',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_chest() {
+    fn equip_invalid_chest() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as chest item
         // should panic with 'Item is not chest armor' message
@@ -579,7 +579,7 @@ mod tests {
 
     #[test]
     #[available_gas(171984)]
-    fn test_equip_valid_chest() {
+    fn equip_valid_chest() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::DivineRobe, xp: 1 };
         adventurer.equipment.equip_chest_armor(item, ImplLoot::get_slot(item.id));
@@ -590,7 +590,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not head armor',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_head() {
+    fn equip_invalid_head() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Katana as head item
         // should panic with 'Item is not head armor' message
@@ -600,7 +600,7 @@ mod tests {
 
     #[test]
     #[available_gas(171984)]
-    fn test_equip_valid_head() {
+    fn equip_valid_head() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Crown, xp: 1 };
         adventurer.equipment.equip_head_armor(item, ImplLoot::get_slot(item.id));
@@ -612,7 +612,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not waist armor',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_waist() {
+    fn equip_invalid_waist() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as waist item
         // should panic with 'Item is not waist armor' message
@@ -622,7 +622,7 @@ mod tests {
 
     #[test]
     #[available_gas(171984)]
-    fn test_equip_valid_waist() {
+    fn equip_valid_waist() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::WoolSash, xp: 1 };
         adventurer.equipment.equip_waist_armor(item, ImplLoot::get_slot(item.id));
@@ -633,7 +633,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not foot armor',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_foot() {
+    fn equip_invalid_foot() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as foot item
         // should panic with 'Item is not foot armor' message
@@ -643,7 +643,7 @@ mod tests {
 
     #[test]
     #[available_gas(172184)]
-    fn test_equip_valid_foot() {
+    fn equip_valid_foot() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::SilkSlippers, xp: 1 };
         adventurer.equipment.equip_foot_armor(item, ImplLoot::get_slot(item.id));
@@ -654,7 +654,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not hand armor',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_hand() {
+    fn equip_invalid_hand() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as hand item
         // should panic with 'Item is not hand armor' message
@@ -664,7 +664,7 @@ mod tests {
 
     #[test]
     #[available_gas(172184)]
-    fn test_equip_valid_hand() {
+    fn equip_valid_hand() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::DivineGloves, xp: 1 };
         adventurer.equipment.equip_hand_armor(item, ImplLoot::get_slot(item.id));
@@ -675,7 +675,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not necklace',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_neck() {
+    fn equip_invalid_neck() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as necklace
         // should panic with 'Item is not necklace' message
@@ -685,7 +685,7 @@ mod tests {
 
     #[test]
     #[available_gas(172184)]
-    fn test_equip_valid_neck() {
+    fn equip_valid_neck() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::Pendant, xp: 1 };
         adventurer.equipment.equip_necklace(item, ImplLoot::get_slot(item.id));
@@ -696,7 +696,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('Item is not a ring',))]
     #[available_gas(90000)]
-    fn test_equip_invalid_ring() {
+    fn equip_invalid_ring() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to equip a Demon Crown as ring
         // should panic with 'Item is not a ring' message
@@ -706,7 +706,7 @@ mod tests {
 
     #[test]
     #[available_gas(172184)]
-    fn test_equip_valid_ring() {
+    fn equip_valid_ring() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let item = Item { id: ItemId::PlatinumRing, xp: 1 };
         adventurer.equipment.equip_ring(item, ImplLoot::get_slot(item.id));
@@ -716,7 +716,7 @@ mod tests {
 
     #[test]
     #[available_gas(511384)]
-    fn test_drop_item() {
+    fn drop_item() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         // assert starting conditions
@@ -801,7 +801,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('item is not equipped',))]
     #[available_gas(172984)]
-    fn test_drop_item_not_equipped() {
+    fn drop_item_not_equipped() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         // try to drop an item that isn't equipped
         // this should panic with 'item is not equipped'
@@ -811,7 +811,7 @@ mod tests {
 
     #[test]
     #[available_gas(550000)]
-    fn test_equip_item() {
+    fn equip_item() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         // assert starting conditions
@@ -856,7 +856,7 @@ mod tests {
 
     #[test]
     #[available_gas(1000000)]
-    fn test_is_equipped() {
+    fn is_equipped() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
         let wand = Item { id: ItemId::Wand, xp: 1 };
         let demon_crown = Item { id: ItemId::DemonCrown, xp: 1 };
@@ -985,7 +985,7 @@ mod tests {
 
     #[test]
     #[available_gas(385184)]
-    fn test_increase_item_xp_at_slot() {
+    fn increase_item_xp_at_slot() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         // assert starting conditions
@@ -1025,7 +1025,7 @@ mod tests {
 
     #[test]
     #[available_gas(198084)]
-    fn test_increase_item_xp_at_slot_max() {
+    fn increase_item_xp_at_slot_max() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         assert(adventurer.equipment.weapon.xp == 0, 'weapon should start with 0xp');
@@ -1035,7 +1035,7 @@ mod tests {
 
     #[test]
     #[available_gas(198084)]
-    fn test_increase_item_xp_at_slot_zero() {
+    fn increase_item_xp_at_slot_zero() {
         let mut adventurer = ImplAdventurer::new(ItemId::Wand);
 
         assert(adventurer.equipment.weapon.xp == 0, 'weapon should start with 0xp');

@@ -492,7 +492,7 @@ mod tests {
 
     #[test]
     #[available_gas(50000)]
-    fn test_get_random_starting_health_max_values() {
+    fn get_random_starting_health_max_values() {
         // test max value case
         // no need to assert result just make sure it doesn't panic
         let _enemy_starting_health = ImplCombat::get_random_starting_health(255, U16_MAX);
@@ -500,14 +500,14 @@ mod tests {
 
     #[test]
     #[available_gas(500000)]
-    fn test_get_random_starting_health_new() {
+    fn get_random_starting_health_new() {
         let enemy_starting_health = ImplCombat::get_random_starting_health(1, 0);
         assert(enemy_starting_health == 11, 'lvl1, min beast heatlh is 11');
     }
 
     #[test]
     #[available_gas(500000)]
-    fn test_get_random_starting_health() {
+    fn get_random_starting_health() {
         let mut adventurer_level = 2;
         let min_beast_level = ImplCombat::get_random_starting_health(adventurer_level, 0);
         let max_beast_level = ImplCombat::get_random_starting_health(adventurer_level, 29);
@@ -574,7 +574,7 @@ mod tests {
 
     #[test]
     #[available_gas(170000)]
-    fn test_get_level_from_xp() {
+    fn get_level_from_xp() {
         assert(ImplCombat::get_level_from_xp(0) == 1, 'XP 0 should return Level 1');
         assert(ImplCombat::get_level_from_xp(1) == 1, 'XP 1 should return Level 1');
         assert(ImplCombat::get_level_from_xp(2) == 1, 'XP 2 should return Level 1');
@@ -616,7 +616,7 @@ mod tests {
 
     #[test]
     #[available_gas(170000)]
-    fn test_get_attack_hp() {
+    fn get_attack_hp() {
         // Initialize weapon struct
         // for this test we just need item tier and level so we can ignore other properties
         let mut weapon = CombatSpec {
@@ -749,7 +749,7 @@ mod tests {
 
     #[test]
     #[available_gas(170000)]
-    fn test_get_armor_hp() {
+    fn get_armor_hp() {
         // T1 Level 20 Armor (no special powers)
         let mut armor = CombatSpec {
             item_type: Type::Blade_or_Hide,
@@ -881,7 +881,7 @@ mod tests {
 
     #[test]
     #[available_gas(123700)]
-    fn test_critical_hit_bonus() {
+    fn critical_hit_bonus() {
         let base_damage = 100;
         let mut critical_hit_chance = 0;
         let mut rnd = 0;
@@ -911,7 +911,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_critical_hit() {
+    fn is_critical_hit() {
         // no critical hit without luck
         let mut luck = 0;
         let mut rnd = 0;
@@ -943,7 +943,7 @@ mod tests {
 
     #[test]
     #[available_gas(22200)]
-    fn test_get_elemental_effectiveness() {
+    fn get_elemental_effectiveness() {
         let weapon_type = Type::Magic_or_Cloth;
         let armor_type = Type::Bludgeon_or_Metal;
         let effectiveness = ImplCombat::get_elemental_effectiveness(weapon_type, armor_type);
@@ -992,7 +992,7 @@ mod tests {
 
     #[test]
     #[available_gas(37220)]
-    fn test_elemental_adjusted_damage() {
+    fn elemental_adjusted_damage() {
         // use 100 damage for easy math
         let base_damage = 100;
 
@@ -1016,7 +1016,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_special2_bonus() {
+    fn get_special2_bonus() {
         let base_damage = 100;
 
         let mut weapon_specials = SpecialPowers { special1: 0, special2: 0, special3: 0 };
@@ -1046,7 +1046,7 @@ mod tests {
 
     #[test]
     #[available_gas(130000)]
-    fn test_get_special3_bonus() {
+    fn get_special3_bonus() {
         let base_damage = 100;
 
         let mut weapon_specials = SpecialPowers { special1: 0, special2: 0, special3: 0 };
@@ -1076,7 +1076,7 @@ mod tests {
 
     #[test]
     #[available_gas(54110)]
-    fn test_strength_bonus() {
+    fn strength_bonus() {
         // use 100 base damage for easy math
         let base_damage = 100;
 
@@ -1103,7 +1103,7 @@ mod tests {
 
     #[test]
     #[available_gas(764930)]
-    fn test_calculate_damage() {
+    fn calculate_damage() {
         let minimum_damage = 4;
 
         let _min_critical_hit_bonus = 0;
@@ -1205,7 +1205,7 @@ mod tests {
 
     #[test]
     #[available_gas(750000)]
-    fn test_get_random_level() {
+    fn get_random_level() {
         let mut adventurer_level = 1;
         let _range_level_increase = 4;
         let _level_multiplier = 6;
@@ -1255,7 +1255,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_base_reward_overflow() {
+    fn get_base_reward_overflow() {
         let combat_spec = CombatSpec {
             item_type: Type::Blade_or_Hide,
             tier: Tier::T1,
@@ -1267,7 +1267,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_base_reward() {
+    fn get_base_reward() {
         // Initialize CombatSpec struct
         let mut combat_spec = CombatSpec {
             item_type: Type::Blade_or_Hide,
@@ -1335,7 +1335,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ability_based_avoid_threat() {
+    fn ability_based_avoid_threat() {
         let mut adventurer_level = 10;
         let mut relevant_stat = 10;
         let mut rnd = 0;

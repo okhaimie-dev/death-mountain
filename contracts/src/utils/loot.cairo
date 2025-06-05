@@ -803,7 +803,7 @@ mod tests {
 
     #[test]
     #[available_gas(151130)]
-    pub fn test_is_necklace() {
+    pub fn is_necklace() {
         let necklace: Array<u8> = array![ItemId::Pendant, ItemId::Necklace, ItemId::Amulet];
 
         let mut item_index = 0;
@@ -826,7 +826,7 @@ mod tests {
 
     #[test]
     #[available_gas(225210)]
-    pub fn test_is_ring() {
+    pub fn is_ring() {
         let rings: Array<u8> = array![
             ItemId::SilverRing, ItemId::BronzeRing, ItemId::PlatinumRing, ItemId::TitaniumRing, ItemId::GoldRing,
         ];
@@ -851,7 +851,7 @@ mod tests {
 
     #[test]
     #[available_gas(560070)]
-    pub fn test_is_weapon() {
+    pub fn is_weapon() {
         let weapons: Array<u8> = array![
             ItemId::GhostWand,
             ItemId::GraveWand,
@@ -889,7 +889,7 @@ mod tests {
 
     #[test]
     #[available_gas(597210)]
-    pub fn test_is_chest_armor() {
+    pub fn is_chest_armor() {
         let chest_armor: Array<u8> = array![
             ItemId::DivineRobe,
             ItemId::SilkRobe,
@@ -928,7 +928,7 @@ mod tests {
 
     #[test]
     #[available_gas(597210)]
-    pub fn test_is_head_armor() {
+    pub fn is_head_armor() {
         let head_armor: Array<u8> = array![
             ItemId::Crown,
             ItemId::DivineHood,
@@ -966,7 +966,7 @@ mod tests {
 
     #[test]
     #[available_gas(597210)]
-    pub fn test_is_waist_armor() {
+    pub fn is_waist_armor() {
         let waist_armor_items: Array<u8> = array![
             ItemId::BrightsilkSash,
             ItemId::SilkSash,
@@ -1005,7 +1005,7 @@ mod tests {
 
     #[test]
     #[available_gas(597210)]
-    pub fn test_is_hand_armor() {
+    pub fn is_hand_armor() {
         let hand_armor_items: Array<u8> = array![
             ItemId::DivineGloves,
             ItemId::SilkGloves,
@@ -1044,7 +1044,7 @@ mod tests {
 
     #[test]
     #[available_gas(597210)]
-    pub fn test_is_foot_armor() {
+    pub fn is_foot_armor() {
         let foot_armor_items: Array<u8> = array![
             ItemId::DivineSlippers,
             ItemId::SilkSlippers,

@@ -1003,7 +1003,7 @@ mod tests {
 
     #[test]
     #[available_gas(3975111110)]
-    fn test_suffix_assignments() {
+    fn suffix_assignments() {
         let mut i: u16 = 0;
         loop {
             if i > ItemSuffixLength.into() {
@@ -1089,7 +1089,7 @@ mod tests {
 
     #[test]
     #[available_gas(2298200670)]
-    fn test_prefix2_assignments() {
+    fn prefix2_assignments() {
         let mut i: u16 = 0;
 
         loop {
@@ -1263,7 +1263,7 @@ mod tests {
 
     #[test]
     #[available_gas(1655011840)]
-    fn test_prefix1_assignment() {
+    fn prefix1_assignment() {
         let mut i: u16 = 0;
         loop {
             if i > NamePrefixLength.into() {
@@ -1517,7 +1517,7 @@ mod tests {
 
     #[test]
     #[available_gas(605400)]
-    fn test_get_item_part1() {
+    fn get_item_part1() {
         let katana_id = ItemId::Katana;
         let katana_item = ImplLoot::get_item(katana_id);
         assert(katana_item.tier == Tier::T1(()), 'katana is T1');
@@ -1665,7 +1665,7 @@ mod tests {
 
     #[test]
     #[available_gas(630600)]
-    fn test_get_item_part2() {
+    fn get_item_part2() {
         let silk_hood_id = ItemId::SilkHood;
         let silk_hood_item = ImplLoot::get_item(silk_hood_id);
         assert(silk_hood_item.tier == Tier::T3(()), 'silk hood is T3');
@@ -1819,7 +1819,7 @@ mod tests {
 
     #[test]
     #[available_gas(378600)]
-    fn test_get_item_part3() {
+    fn get_item_part3() {
         let studded_leather_armor_id = ItemId::StuddedLeatherArmor;
         let studded_leather_armor_item = ImplLoot::get_item(studded_leather_armor_id);
         assert(studded_leather_armor_item.tier == Tier::T3(()), 'studded leather armor is T3');
@@ -1913,7 +1913,7 @@ mod tests {
 
     #[test]
     #[available_gas(328200)]
-    fn test_get_item_part4() {
+    fn get_item_part4() {
         let studded_leather_boots_id = ItemId::StuddedLeatherBoots;
         let studded_leather_boots_item = ImplLoot::get_item(studded_leather_boots_id);
         assert(studded_leather_boots_item.tier == Tier::T3(()), 'studded leather boots is T3');
@@ -1995,7 +1995,7 @@ mod tests {
 
     #[test]
     #[available_gas(2222600)]
-    fn test_get_slot() {
+    fn get_slot() {
         // Weapons
         let katana = ItemId::Katana;
         let katana_slot = ImplLoot::get_slot(katana);
@@ -2411,7 +2411,7 @@ mod tests {
 
     #[test]
     #[available_gas(484600)]
-    fn test_get_tier() {
+    fn get_tier() {
         let pendant = ItemId::Pendant;
         let pendant_tier = ImplLoot::get_tier(pendant);
         assert(pendant_tier == Tier::T1(()), 'pendant is T1');
@@ -2500,7 +2500,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_type() {
+    fn get_type() {
         let warhammer = ItemId::Warhammer;
         let warhammer_type = ImplLoot::get_type(warhammer);
         assert(warhammer_type == Type::Bludgeon_or_Metal(()), 'warhammer is blunt');
@@ -2888,7 +2888,7 @@ mod tests {
 
     #[test]
     #[available_gas(2368710)]
-    fn test_get_item_verify_tier() {
+    fn get_item_verify_tier() {
         let mut t1_items = ItemUtils::get_t1_items();
         loop {
             match t1_items.pop_front() {
@@ -2948,7 +2948,7 @@ mod tests {
 
     #[test]
     #[available_gas(2829820)]
-    fn test_get_item_verify_type() {
+    fn get_item_verify_type() {
         let magic = array![
             ItemId::GhostWand,
             ItemId::GraveWand,
@@ -3082,7 +3082,7 @@ mod tests {
 
     #[test]
     #[available_gas(2961270)]
-    fn test_get_item_verify_slot() {
+    fn get_item_verify_slot() {
         let weapons = array![
             ItemId::GhostWand,
             ItemId::GraveWand,
@@ -3257,7 +3257,7 @@ mod tests {
     // iterate over all 101 items and make sure none are missing
     #[test]
     #[available_gas(2658950)]
-    fn test_get_item_range_check() {
+    fn get_item_range_check() {
         let mut item_index = 1;
         loop {
             if item_index == 102 {
@@ -3271,7 +3271,7 @@ mod tests {
 
     #[test]
     #[available_gas(26100)]
-    fn test_get_item_zero() {
+    fn get_item_zero() {
         let item = ImplLoot::get_item(0);
         assert(item.id == 0, 'item id is 0');
         assert(item.tier == Tier::None(()), 'item is tier none');
@@ -3281,7 +3281,7 @@ mod tests {
 
     #[test]
     #[available_gas(26100)]
-    fn test_get_item_out_of_bounds() {
+    fn get_item_out_of_bounds() {
         let item = ImplLoot::get_item(102);
         assert(item.id == 0, 'item id is 0');
         assert(item.tier == Tier::None(()), 'item is tier none');
@@ -3290,7 +3290,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_slot_length() {
+    fn get_slot_length() {
         // None
         assert(ImplLoot::get_slot_length(Slot::None(())) == 0, 'None slot should return 0');
 
