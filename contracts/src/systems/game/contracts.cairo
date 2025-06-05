@@ -1,5 +1,3 @@
-use lootsurvivor::models::adventurer::adventurer::{Adventurer};
-use lootsurvivor::models::adventurer::bag::{Bag};
 use lootsurvivor::models::adventurer::stats::Stats;
 use lootsurvivor::models::market::ItemPurchase;
 
@@ -16,8 +14,6 @@ pub trait IGameSystems<T> {
     fn drop(ref self: T, adventurer_id: u64, items: Array<u8>);
     fn buy_items(ref self: T, adventurer_id: u64, potions: u8, items: Array<ItemPurchase>);
     fn select_stat_upgrades(ref self: T, adventurer_id: u64, stat_upgrades: Stats);
-    // ------ Game Settings ------
-    fn add_settings(ref self: T, name: felt252, adventurer: Adventurer, bag: Bag) -> u32;
 }
 
 
@@ -36,7 +32,7 @@ mod game_systems {
     use lootsurvivor::constants::discovery::DiscoveryEnums::{DiscoveryType, ExploreResult};
     use lootsurvivor::constants::game::{MAINNET_CHAIN_ID, SEPOLIA_CHAIN_ID, STARTER_BEAST_ATTACK_DAMAGE, messages};
     use lootsurvivor::constants::loot::{SUFFIX_UNLOCK_GREATNESS};
-    use lootsurvivor::constants::world::{DEFAULT_NS, VERSION};
+    use lootsurvivor::constants::world::{DEFAULT_NS};
 
     use lootsurvivor::libs::game::{GameLibs, ImplGameLibs};
     use lootsurvivor::models::adventurer::adventurer::{Adventurer, IAdventurer, ImplAdventurer};
@@ -46,9 +42,7 @@ mod game_systems {
     use lootsurvivor::models::adventurer::stats::{ImplStats, Stats};
     use lootsurvivor::models::beast::{Beast, IBeast};
     use lootsurvivor::models::combat::{CombatSpec, ImplCombat, SpecialPowers};
-    use lootsurvivor::models::game::{
-        AdventurerEntropy, AdventurerPacked, BagPacked, GameSettings, GameSettingsMetadata, SettingsCounter,
-    };
+    use lootsurvivor::models::game::{AdventurerEntropy, AdventurerPacked, BagPacked, GameSettings};
     use lootsurvivor::models::game::{
         AttackEvent, BeastEvent, BuyItemsEvent, DefeatedBeastEvent, DiscoveryEvent, FledBeastEvent, GameEvent,
         GameEventDetails, ItemEvent, LevelUpEvent, MarketItemsEvent, ObstacleEvent, StatUpgradeEvent,
@@ -90,12 +84,10 @@ mod game_systems {
             // assert provided weapon
             _assert_valid_starter_weapon(weapon, game_libs);
 
-            // get random seed
-            let (_, market_seed) = _get_random_seed(world, adventurer_id, 1);
-
             if (game_settings.adventurer.xp == 0) {
                 // generate a new adventurer using the provided started weapon
                 let mut adventurer = ImplAdventurer::new(weapon);
+                adventurer.increment_action_count();
 
                 // spoof a beast ambush by deducting health from the adventurer
                 adventurer.decrease_health(STARTER_BEAST_ATTACK_DAMAGE);
@@ -104,6 +96,7 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::beast(
                         BeastEvent {
                             id: beast.id,
@@ -116,24 +109,57 @@ mod game_systems {
                 );
 
                 _save_beast_seed(ref world, adventurer_id, adventurer_id);
-                _save_adventurer_no_boosts(ref world, adventurer, adventurer_id, game_libs);
+                _save_adventurer_no_boosts(ref world, ref adventurer, adventurer_id, game_libs);
             } else {
                 let mut adventurer = game_settings.adventurer;
+                adventurer.increment_action_count();
 
-                _save_market_seed(ref world, adventurer_id, market_seed);
+                // get random seed
+                let (beast_seed, market_seed) = _get_random_seed(
+                    world, adventurer_id, adventurer.xp, game_settings.game_seed, game_settings.game_seed_until_xp,
+                );
+
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
                 );
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::market_items(
                         MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
                     ),
                 );
 
+                if game_settings.in_battle {
+                    let (beast, _, _) = _get_beast(ref adventurer, beast_seed, game_libs);
+                    adventurer.beast_health = beast.starting_health;
+
+                    // save seed to get correct beast
+                    _save_beast_seed(ref world, adventurer_id, beast_seed);
+
+                    // emit beast event
+                    _emit_game_event(
+                        ref world,
+                        adventurer_id,
+                        adventurer.action_count,
+                        GameEventDetails::beast(
+                            BeastEvent {
+                                id: beast.id,
+                                seed: beast_seed,
+                                health: beast.starting_health,
+                                level: beast.combat_spec.level,
+                                specials: beast.combat_spec.specials,
+                            },
+                        ),
+                    );
+                }
+
+                _save_market_seed(ref world, adventurer_id, market_seed);
+                _save_bag(ref world, adventurer_id, adventurer.action_count, game_settings.bag, game_libs);
                 _save_adventurer(ref world, ref adventurer, game_settings.bag, adventurer_id, game_libs);
             }
         }
@@ -157,6 +183,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -166,14 +193,19 @@ mod game_systems {
             _assert_no_stat_upgrades_available(immutable_adventurer);
             _assert_not_in_battle(immutable_adventurer);
 
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
+
             // get random seed
-            let (explore_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            let (explore_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed, game_settings.game_seed_until_xp,
+            );
 
             // go explore
             _explore(ref world, ref adventurer, ref bag, adventurer_id, explore_seed, till_beast, game_libs);
 
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag, game_libs);
+                _save_bag(ref world, adventurer_id, adventurer.action_count, bag, game_libs);
             }
 
             // rotate market seed if level up
@@ -182,11 +214,13 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
                 );
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::market_items(
                         MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
                     ),
@@ -216,6 +250,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -236,24 +271,10 @@ mod game_systems {
             // get previous entropy to fetch correct beast
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-            // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                game_libs
-                .adventurer
-                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
-
-            // get beast based on entropy seeds
-            let beast = game_libs
-                .beast
-                .get_beast(
-                    adventurer.get_level(),
-                    game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                    beast_seed,
-                    beast_health_rnd,
-                    beast_level_rnd,
-                    beast_specials1_rnd,
-                    beast_specials2_rnd,
-                );
+            // get beast
+            let (beast, beast_seed, beast_level_rnd) = _get_beast(
+                ref adventurer, adventurer_entropy.beast_seed, game_libs,
+            );
 
             // get weapon details
             let weapon = game_libs.loot.get_item(adventurer.equipment.weapon.id);
@@ -264,7 +285,12 @@ mod game_systems {
                 specials: weapon_specials,
             };
 
-            let (level_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
+
+            let (level_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed, game_settings.game_seed_until_xp,
+            );
 
             let mut game_events: Array<GameEventDetails> = array![];
             let mut battle_count = 0;
@@ -287,13 +313,19 @@ mod game_systems {
                 let event = game_events.pop_front().unwrap();
                 match event {
                     GameEventDetails::defeated_beast(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::defeated_beast(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::defeated_beast(event),
+                        );
                     },
                     GameEventDetails::attack(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::attack(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::attack(event),
+                        );
                     },
                     GameEventDetails::beast_attack(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::beast_attack(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::beast_attack(event),
+                        );
                     },
                     _ => {},
                 }
@@ -306,11 +338,13 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
                 );
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::market_items(
                         MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
                     ),
@@ -340,6 +374,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // use an immutable adventurer for assertions
             let immutable_adventurer = adventurer.clone();
@@ -353,27 +388,16 @@ mod game_systems {
             // get previous entropy to fetch correct beast
             let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-            // generate xp based randomness seeds
-            let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                game_libs
-                .adventurer
-                .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+            // get beast
+            let (beast, beast_seed, _) = _get_beast(ref adventurer, adventurer_entropy.beast_seed, game_libs);
 
-            // get beast based on entropy seeds
-            let beast = game_libs
-                .beast
-                .get_beast(
-                    adventurer.get_level(),
-                    game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                    beast_seed,
-                    beast_health_rnd,
-                    beast_level_rnd,
-                    beast_specials1_rnd,
-                    beast_specials2_rnd,
-                );
+            // get game settings
+            let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
 
             // get random seed
-            let (flee_seed, market_seed) = _get_random_seed(world, adventurer_id, adventurer.xp);
+            let (flee_seed, market_seed) = _get_random_seed(
+                world, adventurer_id, adventurer.xp, game_settings.game_seed, game_settings.game_seed_until_xp,
+            );
 
             // attempt to flee
             let mut game_events: Array<GameEventDetails> = array![];
@@ -394,13 +418,19 @@ mod game_systems {
                 let event = game_events.pop_front().unwrap();
                 match event {
                     GameEventDetails::fled_beast(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::fled_beast(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::fled_beast(event),
+                        );
                     },
                     GameEventDetails::flee(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::flee(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::flee(event),
+                        );
                     },
                     GameEventDetails::beast_attack(event) => {
-                        _emit_game_event(ref world, adventurer_id, GameEventDetails::beast_attack(event));
+                        _emit_game_event(
+                            ref world, adventurer_id, adventurer.action_count, GameEventDetails::beast_attack(event),
+                        );
                     },
                     _ => {},
                 }
@@ -412,11 +442,13 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::level_up(LevelUpEvent { level: adventurer.get_level() }),
                 );
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::market_items(
                         MarketItemsEvent { items: game_libs.adventurer.get_market(market_seed).span() },
                     ),
@@ -446,6 +478,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid
             _assert_not_dead(adventurer);
@@ -460,27 +493,16 @@ mod game_systems {
                 // get previous entropy to fetch correct beast
                 let adventurer_entropy = _load_adventurer_entropy(world, adventurer_id);
 
-                // generate xp based randomness seeds
-                let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
-                    game_libs
-                    .adventurer
-                    .get_randomness(adventurer.xp, adventurer_entropy.beast_seed);
+                // get beast
+                let (beast, beast_seed, _) = _get_beast(ref adventurer, adventurer_entropy.beast_seed, game_libs);
 
-                // get beast based on entropy seeds
-                let beast = game_libs
-                    .beast
-                    .get_beast(
-                        adventurer.get_level(),
-                        game_libs.loot.get_type(adventurer.equipment.weapon.id),
-                        beast_seed,
-                        beast_health_rnd,
-                        beast_level_rnd,
-                        beast_specials1_rnd,
-                        beast_specials2_rnd,
-                    );
+                // get game settings
+                let game_settings: GameSettings = _get_game_settings(world, adventurer_id);
 
                 // get random seed
-                let (seed, _) = _get_random_seed(world, adventurer_id, adventurer.xp);
+                let (seed, _) = _get_random_seed(
+                    world, adventurer_id, adventurer.xp, game_settings.game_seed, game_settings.game_seed_until_xp,
+                );
 
                 // get randomness for combat
                 let (_, _, beast_crit_hit_rnd, attack_location_rnd) = game_libs
@@ -492,15 +514,25 @@ mod game_systems {
                     ref adventurer, beast, beast_seed, beast_crit_hit_rnd, attack_location_rnd, false, game_libs,
                 );
 
-                _emit_game_event(ref world, adventurer_id, GameEventDetails::beast_attack(beast_attack_details));
+                _emit_game_event(
+                    ref world,
+                    adventurer_id,
+                    adventurer.action_count,
+                    GameEventDetails::beast_attack(beast_attack_details),
+                );
             }
 
-            _emit_game_event(ref world, adventurer_id, GameEventDetails::equip(ItemEvent { items: items.span() }));
+            _emit_game_event(
+                ref world,
+                adventurer_id,
+                adventurer.action_count,
+                GameEventDetails::equip(ItemEvent { items: items.span() }),
+            );
 
             // save state
             // if the bag was mutated, pack and save it
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag, game_libs);
+                _save_bag(ref world, adventurer_id, adventurer.action_count, bag, game_libs);
             }
 
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
@@ -524,6 +556,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid (ownership of item is handled in internal function when we
             // iterate over items)
@@ -534,12 +567,17 @@ mod game_systems {
             // drop items
             _drop(ref adventurer, ref bag, items.clone(), game_libs);
 
-            _emit_game_event(ref world, adventurer_id, GameEventDetails::drop(ItemEvent { items: items.span() }));
+            _emit_game_event(
+                ref world,
+                adventurer_id,
+                adventurer.action_count,
+                GameEventDetails::drop(ItemEvent { items: items.span() }),
+            );
 
             // save state
             // if the bag was mutated, save it
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag, game_libs);
+                _save_bag(ref world, adventurer_id, adventurer.action_count, bag, game_libs);
             }
 
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
@@ -562,6 +600,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, mut bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             // assert action is valid
             _assert_not_dead(adventurer);
@@ -582,12 +621,13 @@ mod game_systems {
             }
 
             if bag.mutated {
-                _save_bag(ref world, adventurer_id, bag, game_libs);
+                _save_bag(ref world, adventurer_id, adventurer.action_count, bag, game_libs);
             }
 
             _emit_game_event(
                 ref world,
                 adventurer_id,
+                adventurer.action_count,
                 GameEventDetails::buy_items(BuyItemsEvent { potions: potions, items_purchased: items.span() }),
             );
 
@@ -617,6 +657,7 @@ mod game_systems {
 
             // load player assets
             let (mut adventurer, bag) = game_libs.adventurer.load_assets(adventurer_id);
+            adventurer.increment_action_count();
 
             let immutable_adventurer = adventurer.clone();
 
@@ -638,31 +679,13 @@ mod game_systems {
             }
 
             _emit_game_event(
-                ref world, adventurer_id, GameEventDetails::stat_upgrade(StatUpgradeEvent { stats: stat_upgrades }),
+                ref world,
+                adventurer_id,
+                adventurer.action_count,
+                GameEventDetails::stat_upgrade(StatUpgradeEvent { stats: stat_upgrades }),
             );
 
             _save_adventurer(ref world, ref adventurer, bag, adventurer_id, game_libs);
-        }
-
-        fn add_settings(ref self: ContractState, name: felt252, adventurer: Adventurer, bag: Bag) -> u32 {
-            let mut world: WorldStorage = self.world(@DEFAULT_NS());
-            // increment settings counter
-            let mut settings_count: SettingsCounter = world.read_model(VERSION);
-            settings_count.count += 1;
-
-            world.write_model(@GameSettings { settings_id: settings_count.count, adventurer, bag });
-            world
-                .write_model(
-                    @GameSettingsMetadata {
-                        settings_id: settings_count.count,
-                        name,
-                        created_by: starknet::get_caller_address(),
-                        created_at: starknet::get_block_timestamp(),
-                    },
-                );
-            world.write_model(@settings_count);
-
-            settings_count.count
         }
     }
 
@@ -676,6 +699,36 @@ mod game_systems {
 
         // increase adventurer's health for any vitality they received
         adventurer.health += adventurer.stats.get_max_health() - STARTING_HEALTH.into();
+    }
+
+    /// @title Get Beast
+    /// @notice Gets a beast based on the adventurer's xp and beast seed.
+    /// @dev This function is called when a beast is encountered.
+    /// @param adventurer A reference to the adventurer.
+    /// @param beast_seed A u64 representing the seed of the beast.
+    /// @param game_libs A reference to the game libraries.
+    /// @return A tuple containing the beast and the beast seed.
+    fn _get_beast(ref adventurer: Adventurer, beast_seed: u64, game_libs: GameLibs) -> (Beast, u32, u16) {
+        // generate xp based randomness seeds
+        let (beast_seed, _, beast_health_rnd, beast_level_rnd, beast_specials1_rnd, beast_specials2_rnd, _, _) =
+            game_libs
+            .adventurer
+            .get_randomness(adventurer.xp, beast_seed);
+
+        // get beast based on entropy seeds
+        let beast = game_libs
+            .beast
+            .get_beast(
+                adventurer.get_level(),
+                game_libs.loot.get_type(adventurer.equipment.weapon.id),
+                beast_seed,
+                beast_health_rnd,
+                beast_level_rnd,
+                beast_specials1_rnd,
+                beast_specials2_rnd,
+            );
+
+        (beast, beast_seed, beast_level_rnd)
     }
 
     /// @title Process Beast Death
@@ -815,6 +868,7 @@ mod game_systems {
                 _emit_game_event(
                     ref world,
                     adventurer_id,
+                    adventurer.action_count,
                     GameEventDetails::beast(
                         BeastEvent {
                             id: beast.id,
@@ -828,7 +882,9 @@ mod game_systems {
 
                 // emit ambush event
                 if (ambush_event.damage > 0) {
-                    _emit_game_event(ref world, adventurer_id, GameEventDetails::ambush(ambush_event));
+                    _emit_game_event(
+                        ref world, adventurer_id, adventurer.action_count, GameEventDetails::ambush(ambush_event),
+                    );
                 }
             },
             ExploreResult::Obstacle(()) => {
@@ -842,7 +898,9 @@ mod game_systems {
                     item_specials_rnd: rnd3_u16,
                     game_libs: game_libs,
                 );
-                _emit_game_event(ref world, adventurer_id, GameEventDetails::obstacle(obstacle_event));
+                _emit_game_event(
+                    ref world, adventurer_id, adventurer.action_count, GameEventDetails::obstacle(obstacle_event),
+                );
             },
             ExploreResult::Discovery(()) => {
                 let discovery_event = _process_discovery(
@@ -853,7 +911,9 @@ mod game_systems {
                     amount_rnd2: rnd7_u8,
                     game_libs: game_libs,
                 );
-                _emit_game_event(ref world, adventurer_id, GameEventDetails::discovery(discovery_event));
+                _emit_game_event(
+                    ref world, adventurer_id, adventurer.action_count, GameEventDetails::discovery(discovery_event),
+                );
             },
         }
 
@@ -1652,10 +1712,14 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param adventurer_xp A u16 representing the adventurer's XP.
     /// @return A felt252 representing the random seed.
-    fn _get_random_seed(world: WorldStorage, adventurer_id: u64, adventurer_xp: u16) -> (u64, u64) {
+    fn _get_random_seed(
+        world: WorldStorage, adventurer_id: u64, adventurer_xp: u16, game_seed: u64, game_seed_until_xp: u16,
+    ) -> (u64, u64) {
         let mut seed: felt252 = 0;
 
-        if _network_supports_vrf() {
+        if game_seed != 0 && (game_seed_until_xp == 0 || game_seed_until_xp > adventurer_xp) {
+            seed = ImplAdventurer::get_simple_entropy(adventurer_xp, game_seed);
+        } else if _network_supports_vrf() {
             seed = VRFImpl::seed();
         } else {
             seed = ImplAdventurer::get_simple_entropy(adventurer_xp, adventurer_id);
@@ -1691,7 +1755,7 @@ mod game_systems {
     fn _save_adventurer(
         ref world: WorldStorage, ref adventurer: Adventurer, bag: Bag, adventurer_id: u64, game_libs: GameLibs,
     ) {
-        _emit_game_event(ref world, adventurer_id, GameEventDetails::adventurer(adventurer));
+        _emit_game_event(ref world, adventurer_id, adventurer.action_count, GameEventDetails::adventurer(adventurer));
         adventurer = game_libs.adventurer.remove_stat_boosts(adventurer, bag);
         let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
@@ -1705,9 +1769,9 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @return The adventurer.
     fn _save_adventurer_no_boosts(
-        ref world: WorldStorage, adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs,
+        ref world: WorldStorage, ref adventurer: Adventurer, adventurer_id: u64, game_libs: GameLibs,
     ) {
-        _emit_game_event(ref world, adventurer_id, GameEventDetails::adventurer(adventurer));
+        _emit_game_event(ref world, adventurer_id, adventurer.action_count, GameEventDetails::adventurer(adventurer));
         let packed = game_libs.adventurer.pack_adventurer(adventurer);
         world.write_model(@AdventurerPacked { adventurer_id, packed });
     }
@@ -1719,8 +1783,8 @@ mod game_systems {
     /// @param adventurer_id A felt252 representing the unique ID of the adventurer.
     /// @param bag A reference to the bag.
     /// @param game_libs A reference to the game libraries.
-    fn _save_bag(ref world: WorldStorage, adventurer_id: u64, bag: Bag, game_libs: GameLibs) {
-        _emit_game_event(ref world, adventurer_id, GameEventDetails::bag(bag));
+    fn _save_bag(ref world: WorldStorage, adventurer_id: u64, action_count: u16, bag: Bag, game_libs: GameLibs) {
+        _emit_game_event(ref world, adventurer_id, action_count, GameEventDetails::bag(bag));
         let packed = game_libs.adventurer.pack_bag(bag);
         world.write_model(@BagPacked { adventurer_id, packed });
     }
@@ -1863,8 +1927,8 @@ mod game_systems {
     // ------------------------------------------ //
     // ------------ Emit events ----------------- //
     // ------------------------------------------ //
-    fn _emit_game_event(ref world: WorldStorage, adventurer_id: u64, event: GameEventDetails) {
-        world.emit_event(@GameEvent { adventurer_id, details: event });
+    fn _emit_game_event(ref world: WorldStorage, adventurer_id: u64, action_count: u16, event: GameEventDetails) {
+        world.emit_event(@GameEvent { adventurer_id, action_count, details: event });
     }
 }
 

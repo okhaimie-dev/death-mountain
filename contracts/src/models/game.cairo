@@ -52,6 +52,9 @@ pub struct GameSettings {
     pub settings_id: u32,
     pub adventurer: Adventurer,
     pub bag: Bag,
+    pub game_seed: u64,
+    pub game_seed_until_xp: u16,
+    pub in_battle: bool,
 }
 
 #[derive(IntrospectPacked, Copy, Drop, Serde)]
@@ -69,6 +72,7 @@ pub struct SettingsCounter {
 pub struct GameEvent {
     #[key]
     pub adventurer_id: u64,
+    pub action_count: u16,
     pub details: GameEventDetails,
 }
 

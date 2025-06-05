@@ -39,7 +39,8 @@ pub struct Adventurer {
     pub stat_upgrades_available: u8, // 4 bits
     pub stats: Stats, // 30 bits
     pub equipment: Equipment, // 128 bits
-    pub item_specials_seed: u16,
+    pub item_specials_seed: u16, // 16 bits
+    pub action_count: u16,
 }
 
 #[derive(Drop, Serde)]
@@ -74,6 +75,7 @@ pub impl ImplAdventurer of IAdventurer {
             beast_health: BeastSettings::STARTER_BEAST_HEALTH.into(),
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         }
     }
 
@@ -94,7 +96,8 @@ pub impl ImplAdventurer of IAdventurer {
             + adventurer.stat_upgrades_available.into() * TWO_POW_44
             + adventurer.stats.pack().into() * TWO_POW_48
             + adventurer.equipment.pack().into() * TWO_POW_78
-            + adventurer.item_specials_seed.into() * TWO_POW_206)
+            + adventurer.item_specials_seed.into() * TWO_POW_206
+            + adventurer.action_count.into() * TWO_POW_222)
             .try_into()
             .unwrap()
     }
@@ -111,7 +114,8 @@ pub impl ImplAdventurer of IAdventurer {
         let (packed, stat_upgrades_available) = DivRem::div_rem(packed, TWO_POW_4_NZ);
         let (packed, stats) = DivRem::div_rem(packed, TWO_POW_30_NZ);
         let (packed, equipment) = DivRem::div_rem(packed, TWO_POW_128_NZ);
-        let (_, item_specials_seed) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
+        let (packed, item_specials_seed) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
+        let (_, action_count) = DivRem::div_rem(packed, TWO_POW_16_NZ_U256);
 
         Adventurer {
             health: health.try_into().unwrap(),
@@ -122,13 +126,14 @@ pub impl ImplAdventurer of IAdventurer {
             stats: ImplStats::unpack(stats.try_into().unwrap()),
             equipment: ImplEquipment::unpack(equipment.try_into().unwrap()),
             item_specials_seed: item_specials_seed.try_into().unwrap(),
+            action_count: action_count.try_into().unwrap(),
         }
     }
 
     /// @notice Calculates the charisma potion discount for the adventurer based on their charisma
     /// stat.
     /// @return The charisma potion discount.
-    #[inline(always)]
+
     fn charisma_potion_discount(self: Stats) -> u16 {
         CHARISMA_POTION_DISCOUNT.into() * self.charisma.into()
     }
@@ -136,7 +141,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Calculates the charisma item discount for the adventurer based on their charisma
     /// stat.
     /// @return The charisma item discount.
-    #[inline(always)]
+
     fn charisma_item_discount(self: Stats) -> u16 {
         CHARISMA_ITEM_DISCOUNT.into() * self.charisma.into()
     }
@@ -169,7 +174,7 @@ pub impl ImplAdventurer of IAdventurer {
 
     /// @notice Deducts a specified amount of gold from the adventurer, preventing underflow.
     /// @param amount The amount of gold to be deducted.
-    #[inline(always)]
+
     fn deduct_gold(ref self: Adventurer, amount: u16) {
         if amount > self.gold {
             self.gold = 0;
@@ -182,7 +187,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param self: Equipment to check
     /// @param slot: Slot to check
     /// @return Item: Item at slot
-    #[inline(always)]
+
     fn get_item_at_slot(self: Equipment, slot: Slot) -> Item {
         match slot {
             Slot::None(()) => Item { id: 0, xp: 0 },
@@ -201,7 +206,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param self: Equipment to check
     /// @param item_id: ID of the item to get
     /// @return Item: Item at slot, returns an empty item if the item is not found
-    #[inline(always)]
+
     fn get_item(self: Equipment, item_id: u8) -> Item {
         if item_id == self.weapon.id {
             self.weapon
@@ -228,7 +233,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param self: Equipment to check
     /// @param item_id: ID of the item to check
     /// @return bool: True if slot is free, false if not
-    #[inline(always)]
+
     fn is_slot_free_item_id(self: Equipment, item_id: u8, slot: Slot) -> bool {
         match slot {
             Slot::None(()) => false,
@@ -246,7 +251,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Gets the current level of the adventurer based on their XP.
     /// @param self: Adventurer to get level for
     /// @return The current level of the adventurer.
-    #[inline(always)]
+
     fn get_level(self: Adventurer) -> u8 {
         ImplCombat::get_level_from_xp(self.xp)
     }
@@ -256,7 +261,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param adventurer_wisdom: Wisdom of the adventurer
     /// @param rnd: Random value used to determine if the adventurer was ambushed
     /// @return bool: True if the adventurer was ambushed, false if not
-    #[inline(always)]
+
     fn is_ambushed(adventurer_level: u8, adventurer_wisdom: u8, rnd: u8) -> bool {
         !ImplCombat::ability_based_avoid_threat(adventurer_level, adventurer_wisdom, rnd)
     }
@@ -351,7 +356,6 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Sets the luck stat of the adventurer
     /// @param self: Adventurer to set luck for
     /// @param bag: Bag needed for calculating luck
-    #[inline(always)]
     fn set_luck(ref self: Adventurer, bag: Bag) {
         self.stats.luck = self.equipment.calculate_luck(bag);
     }
@@ -359,7 +363,6 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Checks if the adventurer is in battle
     /// @param self: Adventurer to check if in battle
     /// @return bool: True if the adventurer is in battle, false if not
-    #[inline(always)]
     fn in_battle(self: Adventurer) -> bool {
         if self.beast_health == 0 {
             false
@@ -371,7 +374,6 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Deducts a specified amount of health from the adventurer's beast
     /// @param self: Adventurer to deduct beast health from
     /// @param amount: Amount of health to deduct from the beast
-    #[inline(always)]
     fn deduct_beast_health(ref self: Adventurer, amount: u16) {
         if amount > self.beast_health {
             self.beast_health = 0;
@@ -383,7 +385,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Sets the beast's health to a specified amount
     /// @param self: Adventurer to set beast health for
     /// @param amount: Amount of health to set the beast's health to
-    #[inline(always)]
+
     fn set_beast_health(ref self: Adventurer, amount: u16) {
         if (amount > BeastSettings::MAXIMUM_HEALTH) {
             self.beast_health = BeastSettings::MAXIMUM_HEALTH;
@@ -395,7 +397,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Adds health to the adventurer, preventing overflow and capping at max health
     /// @param self: Adventurer to add health to
     /// @param amount: Amount of health to add to the adventurer
-    #[inline(always)]
+
     fn increase_health(ref self: Adventurer, amount: u16) {
         let new_hp = self.health + amount;
         let max_hp = self.stats.get_max_health();
@@ -410,7 +412,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Decreases health of Adventurer with underflow protection
     /// @param self: Adventurer to deduct health from
     /// @param value: Amount of health to deduct from the adventurer
-    #[inline(always)]
+
     fn decrease_health(ref self: Adventurer, value: u16) {
         if value > self.health {
             self.health = 0;
@@ -422,7 +424,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Increases the adventurer's gold by the given value
     /// @param self: Adventurer to add gold to
     /// @param amount: Amount of gold to add to the adventurer
-    #[inline(always)]
+
     fn increase_gold(ref self: Adventurer, amount: u16) {
         let new_amount = self.gold + amount;
         if (new_amount > MAX_GOLD) {
@@ -459,7 +461,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Grants stat upgrades to the adventurer
     /// @param self: Adventurer to add stat upgrades to
     /// @param amount: Amount of stat upgrades to add to the adventurer
-    #[inline(always)]
+
     fn increase_stat_upgrades_available(ref self: Adventurer, amount: u8) {
         let new_amount = self.stat_upgrades_available + amount;
         if (new_amount > MAX_STAT_UPGRADES_AVAILABLE) {
@@ -516,7 +518,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Calculates the bonus luck provided by the jewelry
     /// @param self: Item to calculate bonus luck for
     /// @return The amount of bonus luck, or 0 if the item does not provide a luck bonus
-    #[inline(always)]
+
     fn jewelry_bonus_luck(self: Item) -> u8 {
         if (self.id == ItemId::SilverRing) {
             self.get_greatness() * SILVER_RING_LUCK_BONUS_PER_GREATNESS
@@ -529,7 +531,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param self: Item to calculate gold bonus for
     /// @param base_gold_amount: Base gold amount before the jewelry bonus is applied
     /// @return The amount of bonus gold, or 0 if the item does not provide a gold bonus
-    #[inline(always)]
+
     fn jewelry_gold_bonus(self: Item, base_gold_amount: u16) -> u16 {
         if self.id == ItemId::GoldRing {
             base_gold_amount * JEWELRY_BONUS_BEAST_GOLD_PERCENT.into() * self.get_greatness().into() / 100
@@ -544,7 +546,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param base_damage: Base damage amount before the jewelry bonus is applied
     /// @return The amount of bonus damage, or 0 if the item does not provide a name match damage
     /// bonus
-    #[inline(always)]
+
     fn name_match_bonus_damage(self: Item, base_damage: u16) -> u16 {
         if (self.id == ItemId::PlatinumRing) {
             base_damage * JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS.into() * self.get_greatness().into() / 100
@@ -558,7 +560,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @param base_damage: Base damage amount before the jewelry bonus is applied
     /// @return The amount of bonus damage, or 0 if the item does not provide a critical hit damage
     /// bonus
-    #[inline(always)]
+
     fn critical_hit_bonus_damage(self: Item, base_damage: u16) -> u16 {
         if (self.id == ItemId::TitaniumRing) {
             base_damage * JEWELRY_BONUS_CRITICAL_HIT_PERCENT_PER_GREATNESS.into() * self.get_greatness().into() / 100
@@ -602,7 +604,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Checks if the adventurer can explore
     /// @param self: Adventurer to check if they can explore
     /// @return bool: True if the adventurer can explore, false if not
-    #[inline(always)]
+
     fn can_explore(self: Adventurer) -> bool {
         self.health != 0 && self.beast_health == 0 && self.stat_upgrades_available == 0
     }
@@ -842,7 +844,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Apply the vitality health boost to the adventurer
     /// @param self: The adventurer
     /// @param vitality: The vitality of the adventurer
-    #[inline(always)]
+
     fn apply_vitality_health_boost(ref self: Adventurer, vitality: u8) {
         self.increase_health(VITALITY_INSTANT_HEALTH_BONUS.into() * vitality.into());
     }
@@ -850,7 +852,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Increment the battle action count
     /// @param count: The current count
     /// @return The incremented count
-    #[inline(always)]
+
     fn increment_battle_action_count(count: u16) -> u16 {
         let (result, overflow) = count.overflowing_add(1);
         if (!overflow) {
@@ -860,6 +862,17 @@ pub impl ImplAdventurer of IAdventurer {
         }
     }
 
+    /// @notice Increment the action count
+    /// @param self: The adventurer
+
+    fn increment_action_count(ref self: Adventurer) {
+        let (result, overflow) = self.action_count.overflowing_add(1);
+        if (!overflow) {
+            self.action_count = result;
+        } else {
+            self.action_count = 0;
+        }
+    }
 
     /// @title get_random_explore
     /// @notice gets random explore based on provided entropy
@@ -900,7 +913,7 @@ pub impl ImplAdventurer of IAdventurer {
     /// @notice Gets the vitality boost from an item suffix
     /// @param suffix: suffix of item
     /// @return u8: vitality boost
-    #[inline(always)]
+
     fn get_vitality_item_boost(suffix: u8) -> u8 {
         if (suffix == of_Power) {
             0
@@ -1037,16 +1050,16 @@ pub impl ImplAdventurer of IAdventurer {
 
     /// @notice Gets simple entropy for adventurer
     /// @param adventurer_xp: adventurer xp
-    /// @param adventurer_id: adventurer id
+    /// @param seed: seed
     /// @return felt252: poseidon hash based on xp and adventurer id
-    fn get_simple_entropy(adventurer_xp: u16, adventurer_id: u64) -> felt252 {
+    fn get_simple_entropy(adventurer_xp: u16, seed: u64) -> felt252 {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(adventurer_xp.into());
-        hash_span.append(adventurer_id.into());
+        hash_span.append(seed.into());
         poseidon_hash_span(hash_span.span()).into()
     }
 
-    #[inline(always)]
+
     fn apply_health_boost_from_vitality_unlock(ref self: Adventurer, item_specials: SpecialPowers) {
         // get the vitality boost for the special
         let vit_boost = Self::get_vitality_item_boost(item_specials.special1);
@@ -1073,6 +1086,7 @@ const TWO_POW_44: u256 = 0x100000000000;
 const TWO_POW_48: u256 = 0x1000000000000;
 const TWO_POW_78: u256 = 0x40000000000000000000;
 const TWO_POW_206: u256 = 0x4000000000000000000000000000000000000000000000000000;
+const TWO_POW_222: u256 = 0x40000000000000000000000000000000000000000000000000000000;
 const TWO_POW_128_NZ: NonZero<u256> = 0x100000000000000000000000000000000;
 
 // ---------------------------
@@ -1084,9 +1098,9 @@ mod tests {
     use lootsurvivor::constants::adventurer::{
         BASE_POTION_PRICE, CHARISMA_ITEM_DISCOUNT, HEALTH_INCREASE_PER_VITALITY, ITEM_MAX_GREATNESS,
         JEWELRY_BONUS_NAME_MATCH_PERCENT_PER_GREATNESS, MAX_ADVENTURER_HEALTH, MAX_ADVENTURER_XP, MAX_GOLD,
-        MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED, MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE,
-        MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS, SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS,
-        STARTING_GOLD, STARTING_HEALTH,
+        MAX_PACKABLE_ACTION_COUNT, MAX_PACKABLE_BEAST_HEALTH, MAX_PACKABLE_ITEM_SPECIALS_SEED,
+        MAX_STAT_UPGRADES_AVAILABLE, MINIMUM_ITEM_PRICE, MINIMUM_POTION_PRICE, NECKLACE_ARMOR_BONUS,
+        SILVER_RING_G20_LUCK_BONUS, SILVER_RING_LUCK_BONUS_PER_GREATNESS, STARTING_GOLD, STARTING_HEALTH,
     };
     use lootsurvivor::constants::beast::{BeastId, BeastSettings};
     use lootsurvivor::constants::combat::CombatEnums::{Slot, Type};
@@ -1133,6 +1147,7 @@ mod tests {
             equipment,
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
+            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -1144,6 +1159,7 @@ mod tests {
         assert(adventurer.stat_upgrades_available == unpacked.stat_upgrades_available, 'stat_upgrades_available');
         assert(adventurer.stats == unpacked.stats, 'wrong unpacked stats');
         assert(adventurer.equipment == unpacked.equipment, 'equipment mistmatch');
+        assert(adventurer.action_count == unpacked.action_count, 'action_count');
         assert(adventurer.item_specials_seed == unpacked.item_specials_seed, 'item_specials_seed');
 
         let adventurer = Adventurer {
@@ -1171,6 +1187,7 @@ mod tests {
             },
             beast_health: MAX_PACKABLE_BEAST_HEALTH,
             stat_upgrades_available: MAX_STAT_UPGRADES_AVAILABLE,
+            action_count: MAX_PACKABLE_ACTION_COUNT,
             item_specials_seed: MAX_PACKABLE_ITEM_SPECIALS_SEED,
         };
         let packed = ImplAdventurer::pack(adventurer);
@@ -3487,6 +3504,7 @@ mod tests {
             },
             beast_health: 20,
             stat_upgrades_available: 0,
+            action_count: 0,
             item_specials_seed: 0,
         };
 
@@ -3579,6 +3597,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {
@@ -3616,6 +3635,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {
@@ -3654,6 +3674,7 @@ mod tests {
             beast_health: 20,
             stat_upgrades_available: 0,
             item_specials_seed: 0,
+            action_count: 0,
         };
 
         let boost_stats = Stats {

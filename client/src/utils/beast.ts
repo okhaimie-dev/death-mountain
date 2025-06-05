@@ -242,4 +242,3 @@ export const getArmorTypeWeakness = (type: string): string => {
       return '';
   }
 }
-

@@ -6,9 +6,11 @@ import DeathScreen from '@/containers/DeathScreen';
 import ExploreScreen from '@/containers/ExploreScreen';
 import LoadingContainer from '@/containers/LoadingScreen';
 import MarketScreen from '@/containers/MarketScreen';
-import StatSelectionScreen from '@/containers/StatSelectionScreen';
+import QuestCompletedScreen from '@/containers/QuestCompletedScreen';
 import SettingsScreen from '@/containers/SettingsScreen';
+import StatSelectionScreen from '@/containers/StatSelectionScreen';
 import { useController } from '@/contexts/controller';
+import { useGameDirector } from '@/contexts/GameDirector';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
@@ -22,7 +24,8 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, beast, showBeastRewards, quest } = useGameStore();
+  const { subscription } = useGameDirector();
 
   const [activeNavItem, setActiveNavItem] = useState<'GAME' | 'CHARACTER' | 'MARKET' | 'SETTINGS'>('GAME');
 
@@ -31,17 +34,17 @@ export default function GamePage() {
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
+  const settings_id = Number(searchParams.get('settingsId'));
 
   async function mint() {
     setLoadingProgress(45)
-    let tokenId = await mintGame(account, playerName);
-    navigate(`/play?id=${tokenId}`);
+    let tokenId = await mintGame(account, playerName, settings_id);
+    navigate(`/play?id=${tokenId}`, { replace: true });
   }
 
   useEffect(() => {
     if (!account && gameId && adventurer) {
       navigate('/');
-      exitGame()
     }
   }, [account]);
 
@@ -67,15 +70,28 @@ export default function GamePage() {
     setActiveNavItem('GAME');
   }, [adventurer?.stat_upgrades_available, adventurer?.beast_health]);
 
+  useEffect(() => {
+    return () => {
+      if (subscription) {
+        try {
+          subscription.cancel();
+        } catch (error) { }
+      }
+
+      exitGame();
+    };
+  }, []);
+
   const isLoading = !gameId || !adventurer;
   const isDead = adventurer && adventurer.health === 0;
   const isBeastDefeated = showBeastRewards && adventurer?.beast_health === 0;
+  const isQuestCompleted = quest && adventurer && adventurer.xp >= quest.targetScore;
 
   return (
     <Box className="container" sx={styles.container}>
       {isLoading
         ? <LoadingContainer loadingProgress={loadingProgress} />
-        : isDead ? <DeathScreen /> : isBeastDefeated ? <BeastSlainScreen />
+        : isDead ? <DeathScreen /> : isQuestCompleted ? <QuestCompletedScreen /> : isBeastDefeated ? <BeastSlainScreen />
           : <>
             {adventurer.beast_health > 0 && beast && <BeastScreen />}
             {adventurer.stat_upgrades_available > 0 && <StatSelectionScreen />}

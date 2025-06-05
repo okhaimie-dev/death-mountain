@@ -16,13 +16,11 @@ export default function SettingsScreen() {
   const { account, address, playerName, login, openProfile } = useController();
 
   const handleExitGame = () => {
-    exitGame();
     navigate('/');
   };
 
   const handleUnstuck = async () => {
     const adventurer = await fetchAdventurer(gameId!);
-    console.log('Unstuck adventurer', adventurer);
 
     if (adventurer) {
       setAdventurer(adventurer);

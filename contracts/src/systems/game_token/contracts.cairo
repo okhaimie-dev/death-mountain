@@ -88,7 +88,18 @@ mod game_token_systems {
                 SETTINGS_MODEL(),
             );
 
-        world.write_model(@GameSettings { settings_id: 0, adventurer: ImplAdventurer::new(0), bag: ImplBag::new() });
+        world
+            .write_model(
+                @GameSettings {
+                    settings_id: 0,
+                    adventurer: ImplAdventurer::new(0),
+                    bag: ImplBag::new(),
+                    game_seed: 0,
+                    game_seed_until_xp: 0,
+                    in_battle: false,
+                },
+            );
+
         world
             .write_model(
                 @GameSettingsMetadata {

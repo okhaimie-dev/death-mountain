@@ -27,7 +27,7 @@ export const fetchAdventurer = async (adventurerId: number): Promise<Adventurer 
     });
 
     const data = await response.json();
-    if (!data?.result || data?.result.length !== 29) return null;
+    if (!data?.result || data?.result.length < 10) return null;
 
     let adventurer: Adventurer = {
       health: parseInt(data?.result[0], 16),
@@ -79,6 +79,7 @@ export const fetchAdventurer = async (adventurerId: number): Promise<Adventurer 
         },
       },
       item_specials_seed: parseInt(data?.result[28], 16),
+      action_count: parseInt(data?.result[28], 16),
     }
 
     return adventurer;

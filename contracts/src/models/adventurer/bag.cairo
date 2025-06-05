@@ -163,7 +163,7 @@ pub impl ImplBag of IBag {
     // @dev If the bag is full, it throws an error
     // @param self The instance of the Bag
     // @param item The item to be added to the bag
-    #[inline(always)]
+
     fn add_item(ref bag: Bag, item: Item) {
         // assert item id is not 0
         assert(item.id != 0, 'Item ID cannot be 0');
@@ -211,7 +211,7 @@ pub impl ImplBag of IBag {
     // @param self The instance of the Bag
     // @param item_id The id of the item to be removed
     // @return The item that was removed from the bag
-    #[inline(always)]
+
     fn remove_item(ref bag: Bag, item_id: u8) -> Item {
         let removed_item = Self::get_item(bag, item_id);
 
@@ -810,7 +810,6 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Item ID cannot be 0',))]
-    #[available_gas(7920)]
     fn add_item_blank_item() {
         // start with full bag
         let mut bag = Bag {
@@ -840,7 +839,6 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Bag is full',))]
-    #[available_gas(7920)]
     fn add_item_full_bag() {
         // start with full bag
         let mut bag = Bag {

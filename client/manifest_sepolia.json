@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
-    "address": "0x322c5eeb5c91b55f620984b9938b07dfe2d8695bc807a7471a19f5b52cd1db0",
-    "seed": "test_ls_0_1",
+    "address": "0x5246cbbe2bef7fd190adbf05e47bee876ab2ab0e272c3346e0e760cd26adaa7",
+    "seed": "test_ls_0_4",
     "name": "Provable Games",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x4ea1b9694becd352f485362b3f21814df02b0a386bf11b8e7208dd8aff8e6cc",
-      "class_hash": "0x6d10653764bcd1178af99a19fb0f2076af16584d15691be1194dc5840c5a356",
+      "address": "0x36a767f7e7f4be4598b81cb61b67b9545e49edd8f4fcb572096ed4b9d0450d3",
+      "class_hash": "0x113d778b7dd3c32f2f6d45ac0dc2c79ed39b29656eef91b92696f27fd3a6b8c",
       "abi": [
         {
           "type": "impl",
@@ -1506,6 +1506,10 @@
             },
             {
               "name": "item_specials_seed",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "action_count",
               "type": "core::integer::u16"
             }
           ]
@@ -2077,7 +2081,7 @@
       ]
     },
     {
-      "address": "0x3d39021bd4c9ae5772e565a909603095c31137bcf1789c95b522e5e539ccb42",
+      "address": "0x68a1fa290d8dd5c054ab523cf9db412f6a3e105e3614ecdd332a28e60c5a6ef",
       "class_hash": "0x583f95cd3dac90f31e127a4f57693254f4fa62a0a88b2487d607b60ad848f1b",
       "abi": [
         {
@@ -2496,8 +2500,8 @@
       ]
     },
     {
-      "address": "0x61ba0c8563f947de7be527203d829770567cdea027d7d386dff3a232bb4d6ff",
-      "class_hash": "0x840e120d3aec7f05098a027bcffebc4f98afd3ef298d3de8fd6600b0d7cbf7",
+      "address": "0x543fdf9d549d514dfe115363f090e67314f789daf1bdb33ca60710a8211f3e2",
+      "class_hash": "0x6a9270948419e6ec567454f7e99f963145a21e8f329ed4a81321290e6091dc2",
       "abi": [
         {
           "type": "impl",
@@ -2613,166 +2617,6 @@
             {
               "name": "luck",
               "type": "core::integer::u8"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::adventurer::item::Item",
-          "members": [
-            {
-              "name": "id",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "xp",
-              "type": "core::integer::u16"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::adventurer::equipment::Equipment",
-          "members": [
-            {
-              "name": "weapon",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "chest",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "head",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "waist",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "foot",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "hand",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "neck",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "ring",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::adventurer::adventurer::Adventurer",
-          "members": [
-            {
-              "name": "health",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "xp",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "gold",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "beast_health",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "stat_upgrades_available",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "stats",
-              "type": "lootsurvivor::models::adventurer::stats::Stats"
-            },
-            {
-              "name": "equipment",
-              "type": "lootsurvivor::models::adventurer::equipment::Equipment"
-            },
-            {
-              "name": "item_specials_seed",
-              "type": "core::integer::u16"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lootsurvivor::models::adventurer::bag::Bag",
-          "members": [
-            {
-              "name": "item_1",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_2",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_3",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_4",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_5",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_6",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_7",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_8",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_9",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_10",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_11",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_12",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_13",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_14",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "item_15",
-              "type": "lootsurvivor::models::adventurer::item::Item"
-            },
-            {
-              "name": "mutated",
-              "type": "core::bool"
             }
           ]
         },
@@ -2911,30 +2755,6 @@
               ],
               "outputs": [],
               "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "add_settings",
-              "inputs": [
-                {
-                  "name": "name",
-                  "type": "core::felt252"
-                },
-                {
-                  "name": "adventurer",
-                  "type": "lootsurvivor::models::adventurer::adventurer::Adventurer"
-                },
-                {
-                  "name": "bag",
-                  "type": "lootsurvivor::models::adventurer::bag::Bag"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::integer::u32"
-                }
-              ],
-              "state_mutability": "external"
             }
           ]
         },
@@ -3065,13 +2885,12 @@
         "drop",
         "buy_items",
         "select_stat_upgrades",
-        "add_settings",
         "upgrade"
       ]
     },
     {
-      "address": "0x164ac04a3da597baa1b1f0916ec419b5e9776c0e239594629c6f6dacb990dc9",
-      "class_hash": "0x7ea80c5cb7d204dca2c4c6eb04995224d16d90275fc3842fa34bd2095ff30e5",
+      "address": "0x6f261eba018dda4f60bdc1d0874cb7e97bf424979dda63fcbdf8bdcba1fb644",
+      "class_hash": "0x4168f47735bf74c8c6fcbb5f79061aa2a6e138bef24e3af5a7de0c91ca5cdda",
       "abi": [
         {
           "type": "impl",
@@ -4091,7 +3910,7 @@
       ]
     },
     {
-      "address": "0x21daaf023c6099daf1756445817d4edcba2ede78f2f3e511cc943949954e763",
+      "address": "0x513026b65c44bf5843efa2fe925d311ae1593a589bceb74ec0e704df652d770",
       "class_hash": "0x5cdf1657b5f1a819c446069e6a51ab19d209ee4ae842d6168da8895a90bb6ff",
       "abi": [
         {
@@ -4598,8 +4417,8 @@
       ]
     },
     {
-      "address": "0x11c2e8dc8223dd051ca0b5e6e4d36e61bfc06bce7a247e92e49f3daa2f2cdb9",
-      "class_hash": "0x4801a0eda3a2836d01adf320662d302a7647164053ea4e2efa0c46e6b3cae71",
+      "address": "0x165e98ddaea22ef835a18b01846054d40db39a2f3ec06ce2e6718a44d018680",
+      "class_hash": "0x13e9803640598ac36f27778b3337f1b34a3b0adcb49b135717c288335d989c6",
       "abi": [
         {
           "type": "impl",
@@ -4799,6 +4618,515 @@
       "systems": [
         "upgrade"
       ]
+    },
+    {
+      "address": "0xefb3cd6b2d70109162ca62e57381db51424d085c930f35ac3e888be10922c2",
+      "class_hash": "0x6fe0ef13d1ba76ada3ddd907b0897c5600d4795b28d32308f50cb0e3f17569d",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "settings_systems__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "settings_systems__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "SettingsSystemsImpl",
+          "interface_name": "lootsurvivor::systems::settings::contracts::ISettingsSystems"
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::adventurer::stats::Stats",
+          "members": [
+            {
+              "name": "strength",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "dexterity",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "vitality",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "intelligence",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "wisdom",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "charisma",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "luck",
+              "type": "core::integer::u8"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::adventurer::item::Item",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "xp",
+              "type": "core::integer::u16"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::adventurer::equipment::Equipment",
+          "members": [
+            {
+              "name": "weapon",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "chest",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "head",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "waist",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "foot",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "hand",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "neck",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "ring",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::adventurer::adventurer::Adventurer",
+          "members": [
+            {
+              "name": "health",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "xp",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "gold",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "beast_health",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "stat_upgrades_available",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "stats",
+              "type": "lootsurvivor::models::adventurer::stats::Stats"
+            },
+            {
+              "name": "equipment",
+              "type": "lootsurvivor::models::adventurer::equipment::Equipment"
+            },
+            {
+              "name": "item_specials_seed",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "action_count",
+              "type": "core::integer::u16"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::adventurer::bag::Bag",
+          "members": [
+            {
+              "name": "item_1",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_2",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_3",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_4",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_5",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_6",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_7",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_8",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_9",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_10",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_11",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_12",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_13",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_14",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "item_15",
+              "type": "lootsurvivor::models::adventurer::item::Item"
+            },
+            {
+              "name": "mutated",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lootsurvivor::models::game::GameSettings",
+          "members": [
+            {
+              "name": "settings_id",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "adventurer",
+              "type": "lootsurvivor::models::adventurer::adventurer::Adventurer"
+            },
+            {
+              "name": "bag",
+              "type": "lootsurvivor::models::adventurer::bag::Bag"
+            },
+            {
+              "name": "game_seed",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "game_seed_until_xp",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "in_battle",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "lootsurvivor::systems::settings::contracts::ISettingsSystems",
+          "items": [
+            {
+              "type": "function",
+              "name": "add_settings",
+              "inputs": [
+                {
+                  "name": "name",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "adventurer",
+                  "type": "lootsurvivor::models::adventurer::adventurer::Adventurer"
+                },
+                {
+                  "name": "bag",
+                  "type": "lootsurvivor::models::adventurer::bag::Bag"
+                },
+                {
+                  "name": "game_seed",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "game_seed_until_xp",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "in_battle",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "setting_details",
+              "inputs": [
+                {
+                  "name": "settings_id",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "lootsurvivor::models::game::GameSettings"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "game_settings",
+              "inputs": [
+                {
+                  "name": "game_id",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "lootsurvivor::models::game::GameSettings"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "settings_count",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "view"
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "lootsurvivor::systems::settings::contracts::settings_systems::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "ls_0_0_1-settings_systems",
+      "selector": "0x66bb04604f81385856aa7b8526ccdaeeb6bf1568e3656e1eea1727d41d2f206",
+      "systems": [
+        "add_settings",
+        "upgrade"
+      ]
     }
   ],
   "libraries": [],
@@ -4835,7 +5163,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x70bc1bdb7a3c425a910caba30e5b11452ed105cabd7c0559744b73f428141e9",
+      "class_hash": "0x35e166c888f48fda40e84274c0fadd91a3a914a29c320461189fa045c1d62ad",
       "tag": "ls_0_0_1-GameSettings",
       "selector": "0x2b4e78e32ea8503f2dc7123211b672ce9712a014664c3a4d955eefda8371ab6"
     },
@@ -4879,7 +5207,7 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x109fdaf1573076be974eaee0b2e19a52f77bc2a34d7d5608e95f701755a4c3",
+      "class_hash": "0x6c6269784fff73e18c54bf400d8062294ed8be1d17e4abcd28f7a68be4e2f4b",
       "tag": "ls_0_0_1-GameEvent",
       "selector": "0x26d8912eece420b95692b8da8105587d09888bd0ff0e243c8e8cfb0e23ab894"
     }

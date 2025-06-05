@@ -1,10 +1,11 @@
 import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter, Route, Routes, } from "react-router-dom";
-
 import Box from '@mui/material/Box';
 import { SnackbarProvider } from 'notistack';
 
 import Header from './components/Header';
+import GameSettingsList from './components/GameSettingsList';
+import GameSettings from './components/GameSettings';
 import { ControllerProvider } from './contexts/controller';
 import { GameDirector } from './contexts/GameDirector';
 import { SoundProvider } from './contexts/Sound';
@@ -29,6 +30,9 @@ function App() {
                           return <Route key={index} path={route.path} element={route.content} />
                         })}
                       </Routes>
+
+                      <GameSettingsList />
+                      <GameSettings />
                     </Box>
                   </GameDirector>
                 </ControllerProvider>
@@ -37,7 +41,7 @@ function App() {
           </ThemeProvider>
         </StyledEngineProvider>
       </Box>
-    </BrowserRouter >
+    </BrowserRouter>
   );
 }
 

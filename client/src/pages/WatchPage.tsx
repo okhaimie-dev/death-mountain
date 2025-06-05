@@ -12,13 +12,13 @@ import GamePage from './GamePage';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VideocamIcon from '@mui/icons-material/Videocam';
-import { formatGameEvent } from '@/utils/events';
+import { ExplorerReplayEvents } from '@/utils/events';
 
 export default function WatchPage() {
   const { watch } = useGameDirector();
-  const { spectating, setSpectating, replayEvents, processEvent, setEventQueue } = watch;
+  const { spectating, setSpectating, replayEvents, processEvent, setEventQueue, eventsProcessed, setEventsProcessed } = watch;
 
-  const { gameId, adventurer, exitGame } = useGameStore();
+  const { gameId, adventurer, popExploreLog } = useGameStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [replayIndex, setReplayIndex] = useState(0);
 
@@ -38,6 +38,7 @@ export default function WatchPage() {
 
   useEffect(() => {
     if (replayEvents.length > 0 && replayIndex === 0) {
+      processEvent(replayEvents[0], true)
       replayForward();
     }
   }, [replayEvents]);
@@ -45,7 +46,7 @@ export default function WatchPage() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isPlaying) return; // Don't handle keyboard events while playing
-      
+
       if (event.key === 'ArrowRight') {
         replayForward();
       } else if (event.key === 'ArrowLeft') {
@@ -58,7 +59,6 @@ export default function WatchPage() {
   }, [replayIndex, isPlaying]); // Add dependencies
 
   const handleEndWatching = () => {
-    exitGame();
     setSpectating(false);
     navigate('/');
   };
@@ -67,7 +67,9 @@ export default function WatchPage() {
     if (play) {
       setEventQueue(replayEvents.slice(replayIndex));
     } else {
+      setReplayIndex(prev => prev + eventsProcessed + 1);
       setEventQueue([]);
+      setEventsProcessed(0);
     }
 
     setIsPlaying(play);
@@ -76,16 +78,16 @@ export default function WatchPage() {
   const replayForward = () => {
     if (replayIndex >= replayEvents.length - 1) return;
 
-    let currentIndex = replayIndex;
-    while (currentIndex < replayEvents.length - 1) {
-      let currentEntity = replayEvents[currentIndex];
-      processEvent(currentEntity, true);
-      currentIndex++;
+    let currentIndex = replayIndex + 1;
+    while (currentIndex <= replayEvents.length - 1) {
+      let currentEvent = replayEvents[currentIndex];
+      processEvent(currentEvent, true);
 
-      let event = formatGameEvent(currentEntity);
-      if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
+      if (currentEvent.type === 'adventurer' && currentEvent.adventurer?.stat_upgrades_available === 0) {
         break;
       }
+
+      currentIndex++;
     }
 
     setReplayIndex(currentIndex);
@@ -94,16 +96,28 @@ export default function WatchPage() {
   const replayBackward = () => {
     if (replayIndex < 1) return;
 
-    let currentIndex = replayIndex;
+    let currentIndex = replayIndex - 1;
     while (currentIndex > 0) {
-      let currentEntity = replayEvents[currentIndex];
-      processEvent(currentEntity, true);
-      currentIndex--;
+      let event = replayEvents[currentIndex];
+      if (ExplorerReplayEvents.includes(event.type)) {
+        popExploreLog()
+      } else {
+        processEvent(event, true);
+      }
 
-      let event = formatGameEvent(currentEntity);
       if (event.type === 'adventurer' && event.adventurer?.stat_upgrades_available === 0) {
+        if (event.adventurer?.beast_health > 0) {
+          if (replayEvents[currentIndex - 1]?.type === 'beast') {
+            processEvent(replayEvents[currentIndex - 1], true);
+          } else if (replayEvents[currentIndex - 1]?.type === 'ambush') {
+            processEvent(replayEvents[currentIndex - 2], true);
+          }
+        }
+
         break;
       }
+
+      currentIndex--;
     }
 
     setReplayIndex(currentIndex);

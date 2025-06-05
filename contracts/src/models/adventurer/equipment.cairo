@@ -83,7 +83,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips an item to the adventurer
     /// @param self: The Equipment to equip the item to
     /// @param item: The item to equip
-    #[inline(always)]
+
     fn equip(ref self: Equipment, item: Item, slot: Slot) {
         match slot {
             Slot::None(()) => (),
@@ -101,7 +101,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a weapon to the adventurer
     /// @param self: The Equipment to equip the weapon to
     /// @param item: The weapon to equip
-    #[inline(always)]
+
     fn equip_weapon(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Weapon, 'Item is not weapon');
         self.weapon = item
@@ -110,7 +110,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a chest armor to the adventurer
     /// @param self: The Equipment to equip the chest armor to
     /// @param item: The chest armor to equip
-    #[inline(always)]
+
     fn equip_chest_armor(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Chest, 'Item is not chest armor');
         self.chest = item
@@ -119,7 +119,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a head armor to the adventurer
     /// @param self: The Equipment to equip the head armor to
     /// @param item: The head armor to equip
-    #[inline(always)]
+
     fn equip_head_armor(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Head, 'Item is not head armor');
         self.head = item
@@ -128,7 +128,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a waist armor to the adventurer
     /// @param self: The Equipment to equip the waist armor to
     /// @param item: The waist armor to equip
-    #[inline(always)]
+
     fn equip_waist_armor(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Waist, 'Item is not waist armor');
         self.waist = item
@@ -137,7 +137,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a foot armor to the adventurer
     /// @param self: The Equipment to equip the foot armor to
     /// @param item: The foot armor to equip
-    #[inline(always)]
+
     fn equip_foot_armor(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Foot, 'Item is not foot armor');
         self.foot = item
@@ -146,7 +146,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a hand armor to the adventurer
     /// @param self: The Equipment to equip the hand armor to
     /// @param item: The hand armor to equip
-    #[inline(always)]
+
     fn equip_hand_armor(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Hand, 'Item is not hand armor');
         self.hand = item
@@ -155,7 +155,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a necklace to the adventurer
     /// @param self: The Equipment to equip the necklace to
     /// @param item: The necklace to equip
-    #[inline(always)]
+
     fn equip_necklace(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Neck, 'Item is not necklace');
         self.neck = item
@@ -164,7 +164,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Equips a ring to the adventurer
     /// @param self: The Equipment to equip the ring to
     /// @param item: The ring to equip
-    #[inline(always)]
+
     fn equip_ring(ref self: Equipment, item: Item, slot: Slot) {
         assert(slot == Slot::Ring, 'Item is not a ring');
         self.ring = item;
@@ -173,7 +173,7 @@ pub impl ImplEquipment of IEquipment {
     /// @notice Drops an item from the adventurer
     /// @param self: The Equipment to drop the item from
     /// @param item_id: The ID of the item to drop
-    #[inline(always)]
+
     fn drop(ref self: Equipment, item_id: u8) {
         if self.weapon.id == item_id {
             self.weapon.id = 0;

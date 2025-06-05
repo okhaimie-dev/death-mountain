@@ -1,34 +1,26 @@
-import { BEAST_NAMES } from '@/constants/beast';
-import { OBSTACLE_NAMES } from '@/constants/obstacle';
 import { useGameStore } from '@/stores/gameStore';
 import { screenVariants } from '@/utils/animations';
 import { Box, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-export default function DeathScreen() {
-  const { gameId, adventurer, exploreLog, battleEvent, beast, quest } = useGameStore();
+export default function QuestCompletedScreen() {
+  const { gameId, adventurer, quest } = useGameStore();
   const navigate = useNavigate();
 
-  const deathEvent = battleEvent || exploreLog.find(event => event.type === 'obstacle')
+  const shareMessage = `I completed Quest ${quest?.id} in Loot Survivor 2! Want to see how I did it? Watch my replay here: lootsurvivor.io/watch/${gameId} 🗡️⚔️ @provablegames @lootsurvivor`;
 
-  let deathMessage = '';
-  if (deathEvent?.type === 'obstacle') {
-    deathMessage = `${OBSTACLE_NAMES[deathEvent.obstacle?.id!]} hit your ${deathEvent.obstacle?.location} for ${deathEvent.obstacle?.damage} damage ${deathEvent.obstacle?.critical_hit ? 'CRITICAL HIT!' : ''}`
-  } else if (deathEvent?.type === 'beast_attack') {
-    deathMessage = `${BEAST_NAMES[beast?.id!]} attacked your ${battleEvent?.attack?.location} for ${battleEvent?.attack?.damage} damage ${battleEvent?.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`
-  } else if (deathEvent?.type === 'ambush') {
-    deathMessage = `${BEAST_NAMES[beast?.id!]} ambushed your ${battleEvent?.attack?.location} for ${battleEvent?.attack?.damage} damage ${battleEvent?.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`
-  }
-
-  const shareMessage = `I fell to the mist in Loot Survivor after reaching ${adventurer?.xp || 0} XP. Want to see how I did it? Watch my replay here: lootsurvivor.io/watch/${gameId} 🗡️⚔️ @provablegames @lootsurvivor`;
-
-  const backToMenu = () => {
+  const backToCampaign = () => {
+    // Store completed quest in localStorage
     if (quest) {
-      navigate(`/campaign?chapter=${quest.chapterId}`, { replace: true });
-    } else {
-      navigate('/', { replace: true });
+      const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '[]');
+      if (!completedQuests.includes(quest.id)) {
+        completedQuests.push(quest.id);
+        localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
+      }
     }
+
+    navigate(`/campaign?chapter=${quest?.chapterId}`, { replace: true });
   }
 
   return (
@@ -41,7 +33,7 @@ export default function DeathScreen() {
     >
       <Box sx={styles.content}>
         <Typography variant="h2" sx={styles.title}>
-          Death
+          Quest Completed!
         </Typography>
 
         <Box sx={styles.statsContainer}>
@@ -51,18 +43,9 @@ export default function DeathScreen() {
           </Box>
         </Box>
 
-        {deathEvent && (
-          <Box sx={styles.deathCauseContainer}>
-            <Typography sx={styles.deathCauseTitle}>Cause of Death</Typography>
-            <Typography sx={styles.deathCauseText}>
-              {deathMessage}
-            </Typography>
-          </Box>
-        )}
-
         <Box sx={styles.messageContainer}>
           <Typography sx={styles.message}>
-            Your quest for loot ends here, brave adventurer. The mist has claimed you, but your legend will live on in the halls of the fallen.
+            Congratulations, brave adventurer! You have successfully completed Quest {quest?.id}. Your legend grows stronger with each victory.
           </Typography>
         </Box>
 
@@ -78,10 +61,10 @@ export default function DeathScreen() {
           </Button>
           <Button
             variant="contained"
-            onClick={backToMenu}
-            sx={styles.restartButton}
+            onClick={backToCampaign}
+            sx={styles.campaignButton}
           >
-            Play Again
+            Continue
           </Button>
         </Box>
       </Box>
@@ -141,28 +124,6 @@ const styles = {
     fontFamily: 'VT323, monospace',
     fontWeight: 'bold',
   },
-  deathCauseContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    background: 'rgba(255, 0, 0, 0.1)',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 0, 0, 0.2)',
-    width: '100%',
-  },
-  deathCauseTitle: {
-    color: 'rgba(255, 0, 0, 0.7)',
-    fontSize: '1.2rem',
-    fontFamily: 'VT323, monospace',
-    marginBottom: '8px',
-  },
-  deathCauseText: {
-    color: '#FF0000',
-    fontSize: '1.1rem',
-    fontFamily: 'VT323, monospace',
-    textAlign: 'center',
-  },
   messageContainer: {
     padding: '20px',
     background: 'rgba(128, 255, 0, 0.05)',
@@ -194,7 +155,7 @@ const styles = {
       backgroundColor: 'rgba(128, 255, 0, 0.1)',
     },
   },
-  restartButton: {
+  campaignButton: {
     flex: 1,
     fontSize: '1.2rem',
     fontWeight: 'bold',

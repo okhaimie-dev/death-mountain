@@ -30,7 +30,7 @@ export const fetchGameTokenIds = async (address: string) => {
   return data.map((token: any) => parseInt(token.token_id.split(":")[1], 16))
 }
 
-export async function fetchMetadata(sdk: any, tokenId: number) {
+export async function fetchMetadata(sdk: any, tokenId: number, retryCount = 0) {
   const entities = await sdk.getEntities({
     query: new ToriiQueryBuilder()
       .withClause(
@@ -49,13 +49,21 @@ export async function fetchMetadata(sdk: any, tokenId: number) {
 
   let data = getEntityModel(entities.getItems()[0], "TokenMetadata")
 
-  useGameStore.getState().setMetadata({
-    player_name: hexToAscii(data.player_name),
-    settings_id: parseInt(data.settings_id, 16),
-    minted_by: data.minted_by,
-    expires_at: parseInt(data.lifecycle.end.Some || 0, 16) * 1000,
-    available_at: parseInt(data.lifecycle.start.Some || 0, 16) * 1000,
-  })
+  if (data) {
+    useGameStore.getState().setMetadata({
+      player_name: hexToAscii(data.player_name),
+      settings_id: parseInt(data.settings_id, 16),
+      minted_by: data.minted_by,
+      expires_at: parseInt(data.lifecycle.end.Some || 0, 16) * 1000,
+      available_at: parseInt(data.lifecycle.start.Some || 0, 16) * 1000,
+    })
+    return;
+  }
+
+  if (retryCount < 20) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return fetchMetadata(sdk, tokenId, retryCount + 1);
+  }
 }
 
 export const fetchGameTokensData = async (tokenIds: string[]) => {

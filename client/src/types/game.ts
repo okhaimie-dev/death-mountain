@@ -26,6 +26,7 @@ export interface Adventurer {
   stats: Stats;
   equipment: Equipment;
   item_specials_seed: number;
+  action_count: number;
 }
 
 export interface Bag {
@@ -103,6 +104,12 @@ export interface Metadata {
   minted_by: string;
   expires_at: number;
   available_at: number;
+}
+
+export interface Quest {
+  id: number;
+  chapterId: number;
+  targetScore: number;
 }
 
 export type GameSchemaType = SchemaType;

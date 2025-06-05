@@ -70,7 +70,7 @@ pub impl ImplItem of IItemPrimitive {
     /// @param item: the Item to increase the xp of
     /// @param amount: the amount to increase the xp by
     /// @return (u8, u8): the previous level and the new level
-    #[inline(always)]
+
     fn increase_xp(ref item: Item, amount: u16) -> (u8, u8) {
         let previous_level = item.get_greatness();
         let new_xp = item.xp + amount;
@@ -87,7 +87,7 @@ pub impl ImplItem of IItemPrimitive {
     /// @notice gets the greatness of an item
     /// @param self the Item to get the greatness of
     /// @return u8: the greatness of the item
-    #[inline(always)]
+
     fn get_greatness(self: Item) -> u8 {
         if self.xp == 0 {
             1

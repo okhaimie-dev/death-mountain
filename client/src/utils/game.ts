@@ -2,13 +2,6 @@ import { Adventurer, Beast, Equipment, Item } from "@/types/game";
 import { getArmorType, getAttackType } from "./beast";
 import { ItemType, ItemUtils } from "./loot";
 
-// Get attack location based on entropy
-const getAttackLocation = (entropy: number): string => {
-    const locations = ["Chest", "Head", "Waist", "Foot", "Hand"];
-    const index = entropy % locations.length;
-    return locations[index];
-};
-
 export const calculateLevel = (xp: number) => {
     if (xp === 0) return 1;
     return Math.floor(Math.sqrt(xp));
