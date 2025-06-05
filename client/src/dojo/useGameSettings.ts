@@ -90,7 +90,7 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
       bag: formatBag(item),
       in_battle: item.in_battle,
       game_seed: parseInt(item.game_seed, 16),
-      game_seed_until_xp: parseInt(item.game_seed_until_xp, 16)
+      game_seed_until_xp: item.game_seed_until_xp
     }));
 
     // Sort by the order of input IDs if provided

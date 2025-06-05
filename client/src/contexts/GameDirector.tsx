@@ -93,6 +93,14 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   }, [metadata, gameId]);
 
   useEffect(() => {
+    if (!gameSettings || !adventurer || VRFEnabled) return;
+
+    if (gameSettings.game_seed_until_xp !== 0 && adventurer.xp >= gameSettings.game_seed_until_xp) {
+      setVRFEnabled(true);
+    }
+  }, [gameSettings, adventurer]);
+
+  useEffect(() => {
     const processNextEvent = async () => {
       if (eventQueue.length > 0 && !isProcessing) {
         setIsProcessing(true);
