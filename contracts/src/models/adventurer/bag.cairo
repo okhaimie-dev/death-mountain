@@ -810,7 +810,6 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Item ID cannot be 0',))]
-    #[available_gas(7920)]
     fn add_item_blank_item() {
         // start with full bag
         let mut bag = Bag {
@@ -840,7 +839,6 @@ mod tests {
 
     #[test]
     #[should_panic(expected: ('Bag is full',))]
-    #[available_gas(7920)]
     fn add_item_full_bag() {
         // start with full bag
         let mut bag = Bag {
