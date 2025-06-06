@@ -224,31 +224,8 @@ export const formatGameEvent = (entity: any): GameEvent => {
   return { type: 'unknown', action_count: 0 };
 };
 
-export const ExplorerLogEvents = [
-  'discovery',
-  'obstacle',
-  'defeated_beast',
-  'fled_beast',
-  'stat_upgrade',
-  'buy_items',
-  'level_up',
-]
-
-export const BattleEvents = [
-  'attack',
-  'beast_attack',
-  'flee',
-  'ambush'
-]
-
-export const ExplorerReplayEvents = [
-  'discovery',
-  'obstacle',
-  'defeated_beast',
-  'fled_beast',
-  'stat_upgrade',
-  'buy_items',
-  'level_up',
-  'equip',
-  'drop',
-]
+export const VideoEvents: Record<string, string> = {
+  'beast': '/videos/troll.mp4',
+  'obstacle': '/videos/clinging_roots.mp4',
+  'discovery': '/videos/gold_discovery.mp4',
+}

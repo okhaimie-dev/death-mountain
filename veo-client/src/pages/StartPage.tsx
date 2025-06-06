@@ -10,7 +10,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const handleStartGame = async () => {
-    navigate(`/play`)
+    navigate(`/play?settingsId=7`)
   };
 
   return (

@@ -1,80 +1,49 @@
-import { fetchAdventurer } from '@/api/starknet';
 import { getSettingsList, Settings } from '@/dojo/useGameSettings';
 import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
-import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent } from '@/utils/events';
+import { formatGameEvent, GameEvent, VideoEvents } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
-import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+export interface Video {
+  src: string;
+  playing: boolean;
+}
 
 export interface GameDirectorContext {
   executeGameAction: (action: GameAction) => void;
   actionFailed: number;
   subscription: any;
-  watch: {
-    setSpectating: (spectating: boolean) => void;
-    spectating: boolean;
-    replayEvents: any[];
-    processEvent: (event: any, skipAnimation: boolean) => void;
-    setEventQueue: (events: any[]) => void;
-    eventsProcessed: number;
-    setEventsProcessed: (eventsProcessed: number) => void;
-  }
+  video: Video;
+  videoQueue: Video[];
+  setVideo: (video: Video) => void;
 }
 
 const GameDirectorContext = createContext<GameDirectorContext>({} as GameDirectorContext);
 
-/**
- * Wait times for events in milliseconds
-*/
-const delayTimes: any = {
-  'level_up': 1000,
-  'discovery': 1000,
-  'obstacle': 1000,
-  'attack': 2000,
-  'beast_attack': 2000,
-  'flee': 1000,
-}
-
-const replayDelayTimes: any = {
-  'discovery': 2000,
-  'obstacle': 2000,
-  'attack': 2000,
-  'beast_attack': 2000,
-  'beast': 2000,
-  'flee': 2000,
-  'fled_beast': 2000,
-  'defeated_beast': 1000,
-  'buy_items': 2000,
-  'equip': 2000,
-  'drop': 2000,
-}
-
 const VRF_ENABLED = true;
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
-  const navigate = useNavigate();
   const { sdk } = useDojoSDK();
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
-    setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
+  const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast,
+    setMarketItemIds, setNewMarket, metadata, gameSettings, setGameSettings } = useGameStore();
 
-  const [spectating, setSpectating] = useState(false);
-  const [replayEvents, setReplayEvents] = useState<GameEvent[]>([]);
   const [VRFEnabled, setVRFEnabled] = useState(VRF_ENABLED);
 
   const [subscription, setSubscription] = useState<any>(null);
+  const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
-  const [eventsProcessed, setEventsProcessed] = useState(0);
-  const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
+
+  const [video, setVideo] = useState<Video>({ src: '/videos/start_game.mp4', playing: true });
+  const [videoQueue, setVideoQueue] = useState<Video[]>([]);
 
   useEffect(() => {
     if (gameId) {
@@ -108,12 +77,18 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         await processEvent(event, false);
         setEventQueue(prev => prev.slice(1));
         setIsProcessing(false);
-        setEventsProcessed(prev => prev + 1);
       }
     };
 
     processNextEvent();
   }, [eventQueue, isProcessing]);
+
+  useEffect(() => {
+    if (videoQueue.length > 0 && !video.playing) {
+      setVideo(videoQueue[0]);
+      setVideoQueue(prev => prev.slice(1));
+    }
+  }, [videoQueue, video.playing]);
 
   const subscribeEvents = async (gameId: number, settings: Settings) => {
     if (subscription) {
@@ -138,9 +113,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       .sort((a, b) => a.action_count - b.action_count);
 
 
-    if (spectating) {
-      handleSpectating(events);
-    } else if (!events || events.length === 0) {
+    if (!events || events.length === 0) {
       startGame(gameId, (settings.game_seed === 0 && settings.adventurer.xp !== 0));
     } else {
       reconnectGameEvents(events);
@@ -149,31 +122,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     setSubscription(sub);
   }
 
-  const handleSpectating = async (events: GameEvent[]) => {
-    if (events.length === 0) {
-      return navigate('/');
-    }
-
-    // Fetch adventurer state
-    const adventurer = await fetchAdventurer(gameId!);
-    if (!adventurer) {
-      return navigate('/');
-    }
-
-    if (adventurer.health > 0) {
-      reconnectGameEvents(events);
-    } else {
-      setReplayEvents(events);
-    }
-  }
-
   const reconnectGameEvents = async (events: GameEvent[]) => {
     events.forEach(event => {
       processEvent(event, true);
     });
   }
 
-  const processEvent = async (event: GameEvent, skipAnimation: boolean) => {
+  const processEvent = async (event: GameEvent, skipVideo: boolean) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
     }
@@ -191,32 +146,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setNewMarket(true);
     }
 
-    if (!spectating && ExplorerLogEvents.includes(event.type)) {
-      if (!skipAnimation && event.type === 'discovery') {
-        if (event.discovery?.type === 'Loot') {
-          setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
-        }
-      }
-
-      setExploreLog(event);
-    }
-
-    if (spectating && ExplorerReplayEvents.includes(event.type)) {
-      setExploreLog(event);
-    }
-
-    if (!skipAnimation && BattleEvents.includes(event.type)) {
-      setBattleEvent(event);
-    }
-
-    if (!skipAnimation && (delayTimes[event.type] || replayDelayTimes[event.type])) {
-      await delay(spectating ? replayDelayTimes[event.type] : delayTimes[event.type]);
+    if (!skipVideo && VideoEvents[event.type]) {
+      setVideoQueue(prev => [...prev, { src: VideoEvents[event.type], playing: true }]);
     }
   }
 
   const executeGameAction = (action: GameAction) => {
-    if (spectating) return;
-
     let txs: any[] = [];
 
     if (VRFEnabled && ['explore', 'attack', 'flee'].includes(action.type)) {
@@ -256,16 +191,9 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       executeGameAction,
       actionFailed,
       subscription,
-
-      watch: {
-        setSpectating,
-        spectating,
-        replayEvents,
-        processEvent,
-        setEventQueue,
-        eventsProcessed,
-        setEventsProcessed
-      }
+      video,
+      videoQueue,
+      setVideo,
     }}>
       {children}
     </GameDirectorContext.Provider>
