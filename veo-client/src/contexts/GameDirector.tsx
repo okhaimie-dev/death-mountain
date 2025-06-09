@@ -83,6 +83,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     processNextEvent();
   }, [eventQueue, isProcessing]);
 
+
+
   useEffect(() => {
     if (videoQueue.length > 0 && !video.playing) {
       setVideo(videoQueue[0]);

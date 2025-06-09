@@ -1,18 +1,8 @@
-import { useController } from '@/contexts/controller';
-import { Box, Button, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import startImg from '@/assets/images/start.png';
-import WalletConnect from '@/components/WalletConnect';
+import MainMenu from '@/overlays/MainMenu';
 import { motion } from 'framer-motion';
 
 export default function LandingPage() {
-  const { address } = useController();
-  const navigate = useNavigate();
-
-  const handleStartGame = async () => {
-    navigate(`/play?settingsId=7`)
-  };
-
   return (
     <>
       <motion.div
@@ -22,18 +12,7 @@ export default function LandingPage() {
         className="imageContainer"
         style={{ backgroundImage: `url(${startImg})` }}
       >
-        <Box sx={styles.walletContainer}>
-          <WalletConnect />
-        </Box>
-
-        <Box sx={styles.contentContainer}>
-          <Typography variant="h2" sx={styles.title}>
-            Loot Survivor 2
-          </Typography>
-          <Button variant="contained" color="primary" sx={styles.playButton} onClick={handleStartGame}>
-            Play Now
-          </Button>
-        </Box>
+        <MainMenu />
       </motion.div>
     </>
   );

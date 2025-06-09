@@ -1,16 +1,16 @@
+import gameImg from '@/assets/images/game.png';
+import startImg from '@/assets/images/start.png';
+import VideoPlayer from '@/components/VideoPlayer';
 import { useController } from '@/contexts/controller';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
+import CombatOverlay from '@/overlays/Combat';
+import ExploreOverlay from '@/overlays/Explore';
 import { useGameStore } from '@/stores/gameStore';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box, Typography } from '@mui/material';
-import { useEffect, useReducer, useState, useRef } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import ExploreOverlay from '@/overlays/Explore';
-import CombatOverlay from '@/overlays/Combat';
-import startImg from '@/assets/images/start.png';
-import gameImg from '@/assets/images/game.png';
 
 export default function GamePage() {
   const navigate = useNavigate();
@@ -18,8 +18,7 @@ export default function GamePage() {
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast } = useGameStore();
-  const { subscription, video, setVideo, videoQueue } = useGameDirector();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const { subscription, video } = useGameDirector();
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
@@ -27,8 +26,6 @@ export default function GamePage() {
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
   const settings_id = Number(searchParams.get('settingsId'));
-
-  const [isVideoVisible, setIsVideoVisible] = useState(false);
 
   async function mint() {
     setLoadingProgress(45)
@@ -72,21 +69,6 @@ export default function GamePage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (video.src && videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(error => {
-        console.error('Error playing video:', error);
-      });
-      setIsVideoVisible(true);
-    }
-  }, [video.src]);
-
-  const handleVideoEnd = () => {
-    setIsVideoVisible(false);
-    setVideo({ ...video, playing: false });
-  };
-
   const isLoading = !gameId || !adventurer;
 
   return (
@@ -94,27 +76,7 @@ export default function GamePage() {
       {!gameId && <Box className="imageContainer" style={{ backgroundImage: `url(${startImg})` }} />}
       {gameId && <Box className="imageContainer" style={{ backgroundImage: `url(${gameImg})` }} />}
 
-      <AnimatePresence>
-        {video.src && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isVideoVisible ? 1 : 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <video
-              ref={videoRef}
-              muted
-              playsInline
-              loop={video.src === '/videos/explore.mp4' && videoQueue.length === 0}
-              className="videoContainer"
-              onEnded={handleVideoEnd}
-            >
-              <source src={video.src} type="video/mp4" />
-            </video>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <VideoPlayer />
 
       {!video.playing && (
         <Box sx={styles.overlay}>

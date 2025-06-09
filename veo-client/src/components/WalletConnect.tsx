@@ -1,6 +1,6 @@
 import { useController } from '@/contexts/controller';
 import { ellipseAddress } from '@/utils/utils';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined';
 import { Button } from '@mui/material';
 
 function WalletConnect() {
@@ -12,23 +12,25 @@ function WalletConnect() {
         ? <Button
           loading={!playerName}
           onClick={() => openProfile()}
-          startIcon={<SportsEsportsIcon />}
-          color='primary'
           variant='contained'
+          color='secondary'
           size='small'
-          sx={{ minWidth: '100px' }}
+          fullWidth
+          startIcon={<SportsEsportsOutlinedIcon htmlColor='secondary.contrastText' />}
+          sx={{ justifyContent: 'center', color: 'secondary.contrastText', opacity: 1 }}
         >
           {playerName ? playerName : ellipseAddress(address, 4, 4)}
         </Button>
 
         : <Button
           loading={isPending}
+          onClick={() => login()}
           variant='contained'
           color='secondary'
-          onClick={() => login()}
           size='small'
-          startIcon={<SportsEsportsIcon />}
-          sx={{ minWidth: '100px' }}
+          fullWidth
+          startIcon={<SportsEsportsOutlinedIcon htmlColor='secondary.contrastText' />}
+          sx={{ justifyContent: 'center', color: 'secondary.contrastText' }}
         >
           Log In
         </Button>
