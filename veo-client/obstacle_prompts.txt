@@ -1,377 +1,149 @@
-Magical Obstacles (1 – 25)
-Demonic Altar
-• A demonic altar emerges from the emerald portal, spitting fire, but the adventurer sidesteps it. [Avoid]
-• A demonic altar emerges from the emerald portal, spitting fire that scorches the adventurer. [Hit]
-• A demonic altar emerges from the emerald portal, spitting fire that engulfs the adventurer, killing them. [Death]
-
-Vortex of Despair
-• A vortex of despair erupts from the emerald portal, tugging air, yet the adventurer holds on until it fades. [Avoid]
-• A vortex of despair erupts from the emerald portal and yanks the adventurer hard, bruising them. [Hit]
-• A vortex of despair erupts from the emerald portal and pulls the adventurer inside, ending their life. [Death]
-
-Eldritch Barrier
-• An eldritch barrier flashes from the emerald portal, but the adventurer slips under it in time. [Avoid]
-• An eldritch barrier flashes from the emerald portal and slams the adventurer backward. [Hit]
-• An eldritch barrier flashes from the emerald portal and closes on the adventurer, destroying them. [Death]
-
-Soul Trap
-• A soul trap floats from the emerald portal and snaps shut on empty air as the adventurer dodges. [Avoid]
-• A soul trap floats from the emerald portal, clipping the adventurer and draining strength. [Hit]
-• A soul trap floats from the emerald portal and closes around the adventurer, ending their life. [Death]
-
-Phantom Vortex
-• A phantom vortex drifts from the emerald portal; the adventurer darts away unharmed. [Avoid]
-• A phantom vortex drifts from the emerald portal, grazing the adventurer with chilling force. [Hit]
-• A phantom vortex drifts from the emerald portal and swallows the adventurer whole. [Death]
-
-Ectoplasmic Web
-• Ectoplasmic webs spray from the emerald portal; the adventurer rolls aside. [Avoid]
-• Ectoplasmic webs spray from the emerald portal, tangling the adventurer. [Hit]
-• Ectoplasmic webs spray from the emerald portal, cocooning and killing the adventurer. [Death]
-
-Spectral Chains
-• Spectral chains rattle from the emerald portal; the adventurer ducks clear. [Avoid]
-• Spectral chains rattle from the emerald portal and whip the adventurer. [Hit]
-• Spectral chains rattle from the emerald portal, coil tight, and crush the adventurer. [Death]
-
-Infernal Pact
-• Fiery pact runes burst from the emerald portal, but the adventurer dodges their brand. [Avoid]
-• Fiery pact runes burst from the emerald portal and burn the adventurer’s skin. [Hit]
-• Fiery pact runes burst from the emerald portal, branding the adventurer fatally. [Death]
-
-Arcane Explosion
-• An arcane pulse forms in the emerald portal, explodes, and the adventurer dives behind cover. [Avoid]
-• An arcane pulse forms in the emerald portal, explodes, and knocks the adventurer down. [Hit]
-• An arcane pulse forms in the emerald portal, explodes, and vaporizes the adventurer. [Death]
-
-Hypnotic Essence
-• Hypnotic vapors seep from the emerald portal; the adventurer turns away in time. [Avoid]
-• Hypnotic vapors seep from the emerald portal and daze the adventurer. [Hit]
-• Hypnotic vapors seep from the emerald portal and lure the adventurer to their doom. [Death]
-
-Mischievous Sprites
-• Sprites flit from the emerald portal, but the adventurer bats them away. [Avoid]
-• Sprites flit from the emerald portal and sting the adventurer with sparks. [Hit]
-• Sprites flit from the emerald portal, explode in light, and the adventurer collapses. [Death]
-
-Soul-Draining Statue
-• A soul-draining statue rolls from the emerald portal; the adventurer dodges its gaze. [Avoid]
-• A soul-draining statue rolls from the emerald portal and saps the adventurer’s energy. [Hit]
-• A soul-draining statue rolls from the emerald portal and drains the adventurer to nothing. [Death]
-
-Petrifying Gaze
-• A floating eye emerges from the emerald portal; the adventurer avoids its stare. [Avoid]
-• A floating eye emerges from the emerald portal and partially petrifies the adventurer. [Hit]
-• A floating eye emerges from the emerald portal and turns the adventurer entirely to stone. [Death]
-
-Summoning Circle
-• A summoning circle flares from the emerald portal; the adventurer jumps clear. [Avoid]
-• A summoning circle flares from the emerald portal, scraping the adventurer. [Hit]
-• A summoning circle flares from the emerald portal and drags the adventurer under. [Death]
-
-Ethereal Void
-• An ethereal void opens in the emerald portal; the adventurer grips a rock and resists. [Avoid]
-• An ethereal void opens in the emerald portal, pulling the adventurer painfully. [Hit]
-• An ethereal void opens in the emerald portal and consumes the adventurer. [Death]
-
-Magic Lock
-• A spinning magic lock appears in the emerald portal; the adventurer slips through before it snaps shut. [Avoid]
-• A spinning magic lock appears in the emerald portal and slams into the adventurer. [Hit]
-• A spinning magic lock appears in the emerald portal and crushes the adventurer inside. [Death]
-
-Bewitching Fog
-• Bewitching fog billows from the emerald portal; the adventurer steps back to safety. [Avoid]
-• Bewitching fog billows from the emerald portal and disorients the adventurer. [Hit]
-• Bewitching fog billows from the emerald portal, surrounding and killing the adventurer. [Death]
-
-Illusionary Maze
-• Light walls rise from the emerald portal; the adventurer finds a gap and escapes. [Avoid]
-• Light walls rise from the emerald portal, bruising the adventurer before they slip free. [Hit]
-• Light walls rise from the emerald portal, close in, and crush the adventurer. [Death]
-
-Spellbound Mirror
-• A mirror floats from the emerald portal; the adventurer sidesteps the hostile reflection. [Avoid]
-• A mirror floats from the emerald portal and a shard cuts the adventurer. [Hit]
-• A mirror floats from the emerald portal; its reflection fatally pierces the adventurer. [Death]
-
-Ensnaring Shadow
-• Shadow hands creep from the emerald portal; the adventurer leaps clear. [Avoid]
-• Shadow hands creep from the emerald portal and grip the adventurer’s ankle. [Hit]
-• Shadow hands creep from the emerald portal, drag the adventurer under, and silence them. [Death]
-
-Dark Mist
-• Dark mist seeps from the emerald portal; the adventurer backs away into light. [Avoid]
-• Dark mist seeps from the emerald portal and chills the adventurer’s skin. [Hit]
-• Dark mist seeps from the emerald portal and freezes the adventurer solid. [Death]
-
-Curse
-• Black runes swirl from the emerald portal; the adventurer shrugs them off. [Avoid]
-• Black runes swirl from the emerald portal and clutch the adventurer painfully. [Hit]
-• Black runes swirl from the emerald portal, bind the adventurer, and still their heart. [Death]
-
-Haunting Echo
-• A haunting echo rolls from the emerald portal; the adventurer ducks behind a column. [Avoid]
-• A haunting echo rolls from the emerald portal, staggering the adventurer. [Hit]
-• A haunting echo rolls from the emerald portal and ruptures the adventurer’s body. [Death]
-
-Hex
-• Glowing hex glyphs burst from the emerald portal; the adventurer dodges aside. [Avoid]
-• Glowing hex glyphs burst from the emerald portal and latch onto the adventurer. [Hit]
-• Glowing hex glyphs burst from the emerald portal, overwhelm, and kill the adventurer. [Death]
-
-Ghostly Whispers
-• Ghostly whispers drift from the emerald portal; the adventurer steels their mind and steps back. [Avoid]
-• Ghostly whispers drift from the emerald portal, weakening the adventurer. [Hit]
-• Ghostly whispers drift from the emerald portal and lure the adventurer to fatal silence. [Death]
-
-Sharp Obstacles (26 – 50)
-Pendulum Blades – Pendulum blades swing from the emerald portal…
-• the adventurer slides beneath them. [Avoid]
-• one blade slices the adventurer. [Hit]
-• they cleave the adventurer in two. [Death]
-
-Icy Razor Winds – Icy winds gust from the emerald portal…
-• the adventurer ducks behind cover. [Avoid]
-• shards cut the adventurer’s arm. [Hit]
-• shards shred the adventurer completely. [Death]
-
-Acidic Thorns – Acidic thorns shoot from the emerald portal…
-• the adventurer rolls aside. [Avoid]
-• one thorn pierces the adventurer. [Hit]
-• thorns impale and dissolve the adventurer. [Death]
-
-Dragon’s Breath – Dragon fire blasts from the emerald portal…
-• the adventurer dives behind rock. [Avoid]
-• flames scorch the adventurer. [Hit]
-• flames consume the adventurer. [Death]
-
-Pendulum Scythe – A pendulum scythe drops from the emerald portal…
-• the adventurer sprints through its arc. [Avoid]
-• the scythe clips the adventurer. [Hit]
-• the scythe splits the adventurer. [Death]
-
-Flame Jet – A flame jet erupts from the emerald portal…
-• the adventurer tumbles clear. [Avoid]
-• fire singes the adventurer. [Hit]
-• fire engulfs the adventurer. [Death]
-
-Piercing Ice Darts – Ice darts burst from the emerald portal…
-• the adventurer zig-zags away. [Avoid]
-• darts lodge in the adventurer. [Hit]
-• darts riddle the adventurer fatally. [Death]
-
-Glass Sand Storm – Glass sand billows from the emerald portal…
-• the adventurer wraps their cloak and passes unharmed. [Avoid]
-• shards slice the adventurer. [Hit]
-• shards flay the adventurer lifeless. [Death]
-
-Poisoned Dart Wall – Poison darts fire from the emerald portal…
-• the adventurer ducks behind stone. [Avoid]
-• darts stick into the adventurer. [Hit]
-• darts stop the adventurer’s heart. [Death]
-
-Spinning Blade Wheel – A blade wheel rolls from the emerald portal…
-• the adventurer leaps over it. [Avoid]
-• it grazes the adventurer. [Hit]
-• it mows the adventurer down. [Death]
-
-Poison Dart – A single poison dart shoots from the emerald portal…
-• the adventurer snatches it aside. [Avoid]
-• it strikes the adventurer. [Hit]
-• it pierces the adventurer’s neck, killing them. [Death]
-
-Spiked Tumbleweed – A spiked tumbleweed rolls from the emerald portal…
-• the adventurer steps aside. [Avoid]
-• spikes scrape the adventurer. [Hit]
-• it crushes the adventurer. [Death]
-
-Thunderbolt – A thunderbolt cracks from the emerald portal…
-• the adventurer dives clear. [Avoid]
-• electricity shocks the adventurer. [Hit]
-• lightning strikes the adventurer dead. [Death]
-
-Giant Bear Trap – A giant bear trap snaps from the emerald portal…
-• the adventurer hops over it. [Avoid]
-• jaws clamp on the adventurer’s leg. [Hit]
-• jaws close on the adventurer’s torso. [Death]
-
-Steel Needle Rain – Steel needles rain from the emerald portal…
-• the adventurer curls beneath a shield-like slab. [Avoid]
-• needles pepper the adventurer. [Hit]
-• needles pin the adventurer lifeless. [Death]
-
-Spiked Pit – A spiked pit gapes below the emerald portal…
-• the adventurer vaults to safety. [Avoid]
-• the adventurer scrapes a leg on spikes. [Hit]
-• the adventurer falls onto the spikes and dies. [Death]
-
-Diamond Dust Storm – Diamond dust whirls from the emerald portal…
-• the adventurer shields face and passes. [Avoid]
-• dust cuts the adventurer’s skin. [Hit]
-• dust scours the adventurer to bone. [Death]
-
-Trapdoor Scorpion Pit – Scorpions swarm from a trapdoor beside the emerald portal…
-• the adventurer slams the door shut. [Avoid]
-• a scorpion stings the adventurer. [Hit]
-• the swarm drags the adventurer under. [Death]
-
-Bladed Fan – A bladed fan whirs from the emerald portal…
-• the adventurer ducks low. [Avoid]
-• a blade nicks the adventurer. [Hit]
-• blades slice the adventurer fatally. [Death]
-
-Bear Trap – A bear trap springs from the emerald portal…
-• the adventurer leaps back. [Avoid]
-• jaws snap on the adventurer’s boot. [Hit]
-• jaws close on the adventurer’s chest. [Death]
-
-Porcupine Quill – Quills fire from the emerald portal…
-• the adventurer sidesteps them. [Avoid]
-• quills embed in the adventurer’s arm. [Hit]
-• quills pierce the adventurer’s throat. [Death]
-
-Hidden Arrow – An arrow whistles from the emerald portal…
-• the adventurer tilts their head aside. [Avoid]
-• the arrow pierces the adventurer’s leg. [Hit]
-• the arrow pierces the adventurer’s eye. [Death]
-
-Glass Shard – Glass shards burst from the emerald portal…
-• the adventurer raises an arm and avoids cuts. [Avoid]
-• shards slice the adventurer’s hand. [Hit]
-• shards sever the adventurer’s throat. [Death]
-
-Thorn Bush – A thorn bush sprouts from the emerald portal…
-• the adventurer vaults over it. [Avoid]
-• vines lash the adventurer’s arms. [Hit]
-• vines tighten and choke the adventurer. [Death]
-
-Jagged Rocks – Jagged rocks blast from the emerald portal…
-• the adventurer leaps to higher ground. [Avoid]
-• a rock slams the adventurer’s side. [Hit]
-• rocks crush the adventurer under a heap. [Death]
-
-Crushing Obstacles (51 – 75)
-Collapsing Ceiling – A ceiling collapses from the emerald portal…
-• the adventurer runs clear. [Avoid]
-• debris strikes the adventurer. [Hit]
-• rubble buries the adventurer. [Death]
-
-Rockslide – A rockslide pours from the emerald portal…
-• the adventurer climbs out of its path. [Avoid]
-• stones batter the adventurer’s legs. [Hit]
-• stones crush the adventurer. [Death]
-
-Flash Flood – A flash flood bursts from the emerald portal…
-• the adventurer grabs a chain and swings aside. [Avoid]
-• water slams the adventurer to the floor. [Hit]
-• water sweeps the adventurer away to death. [Death]
-
-Clinging Roots – Roots lash from the emerald portal…
-• the adventurer hacks free and escapes. [Avoid]
-• roots yank the adventurer’s ankle. [Hit]
-• roots strangle the adventurer. [Death]
-
-Collapsing Cavern – A cavern collapses from the emerald portal…
-• the adventurer sprints to solid ground. [Avoid]
-• a pillar clips the adventurer’s arm. [Hit]
-• the cavern buries the adventurer alive. [Death]
-
-Crushing Walls – Walls slam from the emerald portal…
-• the adventurer dives through the gap. [Avoid]
-• a wall smacks the adventurer’s side. [Hit]
-• walls flatten the adventurer. [Death]
-
-Smashing Pillars – Pillars smash from the emerald portal…
-• the adventurer zig-zags clear. [Avoid]
-• a pillar strikes the adventurer’s leg. [Hit]
-• a pillar pulverizes the adventurer. [Death]
-
-Rumbling Catacomb – Bones fall from a rumbling catacomb in the emerald portal…
-• the adventurer shields their head. [Avoid]
-• skulls bruise the adventurer’s back. [Hit]
-• the catacomb collapses on the adventurer. [Death]
-
-Whirling Cyclone – A cyclone spins from the emerald portal…
-• the adventurer anchors themselves and endures. [Avoid]
-• debris slashes the adventurer. [Hit]
-• wind flings the adventurer to their death. [Death]
-
-Erupting Earth – The floor erupts near the emerald portal…
-• the adventurer vaults the fissure. [Avoid]
-• lava splashes the adventurer’s leg. [Hit]
-• lava engulfs the adventurer. [Death]
-
-Subterranean Tremor – A tremor ripples from the emerald portal…
-• the adventurer keeps balance. [Avoid]
-• the adventurer is tossed to the ground. [Hit]
-• a fissure opens and swallows the adventurer. [Death]
-
-Falling Chandelier – A chandelier crashes from the emerald portal…
-• the adventurer rolls clear. [Avoid]
-• shards cut the adventurer’s arm. [Hit]
-• iron and glass obliterate the adventurer. [Death]
-
-Collapsing Bridge – A bridge forms and collapses from the emerald portal…
-• the adventurer leaps across in time. [Avoid]
-• a plank smacks the adventurer’s ribs. [Hit]
-• the bridge gives way beneath the adventurer. [Death]
-
-Raging Sandstorm – A sandstorm blasts from the emerald portal…
-• the adventurer shields face and pushes on. [Avoid]
-• sand scours the adventurer’s skin. [Hit]
-• dunes bury the adventurer. [Death]
-
-Avalanching Rocks – An avalanche of rocks thunders from the emerald portal…
-• the adventurer outruns the slide. [Avoid]
-• a rock strikes the adventurer’s shoulder. [Hit]
-• rocks bury the adventurer. [Death]
-
-Tumbling Boulders – Boulders roll from the emerald portal…
-• the adventurer sidesteps them. [Avoid]
-• a boulder knocks the adventurer over. [Hit]
-• boulders crush the adventurer. [Death]
-
-Slamming Iron Gate – An iron gate drops from the emerald portal…
-• the adventurer slides under it. [Avoid]
-• the gate pins the adventurer’s foot. [Hit]
-• the gate crushes the adventurer’s body. [Death]
-
-Shifting Sandtrap – Quicksand opens beside the emerald portal…
-• the adventurer throws a rope and escapes. [Avoid]
-• sand drags the adventurer waist-deep. [Hit]
-• sand swallows the adventurer whole. [Death]
-
-Erupting Mud Geyser – Mud geysers blast near the emerald portal…
-• the adventurer vaults over a jet. [Avoid]
-• mud knocks the adventurer down. [Hit]
-• boiling mud engulfs the adventurer. [Death]
-
-Crumbling Staircase – A staircase crumbles from the emerald portal…
-• the adventurer skips steps to safety. [Avoid]
-• a stone twists the adventurer’s ankle. [Hit]
-• the staircase collapses under the adventurer. [Death]
-
-Swinging Logs – Logs swing from the emerald portal…
-• the adventurer times a dash between them. [Avoid]
-• a log smacks the adventurer’s back. [Hit]
-• logs crush the adventurer against the wall. [Death]
-
-Unstable Cliff – A cliff edge juts from the emerald portal then breaks…
-• the adventurer leaps to a ledge. [Avoid]
-• debris pelts the adventurer. [Hit]
-• the cliff collapses with the adventurer on it. [Death]
-
-Toppling Statue – A statue topples from the emerald portal…
-• the adventurer dodges its fall. [Avoid]
-• the statue clips the adventurer’s arm. [Hit]
-• the statue crushes the adventurer flat. [Death]
-
-Tumbling Barrels – Barrels spill from the emerald portal…
-• the adventurer vaults over one. [Avoid]
-• a barrel hits the adventurer’s knee. [Hit]
-• barrels pile onto the adventurer. [Death]
-
-Rolling Boulder – A huge boulder rolls from the emerald portal…
-• the adventurer sprints clear at the last second. [Avoid]
-• the boulder grazes the adventurer’s side. [Hit]
-• the boulder crushes the adventurer. [Death]
+Demonic Altar hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Vortex of Despair hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Eldritch Barrier hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Soul Trap hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Phantom Vortex hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Ectoplasmic Web hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Spectral Chains hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Infernal Pact hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Arcane Explosion hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Hypnotic Essence hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Mischievous Sprites hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Soul Draining Statue hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Petrifying Gaze hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Summoning Circle hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Ethereal Void hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Magic Lock hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Bewitching Fog hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Illusionary Maze hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Spellbound Mirror hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Ensnaring Shadow hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Dark Mist hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Curse hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Haunting Echo hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Hex hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Ghostly Whispers hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Pendulum Blades hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Icy Razor Winds hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Acidic Thorns hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Dragon's Breath hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Pendulum Scythe hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Flame Jet hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Piercing Ice Darts hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Glass Sand Storm hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Poisoned Dart Wall hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Spinning Blade Wheel hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Poison Dart hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Spiked Tumbleweed hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Thunderbolt hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Giant Bear Trap hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Steel Needle Rain hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Spiked Pit hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Diamond Dust Storm hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Trapdoor Scorpion Pit hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Bladed Fan hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Bear Trap hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Porcupine Quill hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Hidden Arrow hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Glass Shard hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Thorn Bush hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Jagged Rocks hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Collapsing Ceiling hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Rockslide hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Flash Flood hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Clinging Roots hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Collapsing Cavern hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Crushing Walls hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Smashing Pillars hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Rumbling Catacomb hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Whirling Cyclone hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Erupting Earth hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Subterranean Tremor hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Falling Chandelier hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Collapsing Bridge hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Raging Sandstorm hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Avalanching Rocks hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Tumbling Boulders hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Slamming Iron Gate hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Shifting Sandtrap hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Erupting Mud Geyser hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Crumbling Staircase hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Swinging Logs hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Unstable Cliff hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Toppling Statue hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Tumbling Barrels hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
+
+Rolling Boulder hazard flies out from emerald portal towards the adventurer; The adventurer dodges the hazard
