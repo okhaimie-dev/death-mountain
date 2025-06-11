@@ -52,7 +52,7 @@ export async function fetchMetadata(sdk: any, tokenId: number, retryCount = 0) {
   if (data) {
     useGameStore.getState().setMetadata({
       player_name: hexToAscii(data.player_name),
-      settings_id: parseInt(data.settings_id, 16),
+      settings_id: data.settings_id,
       minted_by: data.minted_by,
       expires_at: parseInt(data.lifecycle.end.Some || 0, 16) * 1000,
       available_at: parseInt(data.lifecycle.start.Some || 0, 16) * 1000,
@@ -148,7 +148,7 @@ export const fetchGameTokensData = async (tokenIds: string[]) => {
         ...adventurer,
         adventurer_id: tokenId,
         player_name: hexToAscii(metaData.player_name),
-        settings_id: parseInt(metaData.settings_id, 16),
+        settings_id: metaData.settings_id,
         minted_by: metaData.minted_by,
         expires_at,
         available_at,
