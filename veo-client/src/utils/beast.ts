@@ -5,6 +5,16 @@ import {
   BEAST_NAME_SUFFIXES
 } from "../constants/beast";
 
+import bruteIcon from '@/assets/types/brute.svg';
+import hunterIcon from '@/assets/types/hunter.svg';
+import magicIcon from '@/assets/types/magic.svg';
+
+export const beastTypeIcons = {
+  Brute: bruteIcon,
+  Hunter: hunterIcon,
+  Magic: magicIcon,
+};
+
 /**
  * Determines the beast type based on its ID
  * @param id Beast ID
@@ -231,4 +241,24 @@ export const getArmorTypeWeakness = (type: string): string => {
     default:
       return '';
   }
+}
+
+export const beastPowerPercent = (adventurerLevel: number, power: number) => {
+  let max_beast_level = adventurerLevel * 3
+  let min_beast_level = 1
+
+  if (adventurerLevel >= 50) {
+    min_beast_level += 80
+  } else if (adventurerLevel >= 40) {
+    min_beast_level += 40
+  } else if (adventurerLevel >= 30) {
+    min_beast_level += 20
+  } else if (adventurerLevel >= 20) {
+    min_beast_level += 10
+  }
+
+  let adjusted_max_power = (max_beast_level * 5) - min_beast_level
+  let adjusted_power = Math.max(power - min_beast_level, 1)
+
+  return (adjusted_power / adjusted_max_power) * 100
 }

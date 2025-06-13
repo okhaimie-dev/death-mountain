@@ -1,38 +1,147 @@
+import AnimatedText from '@/components/AnimatedText';
 import { useGameDirector } from '@/contexts/GameDirector';
+import { useGameStore } from '@/stores/gameStore';
+import { ability_based_percentage, calculateAttackDamage, getNewItemsEquipped } from '@/utils/game';
 import { Box, Button, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import Adventurer from './Adventurer';
+import Beast from './Beast';
+
+const attackMessage = "Attacking";
+const fleeMessage = "Attempting to flee";
+const equipMessage = "Equipping items";
 
 export default function CombatOverlay() {
-  const { executeGameAction, } = useGameDirector();
+  const { executeGameAction, actionFailed } = useGameDirector();
+  const { adventurer, adventurerState, beast, battleEvent, bag, equipItem, undoEquipment, setShowBeastRewards } = useGameStore();
+
+  const [untilDeath, setUntilDeath] = useState(false);
+  const [attackInProgress, setAttackInProgress] = useState(false);
+  const [fleeInProgress, setFleeInProgress] = useState(false);
+  const [equipInProgress, setEquipInProgress] = useState(false);
+  const [combatLog, setCombatLog] = useState("");
+
+  useEffect(() => {
+    if (adventurer?.xp === 0) {
+      setCombatLog(beast!.baseName + " ambushed you for 10 damage!");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (battleEvent) {
+      if (battleEvent.type === "attack") {
+        setCombatLog(`You attacked ${beast!.baseName} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+
+      else if (battleEvent.type === "beast_attack") {
+        setCombatLog(`${beast!.baseName} attacked your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+
+      else if (battleEvent.type === "flee") {
+        if (battleEvent.success) {
+          setCombatLog(`You successfully fled`);
+        } else {
+          setCombatLog(`You failed to flee`);
+        }
+      }
+
+      else if (battleEvent.type === "ambush") {
+        setCombatLog(`${beast!.baseName} ambushed your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+      }
+    }
+  }, [battleEvent]);
+
+  useEffect(() => {
+    setAttackInProgress(false);
+    setFleeInProgress(false);
+    setEquipInProgress(false);
+  }, [actionFailed]);
 
   const handleAttack = () => {
-    executeGameAction({ type: 'attack', untilDeath: false });
+    setShowBeastRewards(true);
+    setAttackInProgress(true);
+    setCombatLog(attackMessage);
+    executeGameAction({ type: 'attack', untilDeath });
   };
 
   const handleFlee = () => {
-    executeGameAction({ type: 'flee', untilDeath: false });
+    setFleeInProgress(true);
+    setCombatLog(fleeMessage);
+    executeGameAction({ type: 'flee', untilDeath });
   };
+
+  const handleEquipItems = () => {
+    setEquipInProgress(true);
+    setCombatLog(equipMessage);
+    executeGameAction({ type: 'equip' });
+  };
+
+  const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
+
+  const hasNewItemsEquipped = useMemo(() => {
+    if (!adventurer?.equipment || !adventurerState?.equipment) return false;
+    return getNewItemsEquipped(adventurer.equipment, adventurerState.equipment).length > 0;
+  }, [adventurer?.equipment]);
 
   return (
     <Box sx={styles.container}>
-      <Button
-        variant="contained"
-        onClick={handleAttack}
-        sx={styles.attackButton}
-      >
-        <Typography variant={'h4'} lineHeight={'16px'}>
-          ATTACK
-        </Typography>
-      </Button>
+      <Box sx={[styles.imageContainer, { backgroundImage: `url('/images/battle_scenes/${beast!.baseName.toLowerCase()}.png')` }]} />
 
-      <Button
-        variant="contained"
-        onClick={handleFlee}
-        sx={styles.fleeButton}
-      >
-        <Typography variant={'h4'} lineHeight={'16px'}>
-          FLEE
-        </Typography>
-      </Button>
+      {/* Adventurer */}
+      <Adventurer />
+
+      {/* Beast */}
+      <Beast />
+
+      {/* Combat Log */}
+      <Box sx={styles.middleSection}>
+        <Box sx={styles.combatLogContainer}>
+          <AnimatedText text={combatLog} />
+          {(combatLog === fleeMessage || combatLog === attackMessage || combatLog === equipMessage) && <div className='dotLoader green' style={{ marginTop: '6px' }} />}
+        </Box>
+      </Box>
+
+      {/* Combat Buttons */}
+      <Box sx={styles.buttonContainer}>
+        <Box sx={styles.actionButtonContainer}>
+          <Button
+            variant="contained"
+            onClick={handleAttack}
+            sx={styles.attackButton}
+            disabled={!adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress}
+          >
+            <Box sx={{ opacity: !adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress ? 0.5 : 1 }}>
+              <Typography sx={styles.buttonText}>
+                ATTACK
+              </Typography>
+
+              <Typography sx={styles.buttonHelperText}>
+                {`${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
+              </Typography>
+            </Box>
+          </Button>
+
+        </Box>
+
+        <Box sx={styles.actionButtonContainer}>
+          <Button
+            variant="contained"
+            onClick={handleFlee}
+            sx={styles.fleeButton}
+            disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
+          >
+            <Box sx={{ opacity: adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress ? 0.5 : 1 }}>
+              <Typography sx={styles.buttonText}>
+                FLEE
+              </Typography>
+              <Typography sx={styles.buttonHelperText}>
+                {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : `${fleePercentage}% chance`}
+              </Typography>
+            </Box>
+          </Button>
+
+        </Box>
+      </Box>
     </Box>
   );
 }
@@ -43,65 +152,102 @@ const styles = {
     height: '100dvh',
     display: 'flex',
     flexDirection: 'column',
+    position: 'relative',
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: '#000',
+  },
+  middleSection: {
+    position: 'absolute',
+    top: 30,
+    left: '50%',
+    width: '340px',
+    padding: '4px 8px',
+    border: '2px solid #083e22',
+    borderRadius: '12px',
+    background: 'rgba(24, 40, 24, 0.55)',
+    backdropFilter: 'blur(8px)',
+    transform: 'translateX(-50%)',
+  },
+  combatLogContainer: {
+    width: '100%',
+    minHeight: '40px',
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 32,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    gap: '16px',
+  },
+  actionButtonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  },
   attackButton: {
-    width: '200px',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    height: '56px',
-    background: 'rgba(128, 255, 0, 0.25)',
-    color: '#80FF00',
+    border: '3px solid rgb(8, 62, 34)',
+    background: 'rgba(24, 40, 24, 1)',
+    width: '190px',
+    height: '48px',
+    justifyContent: 'center',
     borderRadius: '8px',
-    border: '2px solid rgba(128, 255, 0, 0.4)',
-    backdropFilter: 'blur(4px)',
-    boxShadow: '0 4px 12px rgba(128, 255, 0, 0.2)',
-    transition: 'all 0.2s ease-in-out',
     '&:hover': {
-      background: 'rgba(128, 255, 0, 0.35)',
-      border: '2px solid rgba(128, 255, 0, 0.6)',
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 16px rgba(128, 255, 0, 0.3)',
-    },
-    '&:active': {
-      transform: 'translateY(0)',
-      boxShadow: '0 2px 8px rgba(128, 255, 0, 0.2)',
+      background: 'rgba(34, 60, 34, 1)',
     },
     '&:disabled': {
-      background: 'rgba(128, 255, 0, 0.1)',
-      color: 'rgba(128, 255, 0, 0.5)',
-      border: '2px solid rgba(128, 255, 0, 0.1)',
-      boxShadow: 'none',
+      background: 'rgba(24, 40, 24, 1)',
+      borderColor: 'rgba(8, 62, 34, 0.5)',
     },
   },
   fleeButton: {
-    width: '200px',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    height: '56px',
-    background: 'rgba(255, 0, 0, 0.25)',
-    color: '#FF0000',
+    width: '190px',
+    height: '48px',
+    justifyContent: 'center',
+    background: 'rgba(60, 16, 16, 1)',
     borderRadius: '8px',
-    border: '2px solid rgba(255, 0, 0, 0.4)',
-    backdropFilter: 'blur(4px)',
-    boxShadow: '0 4px 12px rgba(255, 0, 0, 0.2)',
-    transition: 'all 0.2s ease-in-out',
+    border: '3px solid #6a1b1b',
     '&:hover': {
-      background: 'rgba(255, 0, 0, 0.35)',
-      border: '2px solid rgba(255, 0, 0, 0.6)',
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 16px rgba(255, 0, 0, 0.3)',
-    },
-    '&:active': {
-      transform: 'translateY(0)',
-      boxShadow: '0 2px 8px rgba(255, 0, 0, 0.2)',
+      background: 'rgba(90, 24, 24, 1)',
     },
     '&:disabled': {
-      background: 'rgba(255, 0, 0, 0.1)',
-      color: 'rgba(255, 0, 0, 0.5)',
-      border: '2px solid rgba(255, 0, 0, 0.1)',
-      boxShadow: 'none',
+      background: 'rgba(60, 16, 16, 1)',
+      borderColor: 'rgba(106, 27, 27, 0.5)',
     },
+  },
+  buttonIcon: {
+    fontSize: '2.2rem',
+    color: '#FFD700',
+    filter: 'drop-shadow(0 0 6px #FFD70088)',
+    marginRight: '8px',
+  },
+  buttonText: {
+    fontFamily: 'Cinzel, Georgia, serif',
+    fontWeight: 600,
+    fontSize: '1rem',
+    color: '#d0c98d',
+    letterSpacing: '1px',
+    lineHeight: 1.1,
+  },
+  buttonHelperText: {
+    color: '#d0c98d',
+    fontSize: '12px',
+    opacity: 0.8,
+    lineHeight: '12px',
+    textTransform: 'none',
   },
 };

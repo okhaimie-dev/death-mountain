@@ -1,5 +1,3 @@
-import gameImg from '@/assets/images/game.png';
-import startImg from '@/assets/images/start.png';
 import VideoPlayer from '@/components/VideoPlayer';
 import { useController } from '@/contexts/controller';
 import { useGameDirector } from '@/contexts/GameDirector';
@@ -7,10 +5,13 @@ import { useSystemCalls } from '@/dojo/useSystemCalls';
 import CombatOverlay from '@/overlays/Combat';
 import ExploreOverlay from '@/overlays/Explore';
 import { useGameStore } from '@/stores/gameStore';
+import { streamIds } from '@/utils/cloudflare';
+import { getMenuLeftOffset } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { Box, Typography } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function GamePage() {
   const navigate = useNavigate();
@@ -18,20 +19,22 @@ export default function GamePage() {
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast } = useGameStore();
-  const { subscription, video } = useGameDirector();
+  const { subscription, videoQueue, setVideoQueue } = useGameDirector();
 
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [padding, setPadding] = useState(getMenuLeftOffset());
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
 
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
   const settings_id = Number(searchParams.get('settingsId'));
 
-  async function mint() {
-    setLoadingProgress(45)
-    let tokenId = await mintGame(account, playerName, settings_id);
-    navigate(`/play?id=${tokenId}`, { replace: true });
-  }
+  useEffect(() => {
+    function handleResize() {
+      setPadding(getMenuLeftOffset());
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!account && gameId && adventurer) {
@@ -49,8 +52,11 @@ export default function GamePage() {
       return
     }
 
+    if (videoQueue.length === 0) {
+      setVideoQueue([streamIds.start]);
+    }
+
     if (game_id) {
-      setLoadingProgress(99);
       setGameId(game_id);
     } else if (game_id === 0) {
       mint();
@@ -69,25 +75,47 @@ export default function GamePage() {
     };
   }, []);
 
+  async function mint() {
+    let tokenId = await mintGame(account, playerName, settings_id);
+    navigate(`/play?id=${tokenId}`, { replace: true });
+  }
+
   const isLoading = !gameId || !adventurer;
 
   return (
     <Box sx={styles.container}>
-      {!gameId && <Box className="imageContainer" style={{ backgroundImage: `url(${startImg})` }} />}
-      {gameId && <Box className="imageContainer" style={{ backgroundImage: `url(${gameImg})` }} />}
+      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/start.png')`, zIndex: 0 }} />
 
-      <VideoPlayer />
+      <motion.div
+        initial={false}
+        animate={{ opacity: videoQueue.length > 0 ? 1 : 0 }}
+        transition={{ duration: 0.6 }}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <VideoPlayer />
+      </motion.div>
 
-      {!video.playing && (
-        <Box sx={styles.overlay}>
-          {isLoading ? <Typography sx={styles.loadingText}>Loading</Typography> : (
-            <>
-              {adventurer && adventurer.beast_health > 0 && beast && <CombatOverlay />}
-              {adventurer && adventurer.beast_health === 0 && adventurer.stat_upgrades_available === 0 && <ExploreOverlay />}
-            </>
-          )}
-        </Box>
-      )}
+      <AnimatePresence>
+        {videoQueue.length === 0 && (
+          <motion.div
+            key="overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+          >
+            <Box sx={{ ...styles.overlay, px: `${padding}px` }}>
+              {isLoading ? <Typography sx={styles.loadingText}>Loading</Typography> : (
+                <>
+                  {adventurer && adventurer.beast_health > 0 && beast && <CombatOverlay />}
+                  {adventurer && adventurer.beast_health === 0 && adventurer.stat_upgrades_available === 0 && <ExploreOverlay />}
+                </>
+              )}
+            </Box>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Box>
   );
 }
@@ -116,6 +144,7 @@ const styles = {
     width: '100dvw',
     height: '100dvh',
     zIndex: 99,
+    boxSizing: 'border-box',
   },
   loadingText: {
     color: '#FFFFFF',

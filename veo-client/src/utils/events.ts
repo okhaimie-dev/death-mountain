@@ -1,6 +1,9 @@
 import { BEAST_NAME_PREFIXES, BEAST_NAME_SUFFIXES, BEAST_NAMES, BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from "@/constants/beast";
 import { Adventurer, Attack, Beast, getEntityModel, Item, ItemPurchase, Obstacle, Stats } from "@/types/game";
 import { getBeastName, getBeastTier, getBeastType } from "./beast";
+import { streamIds } from "./cloudflare";
+import { OBSTACLE_NAMES } from "@/constants/obstacle";
+import { ItemUtils } from "./loot";
 
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
@@ -224,8 +227,78 @@ export const formatGameEvent = (entity: any): GameEvent => {
   return { type: 'unknown', action_count: 0 };
 };
 
-export const VideoEvents: Record<string, string> = {
-  'beast': '/videos/troll.mp4',
-  'obstacle': '/videos/clinging_roots.mp4',
-  'discovery': '/videos/gold_discovery.mp4',
+export const getVideoId = (event: GameEvent) => {
+  if (event.type === 'beast') {
+    return streamIds[event.beast!.baseName as keyof typeof streamIds];
+  } else if (event.type === 'obstacle') {
+    return streamIds[OBSTACLE_NAMES[event.obstacle!.id as keyof typeof OBSTACLE_NAMES] as keyof typeof streamIds];
+  } else if (event.type === 'discovery') {
+    return streamIds[event.discovery!.type as keyof typeof streamIds];
+  }
+
+  return null;
 }
+
+export const ExplorerLogEvents = [
+  'discovery',
+  'obstacle',
+  'defeated_beast',
+  'fled_beast',
+  'stat_upgrade',
+  'buy_items',
+  'level_up',
+]
+
+export const BattleEvents = [
+  'attack',
+  'beast_attack',
+  'flee',
+  'ambush'
+]
+
+export const ExplorerReplayEvents = [
+  'discovery',
+  'obstacle',
+  'defeated_beast',
+  'fled_beast',
+  'stat_upgrade',
+  'buy_items',
+  'level_up',
+  'equip',
+  'drop',
+]
+
+export const getEventTitle = (event: GameEvent) => {
+  switch (event.type) {
+    case 'beast':
+      return `Encountered beast`;
+    case 'discovery':
+      if (event.discovery?.type === 'Gold') return 'Discovered Gold';
+      if (event.discovery?.type === 'Health') return 'Discovered Health';
+      if (event.discovery?.type === 'Loot') return `Discovered ${ItemUtils.getItemName(event.discovery?.amount!)}`;
+      return 'Discovered Unknown';
+    case 'obstacle':
+      const location = event.obstacle?.location || 'None';
+      const obstacleName = OBSTACLE_NAMES[event.obstacle?.id!] || 'Unknown Obstacle';
+      if (event.obstacle?.dodged) {
+        return `Avoided ${obstacleName}`;
+      }
+      return `${obstacleName} hit your ${location}`;
+    case 'defeated_beast':
+      return `Defeated ${BEAST_NAMES[event.beast_id!]}`;
+    case 'fled_beast':
+      return `Fled from ${BEAST_NAMES[event.beast_id!]}`;
+    case 'level_up':
+      return 'Level Up';
+    case 'stat_upgrade':
+      return 'Stats Upgraded';
+    case 'buy_items':
+      return 'Visited Market';
+    case 'equip':
+      return 'Equipped Items';
+    case 'drop':
+      return 'Dropped Items'
+    default:
+      return 'Unknown Event';
+  }
+};

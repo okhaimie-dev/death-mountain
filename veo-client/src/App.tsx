@@ -12,29 +12,27 @@ import { mainTheme } from './utils/themes';
 function App() {
   return (
     <BrowserRouter>
-      <Box className='bgImage'>
-        <StyledEngineProvider injectFirst>
-          <ThemeProvider theme={mainTheme}>
-            <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
-              <SoundProvider>
-                <ControllerProvider>
-                  <GameDirector>
-                    <Box className='main'>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={mainTheme}>
+          <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'center' }} preventDuplicate autoHideDuration={3000}>
+            <SoundProvider>
+              <ControllerProvider>
+                <GameDirector>
+                  <Box className='main'>
 
-                      <Routes>
-                        {routes.map((route, index) => {
-                          return <Route key={index} path={route.path} element={route.content} />
-                        })}
-                      </Routes>
+                    <Routes>
+                      {routes.map((route, index) => {
+                        return <Route key={index} path={route.path} element={route.content} />
+                      })}
+                    </Routes>
 
-                    </Box>
-                  </GameDirector>
-                </ControllerProvider>
-              </SoundProvider>
-            </SnackbarProvider>
-          </ThemeProvider>
-        </StyledEngineProvider>
-      </Box>
+                  </Box>
+                </GameDirector>
+              </ControllerProvider>
+            </SoundProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </StyledEngineProvider>
     </BrowserRouter>
   );
 }

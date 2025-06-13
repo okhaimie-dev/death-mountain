@@ -1,25 +1,129 @@
 import { useGameDirector } from '@/contexts/GameDirector';
+import { useGameStore } from '@/stores/gameStore';
 import { Box, Button, Typography } from '@mui/material';
+import Adventurer from './Adventurer';
+import { getEventTitle } from '@/utils/events';
+import MarketOverlay from './Market';
+import InventoryOverlay from './Inventory';
 
 export default function ExploreOverlay() {
-  const { executeGameAction, setVideo } = useGameDirector();
+  const { executeGameAction } = useGameDirector();
+  const { exploreLog } = useGameStore();
 
   const handleExplore = async () => {
-    setVideo({ src: '/videos/explore.mp4', playing: true });
     executeGameAction({ type: 'explore', untilBeast: false });
   };
 
+  const event = exploreLog[exploreLog.length - 1];
+
   return (
     <Box sx={styles.container}>
-      <Button
-        variant="contained"
-        onClick={handleExplore}
-        sx={styles.exploreButton}
-      >
-        <Typography variant={'h4'} lineHeight={'16px'}>
-          EXPLORE
-        </Typography>
-      </Button>
+      <Box sx={[styles.imageContainer, { backgroundImage: `url('/images/game.png')` }]} />
+
+      {/* Adventurer Overlay */}
+      <Adventurer />
+
+      {/* Middle Section for Event Log */}
+      <Box sx={styles.middleSection}>
+        <Box sx={styles.eventLogContainer}>
+          <Box sx={styles.encounterDetails}>
+            <Typography variant="h6">
+              {getEventTitle(event)}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 2, textAlign: 'center', justifyContent: 'center' }}>
+              {typeof event.xp_reward === 'number' && event.xp_reward > 0 && (
+                <Typography color='secondary'>+{event.xp_reward} XP</Typography>
+              )}
+
+              {event.type === 'obstacle' && (
+                <Typography color='secondary'>
+                  {event.obstacle?.dodged ? '' : `-${event.obstacle?.damage} Health ${event.obstacle?.critical_hit ? 'critical hit!' : ''}`}
+                </Typography>
+              )}
+
+              {typeof event.gold_reward === 'number' && event.gold_reward > 0 && (
+                <Typography color='secondary'>
+                  +{event.gold_reward} Gold
+                </Typography>
+              )}
+
+              {event.type === 'discovery' && event.discovery?.type && (
+                <>
+                  {event.discovery.type === 'Gold' && (
+                    <Typography color='secondary'>
+                      +{event.discovery.amount} Gold
+                    </Typography>
+                  )}
+                  {event.discovery.type === 'Health' && (
+                    <Typography color='secondary'>
+                      +{event.discovery.amount} Health
+                    </Typography>
+                  )}
+                </>
+              )}
+
+              {event.type === 'stat_upgrade' && event.stats && (
+                <Typography color='secondary'>
+                  {Object.entries(event.stats)
+                    .filter(([_, value]) => typeof value === 'number' && value > 0)
+                    .map(([stat, value]) => `+${value} ${stat.slice(0, 3).toUpperCase()}`)
+                    .join(', ')}
+                </Typography>
+              )}
+
+              {event.type === 'level_up' && event.level && (
+                <Typography color='secondary'>
+                  Reached Level {event.level}
+                </Typography>
+              )}
+
+              {event.type === 'buy_items' && typeof event.potions === 'number' && event.potions > 0 && (
+                <Typography color='secondary'>
+                  {`+${event.potions} Potions`}
+                </Typography>
+              )}
+
+              {event.items_purchased && event.items_purchased.length > 0 && (
+                <Typography color='secondary'>
+                  +{event.items_purchased.length} Items
+                </Typography>
+              )}
+
+              {event.items && event.items.length > 0 && (
+                <Typography color='secondary'>
+                  {event.items.length} items
+                </Typography>
+              )}
+
+              {event.type === 'beast' && (
+                <Typography color='secondary'>
+                  Level {event.beast?.level} Power {event.beast?.tier! * event.beast?.level!}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* <InventoryOverlay />
+
+      <MarketOverlay /> */}
+
+      {/* Explore Button */}
+      <Box sx={styles.buttonContainer}>
+        <Button
+          variant="contained"
+          onClick={handleExplore}
+          sx={styles.exploreButton}
+        >
+          <Box>
+            <Typography sx={styles.buttonText}>
+              EXPLORE
+            </Typography>
+          </Box>
+        </Button>
+      </Box>
     </Box>
   );
 }
@@ -32,37 +136,89 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: '30px',
     position: 'relative',
     zIndex: 1,
   },
+  imageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: '#000',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 32,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    gap: '16px',
+  },
   exploreButton: {
-    width: '200px',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    height: '56px',
-    background: 'rgba(128, 255, 0, 0.25)',
-    color: '#80FF00',
+    border: '2px solid rgba(255, 255, 255, 0.15)',
+    background: 'rgba(24, 40, 24, 1)',
+    width: '220px',
+    height: '48px',
+    justifyContent: 'center',
     borderRadius: '8px',
-    border: '2px solid rgba(128, 255, 0, 0.4)',
-    backdropFilter: 'blur(4px)',
-    boxShadow: '0 4px 12px rgba(128, 255, 0, 0.2)',
-    transition: 'all 0.2s ease-in-out',
     '&:hover': {
-      background: 'rgba(128, 255, 0, 0.35)',
-      border: '2px solid rgba(128, 255, 0, 0.6)',
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 16px rgba(128, 255, 0, 0.3)',
-    },
-    '&:active': {
-      transform: 'translateY(0)',
-      boxShadow: '0 2px 8px rgba(128, 255, 0, 0.2)',
+      border: '2px solid rgba(34, 60, 34, 1)',
+      background: 'rgba(34, 60, 34, 1)',
     },
     '&:disabled': {
-      background: 'rgba(128, 255, 0, 0.1)',
-      color: 'rgba(128, 255, 0, 0.5)',
-      border: '2px solid rgba(128, 255, 0, 0.1)',
+      background: 'rgba(24, 40, 24, 1)',
+      borderColor: 'rgba(8, 62, 34, 0.5)',
       boxShadow: 'none',
     },
+  },
+  buttonText: {
+    fontFamily: 'Cinzel, Georgia, serif',
+    fontWeight: 600,
+    fontSize: '1.1rem',
+    color: '#d0c98d',
+    letterSpacing: '1px',
+    lineHeight: 1.6,
+  },
+  middleSection: {
+    position: 'absolute',
+    top: 30,
+    left: '50%',
+    width: '340px',
+    padding: '6px 8px',
+    border: '2px solid #083e22',
+    borderRadius: '12px',
+    background: 'rgba(24, 40, 24, 0.55)',
+    backdropFilter: 'blur(8px)',
+    transform: 'translateX(-50%)',
+  },
+  eventLogContainer: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventLogText: {
+    color: '#d0c98d',
+    fontSize: '1rem',
+    textAlign: 'center',
+    width: '100%',
+  },
+  encounter: {
+    display: 'flex',
+    justifyContent: 'center',
+    textAlign: 'center',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '8px',
+    borderRadius: '8px',
+    border: '1px solid rgba(128, 255, 0, 0.2)',
+  },
+  encounterDetails: {
+    flex: 1,
+    textAlign: 'center',
   },
 };

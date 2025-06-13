@@ -14,33 +14,14 @@ import Typography from '@mui/material/Typography';
 import { AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getMenuLeftOffset } from '@/utils/utils';
 
-function getMenuLeftOffset() {
-  const windowWidth = window.innerWidth;
-  const windowHeight = window.innerHeight;
-  const windowAspect = windowWidth / windowHeight;
-  const imageAspect = 16 / 9;
-
-  let imageWidth, imageHeight, leftOffset;
-  if (windowAspect > imageAspect) {
-    // Window is wider than 16:9
-    imageHeight = windowHeight;
-    imageWidth = imageHeight * imageAspect;
-    leftOffset = (windowWidth - imageWidth) / 2;
-  } else {
-    // Window is taller than 16:9
-    imageWidth = windowWidth;
-    imageHeight = imageWidth / imageAspect;
-    leftOffset = 0;
-  }
-  return leftOffset;
-}
 
 export default function MainMenu() {
   const navigate = useNavigate();
   const { address, isPending } = useController();
-  const [left, setLeft] = useState(getMenuLeftOffset());
   const [showAdventurers, setShowAdventurers] = useState(false);
+  const [left, setLeft] = useState(getMenuLeftOffset());
 
   useEffect(() => {
     function handleResize() {

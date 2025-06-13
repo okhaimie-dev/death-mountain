@@ -11,7 +11,7 @@ import { fetchAdventurer } from '@/api/starknet';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
-  const { gameId, exitGame, setAdventurer } = useGameStore();
+  const { gameId, setAdventurer } = useGameStore();
   const { playing, setPlaying, volume, setVolume } = useSound();
   const { account, address, playerName, login, openProfile } = useController();
 

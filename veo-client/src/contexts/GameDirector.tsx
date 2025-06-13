@@ -3,24 +3,18 @@ import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
-import { formatGameEvent, GameEvent, VideoEvents } from '@/utils/events';
+import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent, getVideoId } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
 
-export interface Video {
-  src: string;
-  playing: boolean;
-}
-
 export interface GameDirectorContext {
   executeGameAction: (action: GameAction) => void;
   actionFailed: number;
   subscription: any;
-  video: Video;
-  videoQueue: Video[];
-  setVideo: (video: Video) => void;
+  videoQueue: string[];
+  setVideoQueue: (videoQueue: string[]) => void;
 }
 
 const GameDirectorContext = createContext<GameDirectorContext>({} as GameDirectorContext);
@@ -32,18 +26,17 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
-  const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast,
-    setMarketItemIds, setNewMarket, metadata, gameSettings, setGameSettings } = useGameStore();
+  const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
+    setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
 
   const [VRFEnabled, setVRFEnabled] = useState(VRF_ENABLED);
-
+  const [spectating, setSpectating] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
 
-  const [video, setVideo] = useState<Video>({ src: '/videos/start_game.mp4', playing: true });
-  const [videoQueue, setVideoQueue] = useState<Video[]>([]);
+  const [videoQueue, setVideoQueue] = useState<string[]>([]);
 
   useEffect(() => {
     if (gameId) {
@@ -83,14 +76,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     processNextEvent();
   }, [eventQueue, isProcessing]);
 
-
-
-  useEffect(() => {
-    if (videoQueue.length > 0 && !video.playing) {
-      setVideo(videoQueue[0]);
-      setVideoQueue(prev => prev.slice(1));
-    }
-  }, [videoQueue, video.playing]);
 
   const subscribeEvents = async (gameId: number, settings: Settings) => {
     if (subscription) {
@@ -148,8 +133,26 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setNewMarket(true);
     }
 
-    if (!skipVideo && VideoEvents[event.type]) {
-      setVideoQueue(prev => [...prev, { src: VideoEvents[event.type], playing: true }]);
+    if (!spectating && ExplorerLogEvents.includes(event.type)) {
+      if (!skipVideo && event.type === 'discovery') {
+        if (event.discovery?.type === 'Loot') {
+          setNewInventoryItems([...newInventoryItems, event.discovery.amount!]);
+        }
+      }
+
+      setExploreLog(event);
+    }
+
+    if (spectating && ExplorerReplayEvents.includes(event.type)) {
+      setExploreLog(event);
+    }
+
+    if (!skipVideo && BattleEvents.includes(event.type)) {
+      setBattleEvent(event);
+    }
+
+    if (!skipVideo && getVideoId(event)) {
+      setVideoQueue(prev => [...prev, getVideoId(event)!]);
     }
   }
 
@@ -193,9 +196,8 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       executeGameAction,
       actionFailed,
       subscription,
-      video,
       videoQueue,
-      setVideo,
+      setVideoQueue,
     }}>
       {children}
     </GameDirectorContext.Provider>

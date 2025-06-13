@@ -13,6 +13,7 @@
     "dependencies": {
         "@cartridge/connector": "^0.7.13",
         "@cartridge/controller": "^0.7.13",
+        "@cloudflare/stream-react": "^1.9.3",
         "@dojoengine/create-burner": "^1.5.1",
         "@dojoengine/predeployed-connector": "^1.5.1",
         "@dojoengine/sdk": "^1.5.1",

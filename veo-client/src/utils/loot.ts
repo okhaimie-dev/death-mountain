@@ -16,6 +16,44 @@ import { BEAST_SPECIAL_NAME_LEVEL_UNLOCK } from '@/constants/beast';
 import { Beast, Item, Stats } from '@/types/game';
 import { calculateLevel } from './game';
 
+// Import icons
+import bladeIcon from '@/assets/types/blade.svg';
+import bludgeonIcon from '@/assets/types/bludgeon.svg';
+import chestIcon from '@/assets/types/chest.svg';
+import clothIcon from '@/assets/types/cloth.svg';
+import footIcon from '@/assets/types/foot.svg';
+import handIcon from '@/assets/types/hand.svg';
+import headIcon from '@/assets/types/head.svg';
+import hideIcon from '@/assets/types/hide.svg';
+import magicIcon from '@/assets/types/magic.svg';
+import metalIcon from '@/assets/types/metal.svg';
+import neckIcon from '@/assets/types/neck.svg';
+import ringIcon from '@/assets/types/ring.svg';
+import waistIcon from '@/assets/types/waist.svg';
+import weaponIcon from '@/assets/types/weapon.svg';
+
+export const slotIcons = {
+  Weapon: weaponIcon,
+  Head: headIcon,
+  Chest: chestIcon,
+  Waist: waistIcon,
+  Hand: handIcon,
+  Foot: footIcon,
+  Ring: ringIcon,
+  Neck: neckIcon,
+};
+
+export const typeIcons = {
+  Cloth: clothIcon,
+  Hide: hideIcon,
+  Metal: metalIcon,
+  Magic: magicIcon,
+  Bludgeon: bludgeonIcon,
+  Blade: bladeIcon,
+  Ring: ringIcon,
+  Necklace: neckIcon,
+};
+
 // Create a mapping from ID to name
 const ItemString: { [key: number]: string } = Object.entries(ItemId).reduce((acc, [name, id]) => {
   acc[id] = name.replace(/([A-Z])/g, ' $1').trim();
