@@ -20,6 +20,7 @@ interface GameState {
   exploreLog: GameEvent[];
   battleEvent: GameEvent | null;
   quest: Quest | null;
+  showInventory: boolean;
 
   setGameId: (gameId: number) => void;
   exitGame: () => void;
@@ -39,6 +40,7 @@ interface GameState {
   setQuest: (data: Quest | null) => void;
   equipItem: (data: Item) => void;
   undoEquipment: () => void;
+  setShowInventory: (show: boolean) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -56,6 +58,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   exploreLog: [],
   battleEvent: null,
   quest: null,
+  showInventory: false,
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -76,6 +79,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       exploreLog: [],
       battleEvent: null,
       quest: null,
+      showInventory: false,
     });
   },
 
@@ -172,4 +176,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     });
   },
+
+  setShowInventory: (show: boolean) => set({ showInventory: show }),
 }));

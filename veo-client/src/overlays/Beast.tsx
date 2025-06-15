@@ -4,13 +4,19 @@ import { beastPowerPercent } from '@/utils/beast';
 import { calculateLevel } from '@/utils/game';
 import { beastNameSize } from '@/utils/utils';
 import { Box, LinearProgress, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Beast() {
-  const { adventurer, beast } = useGameStore();
+  const { adventurer, beast, battleEvent } = useGameStore();
   const [beastHealth, setBeastHealth] = useState(adventurer!.beast_health);
 
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
+
+  useEffect(() => {
+    if (battleEvent && battleEvent.type === "attack") {
+      setBeastHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
+    }
+  }, [battleEvent]);
 
   return (
     <>

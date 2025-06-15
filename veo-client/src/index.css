@@ -87,7 +87,7 @@ input:-webkit-autofill {
 }
 
 .dotLoader.green {
-  background: radial-gradient(circle closest-side, #80FF00 90%, #FFF0) 0/calc(100%/3) 100% space;
+  background: radial-gradient(circle closest-side, #d0c98d 90%, #FFF0) 0/calc(100%/3) 100% space;
 }
 
 .dotLoader.white {

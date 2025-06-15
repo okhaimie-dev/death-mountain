@@ -6,6 +6,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import Adventurer from './Adventurer';
 import Beast from './Beast';
+import InventoryOverlay from './Inventory';
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
@@ -35,6 +36,11 @@ export default function CombatOverlay() {
 
       else if (battleEvent.type === "beast_attack") {
         setCombatLog(`${beast!.baseName} attacked your ${battleEvent.attack?.location} for ${battleEvent.attack?.damage} damage ${battleEvent.attack?.critical_hit ? 'CRITICAL HIT!' : ''}`);
+        if (!untilDeath) {
+          setAttackInProgress(false);
+          setFleeInProgress(false);
+          setEquipInProgress(false);
+        }
       }
 
       else if (battleEvent.type === "flee") {
@@ -100,6 +106,8 @@ export default function CombatOverlay() {
           {(combatLog === fleeMessage || combatLog === attackMessage || combatLog === equipMessage) && <div className='dotLoader green' style={{ marginTop: '6px' }} />}
         </Box>
       </Box>
+
+      <InventoryOverlay />
 
       {/* Combat Buttons */}
       <Box sx={styles.buttonContainer}>

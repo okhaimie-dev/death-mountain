@@ -1,13 +1,26 @@
-import { Box, Typography, LinearProgress } from '@mui/material';
-import { STARTING_HEALTH } from '@/constants/game';
-import { calculateLevel } from '@/utils/game';
 import { useGameStore } from '@/stores/gameStore';
+import { useMarketStore } from '@/stores/marketStore';
+import { calculateLevel, calculateProgress } from '@/utils/game';
+import { Box, LinearProgress, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 export default function Adventurer() {
-  const { adventurer, metadata } = useGameStore();
+  const { adventurer, metadata, battleEvent } = useGameStore();
+  const { cart } = useMarketStore();
 
-  const maxHealth = STARTING_HEALTH + ((adventurer?.stats?.vitality || 0) * 15);
-  const healthPercent = (adventurer?.health || 0) / maxHealth * 100;
+  const [health, setHealth] = useState(adventurer!.health);
+
+  useEffect(() => {
+    if (battleEvent && battleEvent.type === "beast_attack") {
+      setHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
+    }
+  }, [battleEvent]);
+
+  const maxHealth = 250 + (adventurer!.stats.vitality * 15);
+  const healthPercent = (health / maxHealth) * 100;
+  const potionHealth = cart.potions * 10;
+  const previewHealth = Math.min(health + potionHealth, maxHealth);
+  const previewHealthPercent = (previewHealth / maxHealth) * 100;
 
   return (
     <>
@@ -38,18 +51,25 @@ export default function Adventurer() {
               value={healthPercent}
               sx={styles.adventurerHealthBar}
             />
+            {cart.potions > 0 && (
+              <LinearProgress
+                variant="determinate"
+                value={previewHealthPercent}
+                sx={styles.previewHealthBar}
+              />
+            )}
             <Typography
               variant="body2"
               sx={styles.healthOverlayText}
             >
-              {adventurer?.health || 0}/{maxHealth}
+              {previewHealth}/{maxHealth}
             </Typography>
           </Box>
           {/* XP Bar */}
           <Box sx={{ mt: 1, position: 'relative' }}>
             <LinearProgress
               variant="determinate"
-              value={adventurer?.xp || 0}
+              value={calculateProgress(adventurer?.xp || 1)}
               sx={styles.xpBar}
             />
             <Typography
@@ -98,6 +118,19 @@ const styles = {
     '& .MuiLinearProgress-bar': {
       backgroundColor: '#4CAF50',
       boxShadow: '0 0 8px rgba(76, 175, 80, 0.5)',
+    },
+  },
+  previewHealthBar: {
+    height: '14px',
+    borderRadius: '6px',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: 'rgba(76, 175, 80, 0.3)',
+      boxShadow: '0 0 8px rgba(76, 175, 80, 0.3)',
     },
   },
   healthOverlayText: {

@@ -84,7 +84,7 @@ export default function GamePage() {
 
   return (
     <Box sx={styles.container}>
-      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/start.png')`, zIndex: 0 }} />
+      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/${adventurer ? 'game' : 'start'}.png')`, zIndex: 0 }} />
 
       <motion.div
         initial={false}
@@ -109,7 +109,7 @@ export default function GamePage() {
               {isLoading ? <Typography sx={styles.loadingText}>Loading</Typography> : (
                 <>
                   {adventurer && adventurer.beast_health > 0 && beast && <CombatOverlay />}
-                  {adventurer && adventurer.beast_health === 0 && adventurer.stat_upgrades_available === 0 && <ExploreOverlay />}
+                  {adventurer && adventurer.beast_health === 0 && <ExploreOverlay />}
                 </>
               )}
             </Box>

@@ -77,7 +77,7 @@ const styles = {
   tooltip: {
     position: 'absolute',
     backgroundColor: 'rgba(17, 17, 17, 1)',
-    border: '1px solid rgba(128, 255, 0, 0.3)',
+    border: '2px solid #083e22',
     borderRadius: '8px',
     padding: '10px',
     zIndex: 1000,
@@ -91,23 +91,21 @@ const styles = {
     marginBottom: '8px',
   },
   itemName: {
-    color: '#80FF00',
-    fontFamily: 'VT323, monospace',
+    color: '#d0c98d',
     fontSize: '1.0rem',
     fontWeight: 'bold',
-    textShadow: '0 0 8px rgba(128, 255, 0, 0.3)',
   },
   tier: {
-    color: 'rgba(128, 255, 0, 0.7)',
-    fontFamily: 'VT323, monospace',
+    color: '#d0c98d',
     fontSize: '0.9rem',
     padding: '2px 6px',
-    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    backgroundColor: 'rgba(208, 201, 141, 0.1)',
     borderRadius: '4px',
   },
   divider: {
     height: '1px',
-    background: 'linear-gradient(to right, transparent, rgba(128, 255, 0, 0.3), transparent)',
+    backgroundColor: '#d7c529',
+    opacity: 0.2,
     margin: '8px 0',
   },
   statsContainer: {
@@ -121,13 +119,11 @@ const styles = {
     alignItems: 'center',
   },
   statLabel: {
-    color: 'rgba(128, 255, 0, 0.7)',
-    fontFamily: 'VT323, monospace',
+    color: '#d7c529',
     fontSize: '0.9rem',
   },
   statValue: {
-    color: '#80FF00',
-    fontFamily: 'VT323, monospace',
+    color: '#d0c98d',
     fontSize: '0.9rem',
     fontWeight: 'bold',
   },
@@ -141,22 +137,20 @@ const styles = {
     marginBottom: '4px',
   },
   xpLabel: {
-    color: 'rgba(128, 255, 0, 0.7)',
-    fontFamily: 'VT323, monospace',
+    color: '#d7c529',
     fontSize: '0.9rem',
   },
   xpValue: {
-    color: '#80FF00',
-    fontFamily: 'VT323, monospace',
+    color: '#d0c98d',
     fontSize: '0.9rem',
   },
   xpBar: {
     height: '6px',
     borderRadius: '3px',
-    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    backgroundColor: 'rgba(208, 201, 141, 0.1)',
     '& .MuiLinearProgress-bar': {
-      backgroundColor: '#80FF00',
-      boxShadow: '0 0 8px rgba(128, 255, 0, 0.5)',
+      backgroundColor: '#d0c98d',
+      boxShadow: '0 0 8px rgba(208, 201, 141, 0.5)',
     },
   },
   specialContainer: {
@@ -165,8 +159,7 @@ const styles = {
     gap: '4px',
   },
   special: {
-    color: '#EDCF33',
-    fontFamily: 'VT323, monospace',
+    color: '#d0c98d',
     fontSize: '0.9rem',
     display: 'flex',
     alignItems: 'center',

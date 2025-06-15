@@ -5,16 +5,41 @@ import Adventurer from './Adventurer';
 import { getEventTitle } from '@/utils/events';
 import MarketOverlay from './Market';
 import InventoryOverlay from './Inventory';
+import { streamIds } from '@/utils/cloudflare';
+import { useState } from 'react';
 
 export default function ExploreOverlay() {
-  const { executeGameAction } = useGameDirector();
-  const { exploreLog } = useGameStore();
+  const { executeGameAction, setVideoQueue } = useGameDirector();
+  const { exploreLog, adventurer } = useGameStore();
+  const [isSelectingStats, setIsSelectingStats] = useState(false);
+  const [selectedStats, setSelectedStats] = useState({
+    strength: 0,
+    dexterity: 0,
+    vitality: 0,
+    intelligence: 0,
+    wisdom: 0,
+    charisma: 0,
+    luck: 0
+  });
 
   const handleExplore = async () => {
+    setVideoQueue(Array.from({ length: 10 }, () => streamIds.explore));
     executeGameAction({ type: 'explore', untilBeast: false });
   };
 
-  const event = exploreLog[exploreLog.length - 1];
+  const handleSelectStats = async () => {
+    setIsSelectingStats(true);
+    executeGameAction({ 
+      type: 'select_stat_upgrades', 
+      statUpgrades: selectedStats
+    });
+  };
+
+  const handleStatsChange = (stats: typeof selectedStats) => {
+    setSelectedStats(stats);
+  };
+
+  const event = exploreLog[0];
 
   return (
     <Box sx={styles.container}>
@@ -106,23 +131,36 @@ export default function ExploreOverlay() {
         </Box>
       </Box>
 
-      {/* <InventoryOverlay />
+      <InventoryOverlay onStatsChange={handleStatsChange} />
 
-      <MarketOverlay /> */}
+      <MarketOverlay />
 
-      {/* Explore Button */}
+      {/* Bottom Buttons */}
       <Box sx={styles.buttonContainer}>
-        <Button
-          variant="contained"
-          onClick={handleExplore}
-          sx={styles.exploreButton}
-        >
-          <Box>
-            <Typography sx={styles.buttonText}>
-              EXPLORE
-            </Typography>
-          </Box>
-        </Button>
+        {adventurer?.stat_upgrades_available! > 0 ? (
+          <Button
+            variant="contained"
+            onClick={handleSelectStats}
+            sx={styles.exploreButton}
+            disabled={isSelectingStats || Object.values(selectedStats).reduce((a, b) => a + b, 0) !== adventurer?.stat_upgrades_available}
+          >
+            {isSelectingStats
+              ? <Box display={'flex'} alignItems={'baseline'}>
+                <Typography sx={styles.buttonText}>Selecting Stats</Typography>
+                <div className='dotLoader green' />
+              </Box>
+              : <Typography sx={styles.buttonText}>Select Stats</Typography>
+            }
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={handleExplore}
+            sx={styles.exploreButton}
+          >
+            <Typography sx={styles.buttonText}>EXPLORE</Typography>
+          </Button>
+        )}
       </Box>
     </Box>
   );
@@ -173,6 +211,9 @@ const styles = {
       background: 'rgba(24, 40, 24, 1)',
       borderColor: 'rgba(8, 62, 34, 0.5)',
       boxShadow: 'none',
+      '& .MuiTypography-root': {
+        opacity: 0.5,
+      },
     },
   },
   buttonText: {

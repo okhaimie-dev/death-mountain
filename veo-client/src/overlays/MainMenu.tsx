@@ -32,7 +32,7 @@ export default function MainMenu() {
   }, []);
 
   const handleStartGame = () => {
-    navigate(`/play?settingsId=7`);
+    navigate(`/play`);
   };
 
   return (

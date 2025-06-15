@@ -3,9 +3,11 @@ import { fetchMetadata } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
 import { GameAction, getEntityModel } from '@/types/game';
+import { streamIds } from '@/utils/cloudflare';
 import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent, getVideoId } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
+import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
 
@@ -20,6 +22,15 @@ export interface GameDirectorContext {
 const GameDirectorContext = createContext<GameDirectorContext>({} as GameDirectorContext);
 
 const VRF_ENABLED = true;
+
+/**
+ * Wait times for events in milliseconds
+*/
+const delayTimes: any = {
+  'attack': 2000,
+  'beast_attack': 2000,
+  'flee': 1000,
+}
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
   const { sdk } = useDojoSDK();
@@ -151,8 +162,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setBattleEvent(event);
     }
 
+    if (!skipVideo && (delayTimes[event.type])) {
+      await delay(delayTimes[event.type]);
+    }
+
     if (!skipVideo && getVideoId(event)) {
-      setVideoQueue(prev => [...prev, getVideoId(event)!]);
+      setVideoQueue(prev => [...prev.filter((id, index) => index === 0 || id !== streamIds.explore), getVideoId(event)!]);
     }
   }
 

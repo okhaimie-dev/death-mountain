@@ -281,7 +281,7 @@ export const ItemUtils = {
 
     try {
       const fileName = name.replace(/ /g, "_").toLowerCase();
-      return new URL(`../assets/loot/${fileName}.png`, import.meta.url).href;
+      return `/images/loot/${fileName}.png`;
     } catch (ex) {
       return "";
     }
