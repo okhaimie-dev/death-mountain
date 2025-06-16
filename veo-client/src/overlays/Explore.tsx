@@ -29,8 +29,8 @@ export default function ExploreOverlay() {
 
   const handleSelectStats = async () => {
     setIsSelectingStats(true);
-    executeGameAction({ 
-      type: 'select_stat_upgrades', 
+    executeGameAction({
+      type: 'select_stat_upgrades',
       statUpgrades: selectedStats
     });
   };
@@ -147,7 +147,7 @@ export default function ExploreOverlay() {
             {isSelectingStats
               ? <Box display={'flex'} alignItems={'baseline'}>
                 <Typography sx={styles.buttonText}>Selecting Stats</Typography>
-                <div className='dotLoader green' />
+                <div className='dotLoader green' style={{ opacity: 0.5 }} />
               </Box>
               : <Typography sx={styles.buttonText}>Select Stats</Typography>
             }
@@ -199,7 +199,7 @@ const styles = {
   exploreButton: {
     border: '2px solid rgba(255, 255, 255, 0.15)',
     background: 'rgba(24, 40, 24, 1)',
-    width: '220px',
+    minWidth: '220px',
     height: '48px',
     justifyContent: 'center',
     borderRadius: '8px',

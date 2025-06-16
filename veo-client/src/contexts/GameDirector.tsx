@@ -38,7 +38,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
-    setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
+    setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings, setShowInventory } = useGameStore();
 
   const [VRFEnabled, setVRFEnabled] = useState(VRF_ENABLED);
   const [spectating, setSpectating] = useState(false);
@@ -129,6 +129,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const processEvent = async (event: GameEvent, skipVideo: boolean) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
+
+      if (!skipVideo && event.adventurer!.stat_upgrades_available > 0) {
+        setShowInventory(true);
+      } else {
+        setShowInventory(false);
+      }
     }
 
     if (event.type === 'bag') {
