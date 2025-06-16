@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 export default function ExploreOverlay() {
   const { executeGameAction, setVideoQueue } = useGameDirector();
-  const { exploreLog, adventurer } = useGameStore();
+  const { exploreLog, adventurer, setShowOverlay } = useGameStore();
   const [isSelectingStats, setIsSelectingStats] = useState(false);
   const [selectedStats, setSelectedStats] = useState({
     strength: 0,
@@ -23,7 +23,8 @@ export default function ExploreOverlay() {
   });
 
   const handleExplore = async () => {
-    setVideoQueue(Array.from({ length: 10 }, () => streamIds.explore));
+    setShowOverlay(false);
+    setVideoQueue([streamIds.explore]);
     executeGameAction({ type: 'explore', untilBeast: false });
   };
 
@@ -133,7 +134,7 @@ export default function ExploreOverlay() {
 
       <InventoryOverlay onStatsChange={handleStatsChange} />
 
-      <MarketOverlay />
+      {adventurer?.stat_upgrades_available! === 0 && <MarketOverlay />}
 
       {/* Bottom Buttons */}
       <Box sx={styles.buttonContainer}>
@@ -199,7 +200,7 @@ const styles = {
   exploreButton: {
     border: '2px solid rgba(255, 255, 255, 0.15)',
     background: 'rgba(24, 40, 24, 1)',
-    minWidth: '220px',
+    minWidth: '250px',
     height: '48px',
     justifyContent: 'center',
     borderRadius: '8px',

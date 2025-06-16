@@ -1,3 +1,4 @@
+import { STARTING_HEALTH } from '@/constants/game';
 import { useGameStore } from '@/stores/gameStore';
 import { useMarketStore } from '@/stores/marketStore';
 import { calculateLevel, calculateProgress } from '@/utils/game';
@@ -5,7 +6,7 @@ import { Box, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function Adventurer() {
-  const { adventurer, metadata, battleEvent } = useGameStore();
+  const { adventurer, metadata, battleEvent, setShowInventory, showInventory, beast } = useGameStore();
   const { cart } = useMarketStore();
 
   const [health, setHealth] = useState(adventurer!.health);
@@ -16,7 +17,13 @@ export default function Adventurer() {
     }
   }, [battleEvent]);
 
-  const maxHealth = 250 + (adventurer!.stats.vitality * 15);
+  useEffect(() => {
+    if (!beast) {
+      setHealth(adventurer!.health);
+    }
+  }, [adventurer?.health]);
+
+  const maxHealth = STARTING_HEALTH + (adventurer!.stats.vitality * 15);
   const healthPercent = (health / maxHealth) * 100;
   const potionHealth = cart.potions * 10;
   const previewHealth = Math.min(health + potionHealth, maxHealth);
@@ -25,7 +32,10 @@ export default function Adventurer() {
   return (
     <>
       {/* Portrait */}
-      <Box sx={styles.portraitWrapper}>
+      <Box
+        sx={{ ...styles.portraitWrapper, cursor: 'pointer' }}
+        onClick={() => setShowInventory(!showInventory)}
+      >
         <img src="/images/adventurer.png" alt="Adventurer" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
         <Box sx={styles.levelCircle}>
           <Typography variant="body2" sx={styles.levelText}>
@@ -69,14 +79,14 @@ export default function Adventurer() {
           <Box sx={{ mt: 1, position: 'relative' }}>
             <LinearProgress
               variant="determinate"
-              value={calculateProgress(adventurer?.xp || 1)}
+              value={adventurer?.stat_upgrades_available! > 0 ? 100 : calculateProgress(adventurer?.xp || 1)}
               sx={styles.xpBar}
             />
             <Typography
               variant="body2"
               sx={styles.xpOverlayText}
             >
-              XP
+              {adventurer?.stat_upgrades_available! > 0 ? 'LEVEL UP' : 'XP'}
             </Typography>
           </Box>
         </Box>

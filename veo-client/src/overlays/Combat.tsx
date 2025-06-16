@@ -2,7 +2,7 @@ import AnimatedText from '@/components/AnimatedText';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
 import { ability_based_percentage, calculateAttackDamage, getNewItemsEquipped } from '@/utils/game';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, Checkbox } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import Adventurer from './Adventurer';
 import Beast from './Beast';
@@ -111,44 +111,90 @@ export default function CombatOverlay() {
 
       {/* Combat Buttons */}
       <Box sx={styles.buttonContainer}>
-        <Box sx={styles.actionButtonContainer}>
-          <Button
-            variant="contained"
-            onClick={handleAttack}
-            sx={styles.attackButton}
-            disabled={!adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress}
-          >
-            <Box sx={{ opacity: !adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress ? 0.5 : 1 }}>
-              <Typography sx={styles.buttonText}>
-                ATTACK
-              </Typography>
-
-              <Typography sx={styles.buttonHelperText}>
-                {`${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
-              </Typography>
+        {hasNewItemsEquipped ? (
+          <>
+            <Box sx={styles.actionButtonContainer}>
+              <Button
+                variant="contained"
+                onClick={handleEquipItems}
+                sx={styles.attackButton}
+                disabled={equipInProgress}
+              >
+                <Box sx={{ opacity: equipInProgress ? 0.5 : 1 }}>
+                  <Typography sx={styles.buttonText}>
+                    EQUIP
+                  </Typography>
+                </Box>
+              </Button>
             </Box>
-          </Button>
 
-        </Box>
-
-        <Box sx={styles.actionButtonContainer}>
-          <Button
-            variant="contained"
-            onClick={handleFlee}
-            sx={styles.fleeButton}
-            disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
-          >
-            <Box sx={{ opacity: adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress ? 0.5 : 1 }}>
-              <Typography sx={styles.buttonText}>
-                FLEE
-              </Typography>
-              <Typography sx={styles.buttonHelperText}>
-                {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : `${fleePercentage}% chance`}
-              </Typography>
+            <Box sx={styles.actionButtonContainer}>
+              <Button
+                variant="contained"
+                onClick={undoEquipment}
+                sx={styles.fleeButton}
+                disabled={equipInProgress}
+              >
+                <Box sx={{ opacity: equipInProgress ? 0.5 : 1 }}>
+                  <Typography sx={styles.buttonText}>
+                    UNDO
+                  </Typography>
+                </Box>
+              </Button>
             </Box>
-          </Button>
+          </>
+        ) : (
+          <>
+            <Box sx={styles.actionButtonContainer}>
+              <Button
+                variant="contained"
+                onClick={handleAttack}
+                sx={styles.attackButton}
+                disabled={!adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress}
+              >
+                <Box sx={{ opacity: !adventurer || !beast || attackInProgress || fleeInProgress || equipInProgress ? 0.5 : 1 }}>
+                  <Typography sx={styles.buttonText}>
+                    ATTACK
+                  </Typography>
 
-        </Box>
+                  <Typography sx={styles.buttonHelperText}>
+                    {`${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
+                  </Typography>
+                </Box>
+              </Button>
+            </Box>
+
+            <Box sx={styles.actionButtonContainer}>
+              <Button
+                variant="contained"
+                onClick={handleFlee}
+                sx={styles.fleeButton}
+                disabled={adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress}
+              >
+                <Box sx={{ opacity: adventurer!.stats.dexterity === 0 || fleeInProgress || attackInProgress ? 0.5 : 1 }}>
+                  <Typography sx={styles.buttonText}>
+                    FLEE
+                  </Typography>
+                  <Typography sx={styles.buttonHelperText}>
+                    {adventurer!.stats.dexterity === 0 ? 'No Dexterity' : `${fleePercentage}% chance`}
+                  </Typography>
+                </Box>
+              </Button>
+            </Box>
+
+            <Box sx={styles.deathCheckboxContainer} onClick={() => setUntilDeath(!untilDeath)}>
+              <Typography sx={styles.deathCheckboxLabel}>
+                until<br />death
+              </Typography>
+              <Checkbox
+                checked={untilDeath}
+                onChange={(e) => setUntilDeath(e.target.checked)}
+                size="medium"
+                sx={styles.deathCheckbox}
+              />
+            </Box>
+          </>
+        )}
       </Box>
     </Box>
   );
@@ -199,6 +245,7 @@ const styles = {
     transform: 'translateX(-50%)',
     display: 'flex',
     gap: '16px',
+    alignItems: 'flex-end',
   },
   actionButtonContainer: {
     display: 'flex',
@@ -257,5 +304,27 @@ const styles = {
     opacity: 0.8,
     lineHeight: '12px',
     textTransform: 'none',
+  },
+  deathCheckboxContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minWidth: '32px',
+    cursor: 'pointer',
+  },
+  deathCheckboxLabel: {
+    color: 'rgba(208, 201, 141, 0.7)',
+    fontSize: '0.75rem',
+    fontFamily: 'Cinzel, Georgia, serif',
+    lineHeight: '0.9',
+    textAlign: 'center',
+  },
+  deathCheckbox: {
+    color: 'rgba(208, 201, 141, 0.7)',
+    padding: '0',
+    '&.Mui-checked': {
+      color: '#d0c98d',
+    },
   },
 };

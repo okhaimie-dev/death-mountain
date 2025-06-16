@@ -18,6 +18,7 @@ interface SoundContextType {
   setPlaying: (playing: boolean) => void;
   volume: number;
   setVolume: (volume: number) => void;
+  hasInteracted: boolean;
 }
 
 const SoundContext = createContext<SoundContextType>({
@@ -25,15 +26,17 @@ const SoundContext = createContext<SoundContextType>({
   setPlaying: () => { },
   volume: 1,
   setVolume: () => { },
+  hasInteracted: false,
 });
 
 export const SoundProvider = ({ children }: PropsWithChildren) => {
+  const { gameId, adventurer } = useGameStore();
   const audioRef = useRef(new Audio(tracks.Intro));
   audioRef.current.loop = true;
 
   const [playing, setPlaying] = useState(true);
   const [volume, setVolume] = useState(0.5);
-  const { gameId, adventurer } = useGameStore();
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   useEffect(() => {
     audioRef.current.volume = volume;
@@ -41,6 +44,7 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const handleFirstInteraction = () => {
+      setHasInteracted(true);
       audioRef.current.play().catch(() => { });
       document.removeEventListener('click', handleFirstInteraction);
     };
@@ -94,6 +98,7 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
       setPlaying,
       volume,
       setVolume,
+      hasInteracted,
     }}>
       {children}
     </SoundContext.Provider>

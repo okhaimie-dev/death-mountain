@@ -173,7 +173,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!skipVideo && getVideoId(event)) {
-      setVideoQueue(prev => [...prev.filter((id, index) => index === 0 || id !== streamIds.explore), getVideoId(event)!]);
+      setVideoQueue(prev => [...prev, getVideoId(event)!]);
     }
   }
 

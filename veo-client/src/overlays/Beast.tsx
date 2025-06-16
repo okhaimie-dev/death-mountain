@@ -81,7 +81,7 @@ const styles = {
   portraitWrapper: {
     position: 'absolute',
     top: 24,
-    right: 0,
+    right: 24,
     width: 80,
     height: 80,
     borderRadius: '50%',
@@ -93,7 +93,7 @@ const styles = {
   healthBarContainer: {
     position: 'absolute',
     top: 30,
-    right: '55px',
+    right: '80px',
     width: '300px',
     height: '72px',
     padding: '4px 8px',

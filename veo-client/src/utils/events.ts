@@ -239,6 +239,12 @@ export const getVideoId = (event: GameEvent) => {
   return null;
 }
 
+// Videos that transition to the next video
+export const transitionVideos = [
+  streamIds.start,
+  streamIds.explore,
+]
+
 export const ExplorerLogEvents = [
   'discovery',
   'obstacle',
@@ -246,7 +252,6 @@ export const ExplorerLogEvents = [
   'fled_beast',
   'stat_upgrade',
   'buy_items',
-  'level_up',
 ]
 
 export const BattleEvents = [

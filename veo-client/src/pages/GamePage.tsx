@@ -18,7 +18,7 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, beast } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, beast, metadata, showOverlay, setShowOverlay } = useGameStore();
   const { subscription, videoQueue, setVideoQueue } = useGameDirector();
 
   const [padding, setPadding] = useState(getMenuLeftOffset());
@@ -84,25 +84,18 @@ export default function GamePage() {
 
   return (
     <Box sx={styles.container}>
-      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/${adventurer ? 'game' : 'start'}.png')`, zIndex: 0 }} />
+      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/${metadata ? 'game' : 'start'}.png')`, zIndex: 0 }} />
 
-      <motion.div
-        initial={false}
-        animate={{ opacity: videoQueue.length > 0 ? 1 : 0 }}
-        transition={{ duration: 0.6 }}
-        style={{ width: '100%', height: '100%' }}
-      >
-        <VideoPlayer />
-      </motion.div>
+      <VideoPlayer />
 
       <AnimatePresence>
-        {videoQueue.length === 0 && (
+        {showOverlay && (
           <motion.div
             key="overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
           >
             <Box sx={{ ...styles.overlay, px: `${padding}px` }}>

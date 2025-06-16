@@ -1,7 +1,7 @@
 import AdventurerStats from '@/components/AdventurerStats';
 import { Box, Typography, Button, Tooltip } from '@mui/material';
 import { DeleteOutline } from '@mui/icons-material';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { ItemUtils } from '../utils/loot';
 import { useGameDirector } from '../contexts/GameDirector';
@@ -42,10 +42,12 @@ interface InventoryOverlayProps {
   }) => void;
 }
 
-function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick }: {
+function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, onItemHover }: {
   isDropMode: boolean,
   itemsToDrop: number[],
-  onItemClick: (item: any) => void
+  onItemClick: (item: any) => void,
+  newItems: number[],
+  onItemHover: (itemId: number) => void
 }) {
   const { adventurer } = useGameStore();
 
@@ -58,6 +60,7 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick }: {
           const metadata = item ? ItemUtils.getMetadata(item.id) : null;
           const isSelected = item?.id ? itemsToDrop.includes(item.id) : false;
           const highlight = item?.id ? (isDropMode && itemsToDrop.length === 0) : false;
+          const isNew = item?.id ? newItems.includes(item.id) : false;
 
           return (
             <Tooltip
@@ -87,10 +90,12 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick }: {
                   styles.equipmentSlot,
                   isSelected && styles.selectedItem,
                   highlight && styles.highlight,
+                  isNew && styles.newItem,
                   !isDropMode && styles.nonInteractive
                 ]}
                 style={{ ...slot.style, position: 'absolute' }}
                 onClick={() => isDropMode && item?.id && onItemClick(item)}
+                onMouseEnter={() => item?.id && onItemHover(item.id)}
               >
                 {item?.id && metadata ? (
                   <img
@@ -112,11 +117,13 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick }: {
   );
 }
 
-function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle }: {
+function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, newItems, onItemHover }: {
   isDropMode: boolean,
   itemsToDrop: number[],
   onItemClick: (item: any) => void,
-  onDropModeToggle: () => void
+  onDropModeToggle: () => void,
+  newItems: number[],
+  onItemHover: (itemId: number) => void
 }) {
   const { bag, adventurer } = useGameStore();
 
@@ -132,6 +139,7 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle }
           const metadata = ItemUtils.getMetadata(item.id);
           const isSelected = itemsToDrop.includes(item.id);
           const highlight = isDropMode && itemsToDrop.length === 0;
+          const isNew = newItems.includes(item.id);
 
           return (
             <Tooltip
@@ -162,13 +170,15 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle }
                 },
               }}
             >
-              <Box 
+              <Box
                 sx={[
                   styles.bagSlot,
                   isSelected && styles.selectedItem,
-                  highlight && styles.highlight
-                ]} 
+                  highlight && styles.highlight,
+                  isNew && styles.newItem
+                ]}
                 onClick={() => onItemClick(item)}
+                onMouseEnter={() => onItemHover(item.id)}
               >
                 <img src={metadata.imageUrl} alt={metadata.name} style={{ ...styles.bagIcon, objectFit: 'contain' }} />
               </Box>
@@ -181,8 +191,8 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle }
           </Box>
         ))}
         {!isDropMode && (
-          <Box 
-            sx={styles.dropButtonSlot} 
+          <Box
+            sx={styles.dropButtonSlot}
             onClick={onDropModeToggle}
           >
             <DeleteOutline sx={styles.dropIcon} />
@@ -196,11 +206,20 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle }
 
 export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProps) {
   const { showInventory, setShowInventory } = useGameStore();
-  const { adventurer, equipItem } = useGameStore();
+  const { adventurer, equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
   const { executeGameAction } = useGameDirector();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<number[]>([]);
   const [dropInProgress, setDropInProgress] = useState(false);
+  const [newItems, setNewItems] = useState<number[]>([]);
+
+  // Update newItems when newInventoryItems changes and clear newInventoryItems
+  useEffect(() => {
+    if (newInventoryItems.length > 0) {
+      setNewItems([...newInventoryItems]);
+      setNewInventoryItems([]);
+    }
+  }, [newInventoryItems, setNewInventoryItems]);
 
   const handleItemClick = useCallback((item: any) => {
     if (isDropMode) {
@@ -229,10 +248,19 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
     setItemsToDrop([]);
   };
 
+  const handleItemHover = useCallback((itemId: number) => {
+    if (newItems.includes(itemId)) {
+      setNewItems((prev: number[]) => prev.filter((id: number) => id !== itemId));
+    }
+  }, [newItems]);
+
   return (
     <>
-      <Box sx={styles.buttonWrapper} onClick={() => setShowInventory(!showInventory)}>
-        <img src={'/images/adventurer.png'} alt="adventurer" style={styles.icon} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', bottom: 24, left: 24, zIndex: 100 }}>
+        <Box sx={styles.buttonWrapper} onClick={() => setShowInventory(!showInventory)}>
+          <img src={'/images/inventory.png'} alt="Inventory" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', filter: 'hue-rotate(40deg) saturate(1.5) brightness(1.15) contrast(1.2)' }} />
+        </Box>
+        <Typography sx={styles.inventoryLabel}>Inventory</Typography>
       </Box>
       {showInventory && (
         <>
@@ -244,6 +272,8 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
                 isDropMode={isDropMode}
                 itemsToDrop={itemsToDrop}
                 onItemClick={handleItemClick}
+                newItems={newItems}
+                onItemHover={handleItemHover}
               />
               {/* Right: Stats */}
               <AdventurerStats onStatsChange={onStatsChange} />
@@ -255,6 +285,8 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
               itemsToDrop={itemsToDrop}
               onItemClick={handleItemClick}
               onDropModeToggle={() => setIsDropMode(true)}
+              newItems={newItems}
+              onItemHover={handleItemHover}
             />
 
             {/* Drop Mode Controls */}
@@ -298,29 +330,28 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
 
 const styles = {
   buttonWrapper: {
-    position: 'absolute',
-    bottom: 24,
-    left: 24,
-    width: 80,
-    height: 80,
+    width: 64,
+    height: 64,
     background: 'rgba(24, 40, 24, 1)',
-    border: '3px solid #083e22',
-    boxShadow: '0 0 8px rgba(0,0,0,0.6)',
-    zIndex: 100,
+    border: '2px solid rgb(49 96 60)',
+    boxShadow: '0 0 8px #000a',
+    borderRadius: '12px',
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 0.5,
     cursor: 'pointer',
+    transition: 'background 0.2s',
     '&:hover': {
-      background: 'rgba(34, 50, 34, 1)',
+      background: 'rgba(34, 50, 34, 0.85)',
     },
   },
-  icon: {
-    width: 60,
-    height: 60,
-    display: 'block',
+  inventoryLabel: {
+    color: '#e6d28a',
+    textShadow: '0 2px 4px #000, 0 0 8px #3a5a2a',
+    letterSpacing: 1,
+    marginTop: 0.5,
+    userSelect: 'none',
+    textAlign: 'center',
   },
   popup: {
     position: 'absolute',
@@ -515,5 +546,12 @@ const styles = {
     padding: '10px',
     zIndex: 1000,
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  },
+  newItem: {
+    border: '2px solid #80FF00',
+    backgroundColor: 'rgba(128, 255, 0, 0.1)',
+    '&:hover': {
+      backgroundColor: 'rgba(128, 255, 0, 0.15)',
+    },
   },
 };

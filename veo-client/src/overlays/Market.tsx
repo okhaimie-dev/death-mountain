@@ -1,5 +1,5 @@
 import { Box, Typography, Button, Modal, Slider, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { useMarketStore } from '../stores/marketStore';
 import { useGameDirector } from '../contexts/GameDirector';
@@ -7,7 +7,6 @@ import { ItemUtils, slotIcons, typeIcons } from '../utils/loot';
 import { MarketItem, generateMarketItems, potionPrice } from '../utils/market';
 import { calculateLevel } from '../utils/game';
 import { STARTING_HEALTH } from '../constants/game';
-import marketIcon from '@/assets/images/market.png';
 import healthPotionImg from '@/assets/images/health.png';
 import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
 
@@ -45,7 +44,7 @@ const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
 
 export default function MarketOverlay() {
   const [isOpen, setIsOpen] = useState(false);
-  const { adventurer, bag, marketItemIds, setShowInventory } = useGameStore();
+  const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems } = useGameStore();
   const { executeGameAction } = useGameDirector();
   const {
     cart,
@@ -60,19 +59,30 @@ export default function MarketOverlay() {
     setInProgress,
     showFilters,
     setShowFilters,
+    clearCart,
   } = useMarketStore();
 
   const [showCart, setShowCart] = useState(false);
 
   const handleOpen = () => {
-    setIsOpen(true);
-    setShowInventory(true);
+    setIsOpen(!isOpen);
+    setShowInventory(!isOpen);
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setShowInventory(false);
-  };
+  useEffect(() => {
+    if (inProgress) {
+      if (cart.items.length > 0) {
+        setNewInventoryItems(cart.items.map(item => item.id));
+        setShowInventory(true);
+      }
+
+      setIsOpen(false);
+      setShowCart(false);
+      setInProgress(false);
+    }
+
+    clearCart();
+  }, [marketItemIds, adventurer?.gold, adventurer?.stats?.charisma]);
 
   // Function to check if an item is already owned (in equipment or bag)
   const isItemOwned = useCallback((itemId: number) => {
@@ -173,9 +183,11 @@ export default function MarketOverlay() {
 
   return (
     <>
-      <Box sx={styles.buttonWrapper} onClick={handleOpen}>
-        <img src={marketIcon} alt="Market" style={styles.icon} />
-        <Typography>Market</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', bottom: 24, right: 24, zIndex: 100 }}>
+        <Box sx={styles.buttonWrapper} onClick={handleOpen}>
+          <img src={'/images/market.png'} alt="Market" style={{ width: '90%', height: '90%', objectFit: 'contain', display: 'block', filter: 'hue-rotate(50deg) brightness(0.93) saturate(1.05)' }} />
+        </Box>
+        <Typography sx={styles.marketLabel}>Market</Typography>
       </Box>
       {isOpen && (
         <>
@@ -445,24 +457,28 @@ export default function MarketOverlay() {
 
 const styles = {
   buttonWrapper: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 80,
-    height: 80,
+    width: 64,
+    height: 64,
     background: 'rgba(24, 40, 24, 1)',
-    border: '3px solid #083e22',
-    boxShadow: '0 0 8px rgba(0,0,0,0.6)',
-    zIndex: 100,
+    border: '2px solid rgb(49 96 60)',
+    boxShadow: '0 0 8px #000a',
+    borderRadius: '12px',
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 0.5,
     cursor: 'pointer',
+    transition: 'background 0.2s',
     '&:hover': {
-      background: 'rgba(34, 50, 34, 1)',
+      background: 'rgba(34, 50, 34, 0.85)',
     },
+  },
+  marketLabel: {
+    color: '#e6d28a',
+    textShadow: '0 2px 4px #000, 0 0 8px #3a5a2a',
+    letterSpacing: 1,
+    marginTop: 0.5,
+    userSelect: 'none',
+    textAlign: 'center',
   },
   icon: {
     width: 32,
@@ -594,18 +610,17 @@ const styles = {
     pr: '2px',
   },
   itemCard: {
+    position: 'relative',
     background: 'rgba(24, 40, 24, 0.95)',
-    border: '2px solid #083e22',
     borderRadius: '4px',
+    border: '2px solid #083e22',
     padding: '8px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    height: 'fit-content',
-    '&:hover': {
-      boxShadow: '0 1px 3px rgba(215, 197, 41, 0.1)',
-    },
+    width: '100%',
+    height: '100%',
+    boxSizing: 'border-box',
+    minWidth: 0,
   },
   itemImageContainer: {
     position: 'relative',
@@ -730,8 +745,7 @@ const styles = {
   },
   cartItemPrice: {
     color: '#d7c529',
-    fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '500',
     minWidth: '80px',
     textAlign: 'right',
   },
@@ -753,16 +767,15 @@ const styles = {
     background: 'rgba(24, 40, 24, 0.95)',
     borderRadius: '4px',
     border: '2px solid #083e22',
-    marginBottom: '8px',
+    marginBottom: '4px',
   },
   charismaLabel: {
     color: '#d0c98d',
-    fontSize: '0.9rem',
+    fontSize: '0.8rem',
   },
   charismaValue: {
     color: '#d7c529',
-    fontSize: '0.9rem',
-    fontWeight: 'bold',
+    fontSize: '0.8rem',
   },
   cartTotal: {
     display: 'flex',
@@ -781,8 +794,8 @@ const styles = {
   },
   totalValue: {
     color: '#d7c529',
-    fontSize: '1.1rem',
-    fontWeight: 'bold',
+    fontSize: '15px',
+    fontWeight: '600',
   },
   cartActions: {
     display: 'flex',

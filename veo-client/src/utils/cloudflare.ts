@@ -1,6 +1,6 @@
 export const streamIds = {
   // Game
-  "start": "1f8bb2d767a27210aa8d271097835617",
+  "start": "7047fe1ebb6312a09d3b4db9cb220d07",
   "death": "6ee71bf0141f82296ce37dbbc1f45636",
   "explore": "39308a8db1acbc0fa14a77ea5fe76683",
 
