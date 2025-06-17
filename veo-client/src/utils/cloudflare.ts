@@ -3,11 +3,12 @@ export const streamIds = {
   "start": "7047fe1ebb6312a09d3b4db9cb220d07",
   "death": "6ee71bf0141f82296ce37dbbc1f45636",
   "explore": "39308a8db1acbc0fa14a77ea5fe76683",
+  "level_up": "25833c15bd5db8a2038efd3f2c839eca",
 
   // Discoveries
   "Gold": "b15b5f5960bbdc7708cea4e1c2d6c86d",
   "Health": "bf2de751a88c055d691484c4f3310649",
-  "Loot": "b15b5f5960bbdc7708cea4e1c2d6c86d",
+  "Loot": "3494c92b4da4a8183068e3c780d07bf2",
 
   // Beasts
   "Warlock": "28ee3f851eea56c8e906a2d2a4f6e84e",
