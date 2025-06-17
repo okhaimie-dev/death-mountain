@@ -53,12 +53,10 @@ export default function GamePage() {
       return
     }
 
-    if (videoQueue.length === 0 && game_id === 0) {
+    if (videoQueue.length === 0) {
       setVideoQueue([streamIds.start]);
-    } else {
-      setShowOverlay(true);
     }
-
+    
     if (game_id) {
       setGameId(game_id);
     } else if (game_id === 0) {

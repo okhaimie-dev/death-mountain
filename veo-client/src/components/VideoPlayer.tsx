@@ -31,7 +31,7 @@ export default function VideoPlayer() {
     setTimeout(() => {
       setVideoQueue(videoQueue.slice(1));
       setNextVideoReady(false);
-    }, transitionVideos.includes(videoQueue[0]) ? 0 : 500);
+    }, !isLastVideo ? 0 : 500);
   }
 
   return (
