@@ -59,7 +59,7 @@ export const mainTheme = createTheme({
     },
     text: {
       primary: '#80FF00',
-      secondary: '#EDCF33'
+      secondary: 'rgba(128, 255, 0, 0.25)'
     },
   },
   components: {
