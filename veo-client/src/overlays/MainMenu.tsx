@@ -15,7 +15,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMenuLeftOffset } from '@/utils/utils';
-
+import discordIcon from '@/assets/images/discord.png';
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ export default function MainMenu() {
                     <XIcon sx={{ fontSize: 20 }} />
                   </IconButton>
                   <IconButton size="small" sx={styles.socialButton} onClick={() => window.open('https://discord.com/channels/884211910222970891/1249816798971560117', '_blank')}>
-                    <img src="/src/assets/images/discord.svg" alt="Discord" style={{ width: 20, height: 20 }} />
+                    <img src={discordIcon} alt="Discord" style={{ width: 20, height: 20 }} />
                   </IconButton>
                   <IconButton size="small" sx={styles.socialButton} onClick={() => window.open('https://github.com/provable-games/loot-survivor-2', '_blank')}>
                     <GitHubIcon sx={{ fontSize: 20 }} />
