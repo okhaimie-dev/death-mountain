@@ -4,6 +4,7 @@ import { getBeastName, getBeastTier, getBeastType } from "./beast";
 import { streamIds } from "./cloudflare";
 import { OBSTACLE_NAMES } from "@/constants/obstacle";
 import { ItemUtils } from "./loot";
+import { preloadAssets } from "./assetLoader";
 
 export interface GameEvent {
   type: 'adventurer' | 'bag' | 'beast' | 'discovery' | 'obstacle' | 'defeated_beast' | 'fled_beast' | 'stat_upgrade' |
@@ -229,6 +230,7 @@ export const formatGameEvent = (entity: any): GameEvent => {
 
 export const getVideoId = (event: GameEvent) => {
   if (event.type === 'beast') {
+    preloadAssets([`/images/battle_scenes/${event.beast!.baseName.toLowerCase()}.png`]);
     return streamIds[event.beast!.baseName as keyof typeof streamIds];
   } else if (event.type === 'obstacle') {
     return streamIds[OBSTACLE_NAMES[event.obstacle!.id as keyof typeof OBSTACLE_NAMES] as keyof typeof streamIds];
