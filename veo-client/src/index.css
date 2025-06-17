@@ -70,6 +70,13 @@ b {
   background-color: transparent;
 }
 
+.videoContainer-hidden {
+  position: fixed !important;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
 input:autofill {
   background-color: inherit;
 }

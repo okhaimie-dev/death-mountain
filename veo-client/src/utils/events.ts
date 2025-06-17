@@ -234,6 +234,8 @@ export const getVideoId = (event: GameEvent) => {
     return streamIds[OBSTACLE_NAMES[event.obstacle!.id as keyof typeof OBSTACLE_NAMES] as keyof typeof streamIds];
   } else if (event.type === 'discovery') {
     return streamIds[event.discovery!.type as keyof typeof streamIds];
+  } else if (event.type === 'level_up') {
+    return streamIds.level_up;
   }
 
   return null;
@@ -241,7 +243,6 @@ export const getVideoId = (event: GameEvent) => {
 
 // Videos that transition to the next video
 export const transitionVideos = [
-  streamIds.start,
   streamIds.explore,
 ]
 

@@ -4,6 +4,7 @@ import { useGameDirector } from '@/contexts/GameDirector';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import CombatOverlay from '@/overlays/Combat';
 import ExploreOverlay from '@/overlays/Explore';
+import DeathOverlay from '@/overlays/Death';
 import { useGameStore } from '@/stores/gameStore';
 import { streamIds } from '@/utils/cloudflare';
 import { getMenuLeftOffset } from '@/utils/utils';
@@ -52,8 +53,10 @@ export default function GamePage() {
       return
     }
 
-    if (videoQueue.length === 0) {
+    if (videoQueue.length === 0 && game_id === 0) {
       setVideoQueue([streamIds.start]);
+    } else {
+      setShowOverlay(true);
     }
 
     if (game_id) {
@@ -101,8 +104,9 @@ export default function GamePage() {
             <Box sx={{ ...styles.overlay, px: `${padding}px` }}>
               {isLoading ? <Typography sx={styles.loadingText}>Loading</Typography> : (
                 <>
-                  {adventurer && adventurer.beast_health > 0 && beast && <CombatOverlay />}
-                  {adventurer && adventurer.beast_health === 0 && <ExploreOverlay />}
+                  {adventurer && adventurer.health === 0 && <DeathOverlay />}
+                  {adventurer && adventurer.health > 0 && adventurer.beast_health > 0 && beast && <CombatOverlay />}
+                  {adventurer && adventurer.health > 0 && adventurer.beast_health === 0 && <ExploreOverlay />}
                 </>
               )}
             </Box>

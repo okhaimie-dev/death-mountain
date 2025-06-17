@@ -30,6 +30,7 @@ const delayTimes: any = {
   'attack': 2000,
   'beast_attack': 2000,
   'flee': 1000,
+  'level_up': 2000,
 }
 
 export const GameDirector = ({ children }: PropsWithChildren) => {
@@ -130,6 +131,10 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
 
+      if (event.adventurer!.health === 0) {
+        setVideoQueue(prev => [...prev, streamIds.death]);
+      }
+
       if (!skipVideo && event.adventurer!.stat_upgrades_available > 0) {
         setShowInventory(true);
       } else {
@@ -168,12 +173,12 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       setBattleEvent(event);
     }
 
-    if (!skipVideo && (delayTimes[event.type])) {
-      await delay(delayTimes[event.type]);
-    }
-
     if (!skipVideo && getVideoId(event)) {
       setVideoQueue(prev => [...prev, getVideoId(event)!]);
+    }
+
+    if (!skipVideo && (delayTimes[event.type])) {
+      await delay(delayTimes[event.type]);
     }
   }
 

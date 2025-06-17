@@ -7,10 +7,13 @@ import MarketOverlay from './Market';
 import InventoryOverlay from './Inventory';
 import { streamIds } from '@/utils/cloudflare';
 import { useState } from 'react';
+import { useMarketStore } from '@/stores/marketStore';
+import { ItemUtils } from '@/utils/loot';
 
 export default function ExploreOverlay() {
   const { executeGameAction, setVideoQueue } = useGameDirector();
   const { exploreLog, adventurer, setShowOverlay } = useGameStore();
+  const { cart, inProgress, setInProgress } = useMarketStore();
   const [isSelectingStats, setIsSelectingStats] = useState(false);
   const [selectedStats, setSelectedStats] = useState({
     strength: 0,
@@ -38,6 +41,21 @@ export default function ExploreOverlay() {
 
   const handleStatsChange = (stats: typeof selectedStats) => {
     setSelectedStats(stats);
+  };
+
+  const handleCheckout = () => {
+    setInProgress(true);
+
+    let itemPurchases = cart.items.map(item => ({
+      item_id: item.id,
+      equip: adventurer?.equipment[ItemUtils.getItemSlot(item.id).toLowerCase() as keyof typeof adventurer.equipment]?.id === 0 ? true : false,
+    }));
+
+    executeGameAction({
+      type: 'buy_items',
+      potions: cart.potions,
+      itemPurchases,
+    });
   };
 
   const event = exploreLog[0];
@@ -156,10 +174,20 @@ export default function ExploreOverlay() {
         ) : (
           <Button
             variant="contained"
-            onClick={handleExplore}
+            onClick={cart.items.length > 0 || cart.potions > 0 ? handleCheckout : handleExplore}
             sx={styles.exploreButton}
+            disabled={inProgress}
           >
-            <Typography sx={styles.buttonText}>EXPLORE</Typography>
+            {inProgress ? (
+              <Box display={'flex'} alignItems={'baseline'}>
+                <Typography sx={styles.buttonText}>Processing</Typography>
+                <div className='dotLoader green' style={{ opacity: 0.5 }} />
+              </Box>
+            ) : (
+              <Typography sx={styles.buttonText}>
+                {cart.items.length > 0 || cart.potions > 0 ? 'BUY ITEMS' : 'EXPLORE'}
+              </Typography>
+            )}
           </Button>
         )}
       </Box>
