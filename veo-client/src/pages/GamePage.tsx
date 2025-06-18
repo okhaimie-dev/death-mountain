@@ -37,7 +37,7 @@ export default function GamePage() {
   const { sdk } = useDojoSDK();
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
-  const { gameId, adventurer, exitGame, setGameId, beast, showOverlay } = useGameStore();
+  const { gameId, adventurer, exitGame, setGameId, beast, showOverlay, setShowOverlay } = useGameStore();
   const { subscription, setVideoQueue } = useGameDirector();
 
   const [padding, setPadding] = useState(getMenuLeftOffset());
@@ -94,6 +94,7 @@ export default function GamePage() {
     setVideoQueue([streamIds.start]);
     let tokenId = await mintGame(account, playerName, settings_id);
     navigate(`/play?id=${tokenId}`, { replace: true });
+    setShowOverlay(false);
   }
 
   const isLoading = !gameId || !adventurer;

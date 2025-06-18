@@ -115,10 +115,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
 
     if (!events || events.length === 0) {
-      if (videoQueue.length === 0) {
-        setVideoQueue([streamIds.start]);
-      }
-      setShowOverlay(false);
       startGame(gameId, (settings.game_seed === 0 && settings.adventurer.xp !== 0));
     } else {
       reconnectGameEvents(events);
@@ -179,6 +175,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     if (!skipVideo && getVideoId(event)) {
+      setShowOverlay(false);
       setVideoQueue(prev => [...prev, getVideoId(event)!]);
     }
 
