@@ -144,8 +144,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
       if (!skipVideo && event.adventurer!.stat_upgrades_available > 0) {
         setShowInventory(true);
-      } else {
-        setShowInventory(false);
       }
     }
 
