@@ -197,7 +197,7 @@ const styles = {
   },
   levelText: {
     fontWeight: 'bold',
-    fontSize: '0.75rem',
-    lineHeight: 0,
+    fontSize: '14px',
+    lineHeight: '5px',
   },
 }; 

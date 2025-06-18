@@ -6,6 +6,9 @@ import { useGameStore } from '../stores/gameStore';
 import { ItemUtils } from '../utils/loot';
 import { useGameDirector } from '../contexts/GameDirector';
 import ItemTooltip from '@/components/ItemTooltip';
+import { calculateLevel } from '@/utils/game';
+import { getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
+import { keyframes } from '@emotion/react';
 
 // Import SVG assets
 import chestIcon from '@/assets/types/chest.svg';
@@ -49,7 +52,7 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
   newItems: number[],
   onItemHover: (itemId: number) => void
 }) {
-  const { adventurer } = useGameStore();
+  const { adventurer, beast } = useGameStore();
 
   return (
     <Box sx={styles.equipmentPanel}>
@@ -61,6 +64,17 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
           const isSelected = item?.id ? itemsToDrop.includes(item.id) : false;
           const highlight = item?.id ? (isDropMode && itemsToDrop.length === 0) : false;
           const isNew = item?.id ? newItems.includes(item.id) : false;
+          const tier = item?.id ? ItemUtils.getItemTier(item.id) : null;
+          const tierColor = tier ? ItemUtils.getTierColor(tier) : undefined;
+          const itemType = item?.id ? ItemUtils.getItemType(item.id) : null;
+          const isStrong = itemType && beast && getItemTypeStrength(itemType) === beast.type;
+          const isWeak = itemType && beast && getItemTypeWeakness(itemType) === beast.type;
+          const level = item?.id ? calculateLevel(item.xp) : 0;
+          const isNameMatch = item?.id && beast ? ItemUtils.isNameMatch(item.id, level, adventurer!.item_specials_seed, beast) : false;
+          const isArmorSlot = ['head', 'chest', 'legs', 'hands', 'waist'].includes(slot.key);
+          const isWeaponSlot = slot.key === 'weapon';
+          const isNameMatchDanger = isNameMatch && isArmorSlot;
+          const isNameMatchPower = isNameMatch && isWeaponSlot;
 
           return (
             <Tooltip
@@ -88,21 +102,33 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
               <Box
                 sx={[
                   styles.equipmentSlot,
-                  isSelected && styles.selectedItem,
-                  highlight && styles.highlight,
-                  isNew && styles.newItem,
-                  !isDropMode && styles.nonInteractive
+                  ...(isSelected ? [styles.selectedItem] : []),
+                  ...(highlight ? [styles.highlight] : []),
+                  ...(isNew ? [styles.newItem] : []),
+                  ...(!isDropMode ? [styles.nonInteractive] : []),
+                  ...(isStrong ? [styles.strongItemSlot] : []),
+                  ...(isWeak ? [styles.weakItemSlot] : []),
+                  ...(isNameMatchDanger ? [styles.nameMatchDangerSlot] : []),
+                  ...(isNameMatchPower ? [styles.nameMatchPowerSlot] : [])
                 ]}
                 style={{ ...slot.style, position: 'absolute' }}
                 onClick={() => isDropMode && item?.id && onItemClick(item)}
                 onMouseEnter={() => item?.id && onItemHover(item.id)}
               >
                 {item?.id && metadata ? (
-                  <img
-                    src={metadata.imageUrl}
-                    alt={metadata.name}
-                    style={{ ...styles.equipmentIcon, objectFit: 'contain' }}
-                  />
+                  <Box sx={styles.itemImageContainer}>
+                    <Box
+                      sx={[
+                        styles.itemGlow,
+                        { backgroundColor: tierColor }
+                      ]}
+                    />
+                    <img
+                      src={metadata.imageUrl}
+                      alt={metadata.name}
+                      style={{ ...styles.equipmentIcon, position: 'relative' }}
+                    />
+                  </Box>
                 ) : (
                   <Box sx={styles.emptySlot} title={slot.label}>
                     <img src={slot.icon} alt={slot.label} style={{ width: 26, height: 26, opacity: 0.5 }} />
@@ -125,7 +151,7 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
   newItems: number[],
   onItemHover: (itemId: number) => void
 }) {
-  const { bag, adventurer } = useGameStore();
+  const { bag, adventurer, beast } = useGameStore();
 
   return (
     <Box sx={styles.bagPanel}>
@@ -140,12 +166,23 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
           const isSelected = itemsToDrop.includes(item.id);
           const highlight = isDropMode && itemsToDrop.length === 0;
           const isNew = newItems.includes(item.id);
+          const tier = ItemUtils.getItemTier(item.id);
+          const tierColor = ItemUtils.getTierColor(tier);
+          const itemType = ItemUtils.getItemType(item.id);
+          const isStrong = itemType && beast && getItemTypeStrength(itemType) === beast.type;
+          const isWeak = itemType && beast && getItemTypeWeakness(itemType) === beast.type;
+          const level = calculateLevel(item.xp);
+          const isNameMatch = beast ? ItemUtils.isNameMatch(item.id, level, adventurer!.item_specials_seed, beast) : false;
+          const isArmorSlot = ['head', 'chest', 'legs', 'hands', 'waist'].includes(ItemUtils.getItemSlot(item.id).toLowerCase());
+          const isWeaponSlot = ItemUtils.getItemSlot(item.id).toLowerCase() === 'weapon';
+          const isNameMatchDanger = isNameMatch && isArmorSlot;
+          const isNameMatchPower = isNameMatch && isWeaponSlot;
 
           return (
             <Tooltip
               key={item.id}
               title={<ItemTooltip item={item} itemSpecialsSeed={adventurer?.item_specials_seed || 0} style={styles.tooltipContainer} />}
-              placement="bottom"
+              placement="auto-end"
               slotProps={{
                 popper: {
                   modifiers: [
@@ -153,12 +190,6 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
                       name: 'preventOverflow',
                       enabled: true,
                       options: { rootBoundary: 'viewport' },
-                    },
-                    {
-                      name: 'offset',
-                      options: {
-                        offset: [-200, 0],
-                      },
                     },
                   ],
                 },
@@ -173,14 +204,30 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
               <Box
                 sx={[
                   styles.bagSlot,
-                  isSelected && styles.selectedItem,
-                  highlight && styles.highlight,
-                  isNew && styles.newItem
+                  ...(isSelected ? [styles.selectedItem] : []),
+                  ...(highlight ? [styles.highlight] : []),
+                  ...(isNew ? [styles.newItem] : []),
+                  ...(isStrong ? [styles.strongItemSlot] : []),
+                  ...(isWeak ? [styles.weakItemSlot] : []),
+                  ...(isNameMatchDanger ? [styles.nameMatchDangerSlot] : []),
+                  ...(isNameMatchPower ? [styles.nameMatchPowerSlot] : [])
                 ]}
                 onClick={() => onItemClick(item)}
                 onMouseEnter={() => onItemHover(item.id)}
               >
-                <img src={metadata.imageUrl} alt={metadata.name} style={{ ...styles.bagIcon, objectFit: 'contain' }} />
+                <Box sx={styles.itemImageContainer}>
+                  <Box
+                    sx={[
+                      styles.itemGlow,
+                      { backgroundColor: tierColor }
+                    ]}
+                  />
+                  <img
+                    src={metadata.imageUrl}
+                    alt={metadata.name}
+                    style={{ ...styles.bagIcon, position: 'relative' }}
+                  />
+                </Box>
               </Box>
             </Tooltip>
           );
@@ -203,6 +250,30 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
     </Box>
   );
 }
+
+const pulseRed = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(248, 27, 27, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+`;
+
+const pulseGreen = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(128, 255, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+`;
 
 export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProps) {
   const { showInventory, setShowInventory } = useGameStore();
@@ -418,9 +489,29 @@ const styles = {
     overflow: 'hidden',
     position: 'absolute',
   },
+  itemImageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemGlow: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '100%',
+    height: '100%',
+    filter: 'blur(8px)',
+    opacity: 0.4,
+    zIndex: 1,
+  },
   equipmentIcon: {
     width: 36,
     height: 36,
+    zIndex: 2,
   },
   emptySlot: {
     width: 34,
@@ -458,10 +549,22 @@ const styles = {
     boxShadow: '0 0 4px #000a',
     cursor: 'pointer',
     overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      border: '2px solid',
+      borderColor: 'inherit',
+      pointerEvents: 'none',
+    }
   },
   bagIcon: {
     width: 34,
     height: 34,
+    zIndex: 2,
   },
   dropButtonSlot: {
     width: 42,
@@ -553,5 +656,45 @@ const styles = {
     '&:hover': {
       backgroundColor: 'rgba(128, 255, 0, 0.15)',
     },
+  },
+  strongItemSlot: {
+    border: '1px solid #80FF00',
+    boxShadow: '0 0 8px rgba(128, 255, 0, 0.3)',
+  },
+  weakItemSlot: {
+    border: '1px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 8px rgba(255, 68, 68, 0.3)',
+  },
+  nameMatchDangerSlot: {
+    animation: `${pulseRed} 1.5s infinite`,
+    border: '2px solid rgb(248, 27, 27)',
+    boxShadow: '0 0 12px rgba(248, 27, 27, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(248, 27, 27, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
+  },
+  nameMatchPowerSlot: {
+    animation: `${pulseGreen} 1.5s infinite`,
+    border: '2px solid #80FF00',
+    boxShadow: '0 0 12px rgba(128, 255, 0, 0.6)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(128, 255, 0, 0.1)',
+      borderRadius: '4px',
+      zIndex: 1,
+    }
   },
 };

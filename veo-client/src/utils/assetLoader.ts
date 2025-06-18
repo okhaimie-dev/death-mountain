@@ -46,6 +46,7 @@ export const gameAssets = [
   '/images/beast.png',
   '/images/game.png',
   '/images/inventory.png',
+  '/images/market.png',
   // Loot items
   '/images/loot/pendant.png',
   '/images/loot/necklace.png',

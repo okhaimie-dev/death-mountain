@@ -7,7 +7,7 @@ import { Box, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function Beast() {
-  const { adventurer, beast, battleEvent } = useGameStore();
+  const { adventurer, beast, battleEvent, setShowInventory } = useGameStore();
   const [beastHealth, setBeastHealth] = useState(adventurer!.beast_health);
 
   const beastPower = Number(beast!.level) * (6 - Number(beast!.tier));
@@ -17,6 +17,10 @@ export default function Beast() {
       setBeastHealth(prev => Math.max(0, prev - battleEvent?.attack?.damage!));
     }
   }, [battleEvent]);
+
+  useEffect(() => {
+    setShowInventory(true);
+  }, []);
 
   return (
     <>
@@ -128,8 +132,8 @@ const styles = {
   },
   levelText: {
     fontWeight: 'bold',
-    fontSize: '0.75rem',
-    lineHeight: 0,
+    fontSize: '13px',
+    lineHeight: '5px',
   },
   beastLevelCircle: {
     position: 'absolute',

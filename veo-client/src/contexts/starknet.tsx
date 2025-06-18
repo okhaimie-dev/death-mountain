@@ -60,7 +60,7 @@ const cartridge = new ControllerConnector({
     },
   ],
   namespace,
-  slot: "lootsurvivor-sepolia",
+  slot: "lootsurvivor-sepolia-2",
   preset: "loot-survivor",
   chains: [{ rpcUrl: dojoConfig.rpcUrl }],
   defaultChainId: import.meta.env.VITE_PUBLIC_CHAIN_ID === 'mainnet' ? StarknetChainId.SN_MAIN : StarknetChainId.SN_SEPOLIA,

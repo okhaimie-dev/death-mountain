@@ -44,7 +44,7 @@ const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
 
 export default function MarketOverlay() {
   const [isOpen, setIsOpen] = useState(false);
-  const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems } = useGameStore();
+  const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems, newMarket, setNewMarket } = useGameStore();
   const { executeGameAction } = useGameDirector();
   const {
     cart,
@@ -67,6 +67,9 @@ export default function MarketOverlay() {
   const handleOpen = () => {
     setIsOpen(!isOpen);
     setShowInventory(!isOpen);
+    if (newMarket) {
+      setNewMarket(false);
+    }
   };
 
   useEffect(() => {
@@ -186,6 +189,9 @@ export default function MarketOverlay() {
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'absolute', bottom: 24, right: 24, zIndex: 100 }}>
         <Box sx={styles.buttonWrapper} onClick={handleOpen}>
           <img src={'/images/market.png'} alt="Market" style={{ width: '90%', height: '90%', objectFit: 'contain', display: 'block', filter: 'hue-rotate(50deg) brightness(0.93) saturate(1.05)' }} />
+          {newMarket && (
+            <Box sx={styles.newIndicator}>!</Box>
+          )}
         </Box>
         <Typography sx={styles.marketLabel}>Market</Typography>
       </Box>
@@ -868,5 +874,23 @@ const styles = {
     '&:hover': {
       background: 'rgba(215, 197, 41, 0.2)',
     },
+  },
+  newIndicator: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 14,
+    height: 14,
+    background: 'radial-gradient(circle, #d7c529 60%, #2d3c00 100%)',
+    borderRadius: '50%',
+    border: '2px solid #222',
+    boxShadow: '0 0 8px #d7c529',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 10,
+    color: '#222',
+    fontWeight: 'bold',
+    zIndex: 2
   },
 };

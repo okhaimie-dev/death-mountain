@@ -61,7 +61,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   battleEvent: null,
   quest: null,
   showInventory: false,
-  showOverlay: false,
+  showOverlay: true,
 
   setGameId: (gameId: number) => {
     set({ gameId });
@@ -83,7 +83,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       battleEvent: null,
       quest: null,
       showInventory: false,
-      showOverlay: false,
+      showOverlay: true,
     });
   },
 

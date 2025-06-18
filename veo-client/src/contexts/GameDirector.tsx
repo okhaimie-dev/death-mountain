@@ -91,7 +91,9 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
   const subscribeEvents = async (gameId: number, settings: Settings) => {
     if (subscription) {
-      subscription.cancel();
+      try {
+        subscription.cancel();
+      } catch (error) { }
     }
 
     const [initialData, sub] = await sdk.subscribeEventQuery({
@@ -113,6 +115,10 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
 
     if (!events || events.length === 0) {
+      if (videoQueue.length === 0) {
+        setVideoQueue([streamIds.start]);
+      }
+      setShowOverlay(false);
       startGame(gameId, (settings.game_seed === 0 && settings.adventurer.xp !== 0));
     } else {
       reconnectGameEvents(events);
