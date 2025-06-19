@@ -1,12 +1,12 @@
 import { STARTING_HEALTH } from '@/constants/game';
 import { useGameStore } from '@/stores/gameStore';
 import { useMarketStore } from '@/stores/marketStore';
-import { calculateLevel, calculateProgress } from '@/utils/game';
+import { calculateCombatStats, calculateLevel, calculateProgress } from '@/utils/game';
 import { Box, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function Adventurer() {
-  const { adventurer, metadata, battleEvent, setShowInventory, showInventory, beast } = useGameStore();
+  const { adventurer, metadata, battleEvent, setShowInventory, showInventory, beast, bag } = useGameStore();
   const { cart } = useMarketStore();
 
   const [health, setHealth] = useState(adventurer!.health);
@@ -28,6 +28,11 @@ export default function Adventurer() {
   const potionHealth = cart.potions * 10;
   const previewHealth = Math.min(health + potionHealth, maxHealth);
   const previewHealthPercent = (previewHealth / maxHealth) * 100;
+  const combatStats = calculateCombatStats(adventurer!, bag, beast);
+  const previewProtection = combatStats.bestProtection;
+  const previewProtectionPercent = Math.min(100, previewProtection);
+
+  console.log('combatStats', combatStats);
 
   return (
     <>
@@ -47,15 +52,18 @@ export default function Adventurer() {
       {/* Health Bar */}
       <Box sx={styles.healthBarContainer}>
         {/* Adventurer Name */}
-        <Typography
+        {!beast && <Typography
           variant="h6"
           sx={{ ml: 4, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', height: '26px', lineHeight: '24px' }}
         >
           {metadata?.player_name || 'Adventurer'}
-        </Typography>
+        </Typography>}
         {/* HP Info */}
-        <Box sx={{ ml: 4 }}>
+        <Box sx={{ ml: beast ? '42px' : '32px', display: 'flex', flexDirection: 'column', height: beast ? '100%' : 'initial', justifyContent: 'center' }}>
           <Box sx={{ position: 'relative' }}>
+            {beast && <Box sx={styles.healthIconContainer}>
+              <span style={styles.heartIcon}>❤️</span>
+            </Box>}
             <LinearProgress
               variant="determinate"
               value={healthPercent}
@@ -77,17 +85,53 @@ export default function Adventurer() {
           </Box>
           {/* XP Bar */}
           <Box sx={{ mt: 1, position: 'relative' }}>
-            <LinearProgress
-              variant="determinate"
-              value={adventurer?.stat_upgrades_available! > 0 ? 100 : calculateProgress(adventurer?.xp || 1)}
-              sx={styles.xpBar}
-            />
-            <Typography
-              variant="body2"
-              sx={styles.xpOverlayText}
-            >
-              {adventurer?.stat_upgrades_available! > 0 ? 'LEVEL UP' : 'XP'}
-            </Typography>
+            {beast ? (
+              <>
+                {/* Attack Bar */}
+                <Box sx={{ position: 'relative', mb: 0.5 }}>
+                  <Box sx={styles.iconContainer}>
+                    <span style={styles.swordIcon}>⚔️</span>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min(100, Math.floor(combatStats.baseDamage / beast.health * 100))}
+                    sx={styles.attackBar}
+                  />
+                </Box>
+                {/* Defense Bar */}
+                <Box sx={{ position: 'relative' }}>
+                  <Box sx={styles.iconContainer}>
+                    <span style={styles.shieldIcon}>🛡️</span>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={combatStats.protection}
+                    sx={styles.defenseBar}
+                  />
+                  {previewProtection > combatStats.protection && (
+                    <LinearProgress
+                      variant="determinate"
+                      value={previewProtectionPercent}
+                      sx={styles.previewDefenseBar}
+                    />
+                  )}
+                </Box>
+              </>
+            ) : (
+              <>
+                <LinearProgress
+                  variant="determinate"
+                  value={adventurer?.stat_upgrades_available! > 0 ? 100 : calculateProgress(adventurer?.xp || 1)}
+                  sx={styles.xpBar}
+                />
+                <Typography
+                  variant="body2"
+                  sx={styles.xpOverlayText}
+                >
+                  {adventurer?.stat_upgrades_available! > 0 ? 'LEVEL UP' : 'XP'}
+                </Typography>
+              </>
+            )}
           </Box>
         </Box>
       </Box>
@@ -199,5 +243,66 @@ const styles = {
     fontWeight: 'bold',
     fontSize: '14px',
     lineHeight: '5px',
+  },
+  attackBar: {
+    height: '12px',
+    borderRadius: '5px',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: '#FF8C00', // darker golden color for power
+      boxShadow: '0 0 8px rgba(184, 134, 11, 0.5)',
+    },
+  },
+  defenseBar: {
+    height: '12px',
+    borderRadius: '5px',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: '#C0C0C0',
+      boxShadow: '0 0 8px rgba(192, 192, 192, 0.5)',
+    },
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: 0,
+    left: -16,
+    width: '12px',
+    height: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  swordIcon: {
+    fontSize: '12px',
+  },
+  shieldIcon: {
+    fontSize: '12px',
+  },
+  healthIconContainer: {
+    position: 'absolute',
+    top: 0,
+    left: -16,
+    width: '14px',
+    height: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  heartIcon: {
+    fontSize: '12px',
+  },
+  previewDefenseBar: {
+    height: '12px',
+    borderRadius: '5px',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: 'rgba(192, 192, 192, 0.3)',
+    },
   },
 }; 

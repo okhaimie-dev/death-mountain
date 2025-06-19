@@ -44,7 +44,7 @@ const critical_hit_bonus = (base_damage: number, luck: number, ring: Item | null
 
         // Titanium Ring gives 3% bonus per level on critical hits
         if (ring && ItemUtils.getItemName(ring.id) === "TitaniumRing" && total > 0) {
-            const ringLevel = Math.floor(Math.sqrt(ring.xp));
+            const ringLevel = calculateLevel(ring.xp);
             total += Math.floor((total * 3 * ringLevel) / 100);
         }
     }
@@ -70,7 +70,7 @@ const calculateWeaponSpecialBonus = (weaponId: number, weaponLevel: number, item
 
     // Platinum Ring gives 3% bonus per level on special matches
     if (ItemUtils.getItemName(ring.id) === "PlatinumRing" && bonus > 0) {
-        const ringLevel = Math.floor(Math.sqrt(ring.xp));
+        const ringLevel = calculateLevel(ring.xp);
         bonus += Math.floor((bonus * 3 * ringLevel) / 100);
     }
 
@@ -81,7 +81,7 @@ export const calculateAttackDamage = (adventurer: Adventurer, beast: Beast, crit
     const weapon = adventurer.equipment.weapon;
     if (!weapon) return 4; // Minimum damage
 
-    const weaponLevel = Math.floor(Math.sqrt(weapon.xp));
+    const weaponLevel = calculateLevel(weapon.xp);
     const weaponTier = ItemUtils.getItemTier(weapon.id);
     const baseAttack = weaponLevel * (6 - Number(weaponTier));
 
@@ -136,7 +136,7 @@ const calculateBeastDamage = (beast: Beast, adventurer: Adventurer, attackLocati
     let damage = baseAttack;
 
     if (armor) {
-        const armorLevel = Math.floor(Math.sqrt(armor.xp));
+        const armorLevel = calculateLevel(armor.xp);
         const armorValue = armorLevel * (6 - ItemUtils.getItemTier(armor.id));
         damage = Math.max(2, baseAttack - armorValue);
 
@@ -152,7 +152,7 @@ const calculateBeastDamage = (beast: Beast, adventurer: Adventurer, attackLocati
         // Check for neck armor reduction
         const neck = adventurer.equipment.neck;
         if (neck_reduction(armor, neck)) {
-            const neckLevel = Math.floor(Math.sqrt(neck.xp));
+            const neckLevel = calculateLevel(neck.xp);
             damage -= Math.floor((armorLevel * (6 - ItemUtils.getItemTier(armor.id)) * neckLevel * 3) / 100);
         }
     }

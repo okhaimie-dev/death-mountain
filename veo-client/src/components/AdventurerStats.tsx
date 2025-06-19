@@ -1,9 +1,9 @@
-import { Box, Button, Tooltip, Typography } from '@mui/material';
-import { useState, useEffect } from 'react';
-import { useGameStore } from '../stores/gameStore';
-import { ability_based_percentage, calculateLevel } from '../utils/game';
-import { potionPrice } from '../utils/market';
+import { Box, Button, FormControl, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { MAX_STAT_VALUE } from '../constants/game';
+import { useGameStore } from '../stores/gameStore';
+import { ability_based_percentage, calculateCombatStats, calculateLevel } from '../utils/game';
+import { potionPrice } from '../utils/market';
 
 const STAT_DESCRIPTIONS = {
   strength: "Increases attack damage.",
@@ -12,7 +12,13 @@ const STAT_DESCRIPTIONS = {
   intelligence: "Increases chance of dodging Obstacles.",
   wisdom: "Increases chance of avoiding Beast ambush.",
   charisma: "Provides discounts on the marketplace.",
-  luck: "Increases chance of critical hits."
+} as const;
+
+const COMBAT_STAT_DESCRIPTIONS = {
+  baseDamage: "Damage you deal per hit.",
+  criticalDamage: "Damage you deal if critical hit.",
+  critChance: "Chance to land a critical hit.",
+  gearScore: "Combined power of your equipment and bag."
 } as const;
 
 type Stats = {
@@ -23,8 +29,11 @@ interface AdventurerStatsProps {
   onStatsChange?: (stats: Stats) => void;
 }
 
+type ViewMode = 'stats' | 'combat';
+
 export default function AdventurerStats({ onStatsChange }: AdventurerStatsProps) {
-  const { adventurer } = useGameStore();
+  const { adventurer, bag, beast } = useGameStore();
+  const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [selectedStats, setSelectedStats] = useState({
     strength: 0,
     dexterity: 0,
@@ -38,6 +47,10 @@ export default function AdventurerStats({ onStatsChange }: AdventurerStatsProps)
   useEffect(() => {
     onStatsChange?.(selectedStats);
   }, [selectedStats, onStatsChange]);
+
+  useEffect(() => {
+    setViewMode(beast ? 'combat' : 'stats');
+  }, [beast]);
 
   const handleStatIncrement = (stat: keyof typeof STAT_DESCRIPTIONS) => {
     if (pointsRemaining > 0 && (selectedStats[stat] + adventurer!.stats[stat]) < MAX_STAT_VALUE) {
@@ -59,10 +72,25 @@ export default function AdventurerStats({ onStatsChange }: AdventurerStatsProps)
 
   const totalSelected = Object.values(selectedStats).reduce((a, b) => a + b, 0);
   const pointsRemaining = adventurer!.stat_upgrades_available - totalSelected;
+  const combatStats = calculateCombatStats(adventurer!, bag, beast);
 
   function STAT_TITLE(stat: string) {
     if (stat === 'intelligence') {
       return 'Intellect';
+    }
+
+    return stat.charAt(0).toUpperCase() + stat.slice(1);
+  }
+
+  function COMBAT_STAT_TITLE(stat: string) {
+    if (stat === 'baseDamage') {
+      return 'Attack Dmg';
+    } else if (stat === 'critChance') {
+      return 'Crit Chance';
+    } else if (stat === 'criticalDamage') {
+      return 'Crit Dmg';
+    } else if (stat === 'gearScore') {
+      return 'Gear Score';
     }
 
     return stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -94,93 +122,193 @@ export default function AdventurerStats({ onStatsChange }: AdventurerStatsProps)
     return null;
   }
 
+  function COMBAT_STAT_HELPER_TEXT(stat: string, currentValue: number) {
+    if (stat === 'baseDamage') {
+      return `${currentValue} damage`;
+    } else if (stat === 'critChance') {
+      return `${currentValue}% chance`;
+    } else if (stat === 'criticalDamage') {
+      return `${currentValue} damage`;
+    } else if (stat === 'gearScore') {
+      return `${currentValue}`;
+    }
+    return null;
+  }
+
+  const renderStatsView = () => (
+    <>
+      {Object.entries(STAT_DESCRIPTIONS).map(([stat, description]) => (
+        <Box sx={styles.statRow} key={stat}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Tooltip
+              title={
+                <Box sx={styles.tooltipContainer}>
+                  <Box sx={styles.tooltipTypeRow}>
+                    <Typography sx={styles.tooltipTypeText}>
+                      {STAT_TITLE(stat)}
+                    </Typography>
+                    <Typography sx={styles.tooltipTypeText}>
+                      {adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!}
+                    </Typography>
+                  </Box>
+                  <Box sx={styles.sectionDivider} />
+                  <Box sx={styles.tooltipSection}>
+                    <Typography sx={styles.tooltipDescription}>
+                      {description}
+                    </Typography>
+                    <Box sx={styles.tooltipRow}>
+                      <Typography sx={styles.tooltipLabel}>Current Effect:</Typography>
+                      <Typography sx={styles.tooltipValue}>
+                        {STAT_HELPER_TEXT(stat, adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              }
+              arrow
+              placement="right"
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'preventOverflow',
+                      enabled: true,
+                      options: { rootBoundary: 'viewport' },
+                    },
+                  ],
+                },
+                tooltip: {
+                  sx: {
+                    bgcolor: 'transparent',
+                    border: 'none',
+                  },
+                },
+              }}
+            >
+              <Box sx={styles.infoIcon}>i</Box>
+            </Tooltip>
+            <Typography sx={styles.statLabel}>{STAT_TITLE(stat)}</Typography>
+          </Box>
+          <Box sx={styles.statControls}>
+            {adventurer?.stat_upgrades_available! > 0 && stat !== 'luck' && <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleStatDecrement(stat as keyof typeof STAT_DESCRIPTIONS)}
+              sx={styles.controlButton}
+            >
+              -
+            </Button>}
+
+            <Typography sx={{ width: '18px', textAlign: 'center', pt: '1px' }}>
+              {adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!}
+            </Typography>
+
+            {adventurer?.stat_upgrades_available! > 0 && stat !== 'luck' && <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleStatIncrement(stat as keyof typeof STAT_DESCRIPTIONS)}
+              disabled={(adventurer!.stats[stat as keyof typeof STAT_DESCRIPTIONS] + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]) >= MAX_STAT_VALUE}
+              sx={styles.controlButton}
+            >
+              +
+            </Button>}
+          </Box>
+        </Box>
+      ))}
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 0.5 }}>
+        {adventurer?.stat_upgrades_available! > 0 &&
+          <Typography color="secondary" >{pointsRemaining} remaining</Typography>
+        }
+      </Box>
+    </>
+  );
+
+  const renderCombatView = () => (
+    <>
+      {Object.entries(COMBAT_STAT_DESCRIPTIONS).map(([stat, description]) => (
+        <Box sx={styles.statRow} key={stat}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Tooltip
+              title={
+                <Box sx={styles.tooltipContainer}>
+                  <Box sx={styles.tooltipTypeRow}>
+                    <Typography sx={styles.tooltipTypeText}>
+                      {COMBAT_STAT_TITLE(stat)}
+                    </Typography>
+                    <Typography sx={styles.tooltipTypeText}>
+                      {(combatStats as any)?.[stat]}
+                    </Typography>
+                  </Box>
+                  <Box sx={styles.sectionDivider} />
+                  <Box sx={styles.tooltipSection}>
+                    <Typography sx={styles.tooltipDescription}>
+                      {description}
+                    </Typography>
+                    <Box sx={styles.tooltipRow}>
+                      <Typography sx={styles.tooltipLabel}>Current Value:</Typography>
+                      <Typography sx={styles.tooltipValue}>
+                        {COMBAT_STAT_HELPER_TEXT(stat, (combatStats as any)?.[stat]!)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              }
+              arrow
+              placement="right"
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'preventOverflow',
+                      enabled: true,
+                      options: { rootBoundary: 'viewport' },
+                    },
+                  ],
+                },
+                tooltip: {
+                  sx: {
+                    bgcolor: 'transparent',
+                    border: 'none',
+                  },
+                },
+              }}
+            >
+              <Box sx={styles.infoIcon}>i</Box>
+            </Tooltip>
+            <Typography sx={styles.statLabel}>{COMBAT_STAT_TITLE(stat)}</Typography>
+          </Box>
+          <Box sx={styles.statControls}>
+            <Typography sx={{ width: '18px', textAlign: 'center', pt: '1px' }}>
+              {(combatStats as any)?.[stat]}{stat === 'critChance' && '%'}
+            </Typography>
+          </Box>
+        </Box>
+      ))}
+    </>
+  );
+
   return (
     <>
       <Box sx={styles.statsPanel}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-          <Typography color="secondary" sx={styles.statsTitle}>Stats</Typography>
-          {adventurer?.stat_upgrades_available! > 0 &&
-            <Typography color="secondary">({pointsRemaining} remaining)</Typography>
-          }
-        </Box>
-        {Object.entries(STAT_DESCRIPTIONS).map(([stat, description]) => (
-          <Box sx={styles.statRow} key={stat}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Tooltip
-                title={
-                  <Box sx={styles.tooltipContainer}>
-                    <Box sx={styles.tooltipTypeRow}>
-                      <Typography sx={styles.tooltipTypeText}>
-                        {STAT_TITLE(stat)}
-                      </Typography>
-                      <Typography sx={styles.tooltipTypeText}>
-                        {adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!}
-                      </Typography>
-                    </Box>
-                    <Box sx={styles.sectionDivider} />
-                    <Box sx={styles.tooltipSection}>
-                      <Typography sx={styles.tooltipDescription}>
-                        {description}
-                      </Typography>
-                      <Box sx={styles.tooltipRow}>
-                        <Typography sx={styles.tooltipLabel}>Current Effect:</Typography>
-                        <Typography sx={styles.tooltipValue}>
-                          {STAT_HELPER_TEXT(stat, adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <FormControl size="small" sx={styles.dropdown}>
+            <Select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value as ViewMode)}
+              sx={styles.select}
+              fullWidth
+              MenuProps={{
+                PaperProps: {
+                  sx: styles.menuPaper
                 }
-                arrow
-                placement="right"
-                slotProps={{
-                  popper: {
-                    modifiers: [
-                      {
-                        name: 'preventOverflow',
-                        enabled: true,
-                        options: { rootBoundary: 'viewport' },
-                      },
-                    ],
-                  },
-                  tooltip: {
-                    sx: {
-                      bgcolor: 'transparent',
-                      border: 'none',
-                    },
-                  },
-                }}
-              >
-                <Box sx={styles.infoIcon}>i</Box>
-              </Tooltip>
-              <Typography sx={styles.statLabel}>{STAT_TITLE(stat)}</Typography>
-            </Box>
-            <Box sx={styles.statControls}>
-              {adventurer?.stat_upgrades_available! > 0 && stat !== 'luck' && <Button
-                variant="contained"
-                size="small"
-                onClick={() => handleStatDecrement(stat as keyof typeof STAT_DESCRIPTIONS)}
-                sx={styles.controlButton}
-              >
-                -
-              </Button>}
-
-              <Typography sx={{ width: '18px', textAlign: 'center', pt: '1px' }}>
-                {adventurer?.stats?.[stat as keyof typeof STAT_DESCRIPTIONS]! + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]!}
-              </Typography>
-
-              {adventurer?.stat_upgrades_available! > 0 && stat !== 'luck' && <Button
-                variant="contained"
-                size="small"
-                onClick={() => handleStatIncrement(stat as keyof typeof STAT_DESCRIPTIONS)}
-                disabled={(adventurer!.stats[stat as keyof typeof STAT_DESCRIPTIONS] + selectedStats[stat as keyof typeof STAT_DESCRIPTIONS]) >= MAX_STAT_VALUE}
-                sx={styles.controlButton}
-              >
-                +
-              </Button>}
-            </Box>
-          </Box>
-        ))}
+              }}
+            >
+              <MenuItem value="stats">Stats</MenuItem>
+              <MenuItem value="combat">Combat</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+        {viewMode === 'stats' ? renderStatsView() : renderCombatView()}
       </Box>
     </>
   );
@@ -199,6 +327,39 @@ const styles = {
     flexDirection: 'column',
     gap: 1,
     boxShadow: '0 0 8px #000a',
+  },
+  dropdown: {
+    minWidth: '120px',
+  },
+  select: {
+    color: '#d0c98d',
+    fontSize: '14px',
+    fontWeight: '500',
+    '& .MuiSelect-select': {
+      padding: '2px 8px',
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#083e22',
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#d0c98d',
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#d0c98d',
+    },
+  },
+  menuPaper: {
+    backgroundColor: 'rgba(17, 17, 17, 0.95)',
+    border: '1px solid #083e22',
+    '& .MuiMenuItem-root': {
+      color: '#d0c98d',
+      '&:hover': {
+        backgroundColor: 'rgba(8, 62, 34, 0.5)',
+      },
+      '&.Mui-selected': {
+        backgroundColor: 'rgba(8, 62, 34, 0.8)',
+      },
+    },
   },
   statsTitle: {
     fontWeight: '500',

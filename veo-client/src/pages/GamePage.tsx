@@ -38,7 +38,7 @@ export default function GamePage() {
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast, showOverlay, setShowOverlay } = useGameStore();
-  const { subscription, setVideoQueue } = useGameDirector();
+  const { subscription, setVideoQueue, videoQueue } = useGameDirector();
 
   const [padding, setPadding] = useState(getMenuLeftOffset());
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
@@ -100,7 +100,7 @@ export default function GamePage() {
   const isLoading = !gameId || !adventurer;
   return (
     <Box sx={styles.container}>
-      <Box className="imageContainer" sx={{ backgroundImage: `url('/images/game.png')`, zIndex: 0 }} />
+      {!showOverlay && <Box className="imageContainer" sx={{ backgroundImage: `url('/images/game.png')`, zIndex: 0 }} />}
 
       <VideoPlayer />
 

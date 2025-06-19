@@ -69,6 +69,16 @@ export interface Stats {
   luck: number;
 }
 
+export interface CombatStats {
+  baseDamage: number;
+  protection: number;
+  bestProtection: number;
+  bestItems: Item[];
+  critChance: number;
+  criticalDamage: number;
+  gearScore: number;
+}
+
 export interface ItemPurchase {
   item_id: number;
   equip: boolean;

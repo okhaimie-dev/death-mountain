@@ -12,3 +12,4 @@ export const PREFIXES_UNLOCK_GREATNESS = 19;
 export const STARTING_HEALTH = 100;
 export const MAX_STAT_VALUE = 31;
 export const MAX_BAG_SIZE = 15;
+export const MIN_DAMAGE = 4;

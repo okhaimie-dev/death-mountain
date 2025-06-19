@@ -158,7 +158,7 @@ export default function CombatOverlay() {
                   </Typography>
 
                   <Typography sx={styles.buttonHelperText}>
-                    {`${calculateAttackDamage(adventurer!, beast!, 0)} damage`}
+                    {`${calculateAttackDamage(adventurer!.equipment.weapon!, adventurer!, beast!).baseDamage} damage`}
                   </Typography>
                 </Box>
               </Button>

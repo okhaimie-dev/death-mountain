@@ -1,10 +1,8 @@
 import { useGameStore } from '@/stores/gameStore';
 import { Item } from '@/types/game';
-import { getArmorTypeStrength, getArmorTypeWeakness, getAttackType, getWeaponTypeStrength, getWeaponTypeWeakness, getArmorType } from '@/utils/beast';
-import { calculateLevel, calculateNextLevelXP, calculateProgress } from '@/utils/game';
+import { calculateAttackDamage, calculateBeastDamage, calculateLevel, calculateNextLevelXP, calculateProgress } from '@/utils/game';
 import { ItemUtils } from '@/utils/loot';
 import { Box, LinearProgress, Typography } from '@mui/material';
-import { calculateBeastDamage, calculateWeaponDamage } from '../utils/processFutures';
 
 interface ItemTooltipProps {
   item: Item;
@@ -13,7 +11,7 @@ interface ItemTooltipProps {
 }
 
 export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemTooltipProps) {
-  const { beast, adventurer } = useGameStore();
+  const { adventurer, beast } = useGameStore();
   const level = calculateLevel(item.xp);
   const tier = ItemUtils.getItemTier(item.id);
   const type = ItemUtils.getItemType(item.id);
@@ -23,52 +21,18 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
   const fullName = specials.suffix ? `${specials.prefix} ${specials.suffix} ${metadata.name}` : metadata.name;
 
   // Calculate damage if there's a beast and this is an armor or weapon item
-  let damageInfo = null;
-  if (beast && (['Head', 'Chest', 'Foot', 'Hand', 'Waist'].includes(ItemUtils.getItemSlot(item.id)) || ItemUtils.isWeapon(item.id))) {
-    const beastAttackType = getAttackType(beast.id);
-    const beastArmorType = getArmorType(beast.id);
-    const isWeak = ItemUtils.isWeapon(item.id)
-      ? getWeaponTypeWeakness(type) === beastArmorType
-      : getArmorTypeWeakness(type) === beastAttackType;
-    const isStrong = ItemUtils.isWeapon(item.id)
-      ? getWeaponTypeStrength(type) === beastArmorType
-      : getArmorTypeStrength(type) === beastAttackType;
-    const isNameMatch = ItemUtils.isNameMatch(item.id, level, itemSpecialsSeed, beast);
+  let damage = null;
+  let damageTaken = null;
+  let isNameMatch = false;
 
-    const damage = calculateBeastDamage(
-      beast,
-      level,
-      tier,
-      type,
-      isWeak,
-      isStrong,
-      isNameMatch,
-      adventurer?.equipment,
-      item.id,
-      itemSpecialsSeed
-    );
+  if (beast) {
+    isNameMatch = ItemUtils.isNameMatch(item.id, level, itemSpecialsSeed, beast);
 
-    const weaponDamage = ItemUtils.isWeapon(item.id) ? calculateWeaponDamage(
-      beast,
-      level,
-      tier,
-      isWeak,
-      isStrong,
-      isNameMatch,
-      adventurer?.equipment,
-      item.id,
-      itemSpecialsSeed,
-      adventurer?.stats.strength || 0
-    ) : undefined;
-
-    damageInfo = {
-      isWeak,
-      isStrong,
-      damage,
-      beastName: beast.name,
-      weaponDamage,
-      isNameMatch
-    };
+    if (['Head', 'Chest', 'Foot', 'Hand', 'Waist'].includes(ItemUtils.getItemSlot(item.id))) {
+      damageTaken = calculateBeastDamage(beast, adventurer!, item);
+    } else if (ItemUtils.isWeapon(item.id)) {
+      damage = calculateAttackDamage(item, adventurer!, beast);
+    }
   }
 
   return (
@@ -126,42 +90,27 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
         </>
       )}
 
-      {damageInfo && (
+      {(damage || damageTaken) && (
         <>
           <Box sx={styles.divider} />
-          <Box sx={[
-            styles.damageContainer,
-            damageInfo.isWeak && styles.weakDamageContainer,
-            damageInfo.isStrong && styles.strongDamageContainer,
-            !damageInfo.isWeak && !damageInfo.isStrong && styles.neutralDamageContainer
-          ]}>
-            <Typography sx={[
-              styles.damageWarning,
-            ]}>
-              {damageInfo.isWeak
-                ? `Weak`
-                : damageInfo.isStrong
-                  ? `Strong`
-                  : `Neutral`
-              }
-            </Typography>
+          <Box sx={styles.damageContainer}>
             <Typography sx={[
               styles.damageValue,
               styles.damageText
             ]}>
-              {ItemUtils.isWeapon(item.id) && damageInfo.weaponDamage && (
+              {damage && (
                 <Box>
-                  <Box fontSize="13px">Deals {damageInfo.weaponDamage.baseDamage} damage (base)</Box>
-                  <Box fontSize="13px">Deals {damageInfo.weaponDamage.criticalDamage} damage (critical)</Box>
+                  <Box fontSize="13px">Deals {damage.baseDamage} damage (base)</Box>
+                  <Box fontSize="13px">Deals {damage.criticalDamage} damage (critical)</Box>
                 </Box>
               )}
-              {!ItemUtils.isWeapon(item.id) && `-${damageInfo.damage} health when hit`}
+              {damageTaken && `-${damageTaken} health when hit`}
             </Typography>
           </Box>
         </>
       )}
 
-      {damageInfo && damageInfo.isNameMatch && (
+      {isNameMatch && (
         <>
           <Box sx={styles.divider} />
           <Box sx={styles.nameMatchContainer}>
@@ -272,16 +221,6 @@ const styles = {
     padding: '6px',
     borderRadius: '4px',
     border: '1px solid',
-  },
-  weakDamageContainer: {
-    backgroundColor: 'rgba(215, 197, 41, 0.1)',
-    borderColor: 'rgba(215, 197, 41, 0.2)',
-  },
-  strongDamageContainer: {
-    backgroundColor: 'rgba(215, 197, 41, 0.1)',
-    borderColor: 'rgba(215, 197, 41, 0.2)',
-  },
-  neutralDamageContainer: {
     backgroundColor: 'rgba(215, 197, 41, 0.1)',
     borderColor: 'rgba(215, 197, 41, 0.2)',
   },

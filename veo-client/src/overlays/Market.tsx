@@ -175,7 +175,7 @@ export default function MarketOverlay() {
   const remainingGold = (adventurer?.gold || 0) - totalCost;
   const maxHealth = STARTING_HEALTH + (adventurer?.stats?.vitality || 0) * 15;
   const maxPotionsByHealth = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
-  const maxPotionsByGold = Math.floor((adventurer?.gold || 0) / potionCost);
+  const maxPotionsByGold = Math.floor((adventurer!.gold - cart.items.reduce((sum, item) => sum + item.price, 0)) / potionCost);
   const maxPotions = Math.min(maxPotionsByHealth, maxPotionsByGold);
 
   const filteredItems = marketItems.filter(item => {

@@ -6,7 +6,7 @@ import { useGameStore } from '../stores/gameStore';
 import { ItemUtils } from '../utils/loot';
 import { useGameDirector } from '../contexts/GameDirector';
 import ItemTooltip from '@/components/ItemTooltip';
-import { calculateLevel } from '@/utils/game';
+import { calculateLevel, calculateCombatStats } from '@/utils/game';
 import { getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
 import { keyframes } from '@emotion/react';
 
@@ -66,9 +66,6 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
           const isNew = item?.id ? newItems.includes(item.id) : false;
           const tier = item?.id ? ItemUtils.getItemTier(item.id) : null;
           const tierColor = tier ? ItemUtils.getTierColor(tier) : undefined;
-          const itemType = item?.id ? ItemUtils.getItemType(item.id) : null;
-          const isStrong = itemType && beast && getItemTypeStrength(itemType) === beast.type;
-          const isWeak = itemType && beast && getItemTypeWeakness(itemType) === beast.type;
           const level = item?.id ? calculateLevel(item.xp) : 0;
           const isNameMatch = item?.id && beast ? ItemUtils.isNameMatch(item.id, level, adventurer!.item_specials_seed, beast) : false;
           const isArmorSlot = ['head', 'chest', 'legs', 'hands', 'waist'].includes(slot.key);
@@ -106,8 +103,6 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
                   ...(highlight ? [styles.highlight] : []),
                   ...(isNew ? [styles.newItem] : []),
                   ...(!isDropMode ? [styles.nonInteractive] : []),
-                  ...(isStrong ? [styles.strongItemSlot] : []),
-                  ...(isWeak ? [styles.weakItemSlot] : []),
                   ...(isNameMatchDanger ? [styles.nameMatchDangerSlot] : []),
                   ...(isNameMatchPower ? [styles.nameMatchPowerSlot] : [])
                 ]}
@@ -152,6 +147,10 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
   onItemHover: (itemId: number) => void
 }) {
   const { bag, adventurer, beast } = useGameStore();
+  
+  // Calculate combat stats to get bestItems for defense highlighting
+  const combatStats = beast ? calculateCombatStats(adventurer!, bag, beast) : null;
+  const bestItemIds = combatStats?.bestItems.map(item => item.id) || [];
 
   return (
     <Box sx={styles.bagPanel}>
@@ -168,15 +167,13 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
           const isNew = newItems.includes(item.id);
           const tier = ItemUtils.getItemTier(item.id);
           const tierColor = ItemUtils.getTierColor(tier);
-          const itemType = ItemUtils.getItemType(item.id);
-          const isStrong = itemType && beast && getItemTypeStrength(itemType) === beast.type;
-          const isWeak = itemType && beast && getItemTypeWeakness(itemType) === beast.type;
           const level = calculateLevel(item.xp);
           const isNameMatch = beast ? ItemUtils.isNameMatch(item.id, level, adventurer!.item_specials_seed, beast) : false;
           const isArmorSlot = ['head', 'chest', 'legs', 'hands', 'waist'].includes(ItemUtils.getItemSlot(item.id).toLowerCase());
           const isWeaponSlot = ItemUtils.getItemSlot(item.id).toLowerCase() === 'weapon';
           const isNameMatchDanger = isNameMatch && isArmorSlot;
           const isNameMatchPower = isNameMatch && isWeaponSlot;
+          const isDefenseItem = bestItemIds.includes(item.id);
 
           return (
             <Tooltip
@@ -207,10 +204,9 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
                   ...(isSelected ? [styles.selectedItem] : []),
                   ...(highlight ? [styles.highlight] : []),
                   ...(isNew ? [styles.newItem] : []),
-                  ...(isStrong ? [styles.strongItemSlot] : []),
-                  ...(isWeak ? [styles.weakItemSlot] : []),
                   ...(isNameMatchDanger ? [styles.nameMatchDangerSlot] : []),
-                  ...(isNameMatchPower ? [styles.nameMatchPowerSlot] : [])
+                  ...(isNameMatchPower ? [styles.nameMatchPowerSlot] : []),
+                  ...(isDefenseItem ? [styles.defenseItemSlot] : [])
                 ]}
                 onClick={() => onItemClick(item)}
                 onMouseEnter={() => onItemHover(item.id)}
@@ -251,33 +247,9 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
   );
 }
 
-const pulseRed = keyframes`
-  0% {
-    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(248, 27, 27, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
-  }
-`;
-
-const pulseGreen = keyframes`
-  0% {
-    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(128, 255, 0, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
-  }
-`;
-
 export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProps) {
   const { showInventory, setShowInventory } = useGameStore();
-  const { adventurer, equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
+  const { equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
   const { executeGameAction } = useGameDirector();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<number[]>([]);
@@ -398,6 +370,31 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
     </>
   );
 }
+
+const pulseRed = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(248, 27, 27, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(248, 27, 27, 0.6);
+  }
+`;
+
+const pulseGreen = keyframes`
+  0% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(128, 255, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(128, 255, 0, 0.6);
+  }
+`;
+
 
 const styles = {
   buttonWrapper: {
@@ -696,5 +693,9 @@ const styles = {
       borderRadius: '4px',
       zIndex: 1,
     }
+  },
+  defenseItemSlot: {
+    border: '1px solid rgba(128, 255, 0, 0.4)',
+    boxShadow: '0 0 6px rgba(128, 255, 0, 0.2)',
   },
 };
