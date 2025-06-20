@@ -6,7 +6,6 @@ import { useGameDirector } from '../contexts/GameDirector';
 import { ItemUtils, slotIcons, typeIcons } from '../utils/loot';
 import { MarketItem, generateMarketItems, potionPrice } from '../utils/market';
 import { calculateLevel } from '../utils/game';
-import { STARTING_HEALTH } from '../constants/game';
 import healthPotionImg from '@/assets/images/health.png';
 import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
 
@@ -44,7 +43,7 @@ const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
 
 export default function MarketOverlay() {
   const [isOpen, setIsOpen] = useState(false);
-  const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems, newMarket, setNewMarket } = useGameStore();
+  const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems, newMarket, setNewMarket, gameSettings } = useGameStore();
   const { executeGameAction } = useGameDirector();
   const {
     cart,
@@ -173,7 +172,7 @@ export default function MarketOverlay() {
   const potionCost = potionPrice(calculateLevel(adventurer?.xp || 0), adventurer?.stats?.charisma || 0);
   const totalCost = cart.items.reduce((sum, item) => sum + item.price, 0) + (cart.potions * potionCost);
   const remainingGold = (adventurer?.gold || 0) - totalCost;
-  const maxHealth = STARTING_HEALTH + (adventurer?.stats?.vitality || 0) * 15;
+  const maxHealth = gameSettings?.adventurer.health! + (adventurer?.stats?.vitality || 0) * 15;
   const maxPotionsByHealth = Math.ceil((maxHealth - (adventurer?.health || 0)) / 10);
   const maxPotionsByGold = Math.floor((adventurer!.gold - cart.items.reduce((sum, item) => sum + item.price, 0)) / potionCost);
   const maxPotions = Math.min(maxPotionsByHealth, maxPotionsByGold);
@@ -387,6 +386,12 @@ export default function MarketOverlay() {
                       sx={styles.itemCard}
                     >
                       <Box sx={styles.itemImageContainer}>
+                        <Box
+                          sx={[
+                            styles.itemGlow,
+                            { backgroundColor: ItemUtils.getTierColor(item.tier) }
+                          ]}
+                        />
                         <Box
                           component="img"
                           src={item.imageUrl}
@@ -643,6 +648,19 @@ const styles = {
     width: '100%',
     height: '100%',
     objectFit: 'contain',
+    position: 'relative',
+    zIndex: 2,
+  },
+  itemGlow: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '100%',
+    height: '100%',
+    filter: 'blur(8px)',
+    opacity: 0.4,
+    zIndex: 1,
   },
   itemTierBadge: {
     position: 'absolute',
@@ -653,6 +671,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 3,
   },
   itemTierText: {
     color: '#111111',
@@ -660,6 +679,7 @@ const styles = {
     fontWeight: 'bold',
   },
   itemInfo: {
+    pt: '4px',
     display: 'flex',
     flexDirection: 'column',
     gap: 1,

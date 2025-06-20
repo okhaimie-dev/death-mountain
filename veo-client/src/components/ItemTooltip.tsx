@@ -18,7 +18,10 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
   const metadata = ItemUtils.getMetadata(item.id);
   const xpToNextLevel = calculateNextLevelXP(level);
   const specials = ItemUtils.getSpecials(item.id, level, itemSpecialsSeed);
-  const fullName = specials.suffix ? `${specials.prefix} ${specials.suffix} ${metadata.name}` : metadata.name;
+  const specialName = specials.suffix ? `"${specials.prefix} ${specials.suffix}"` : null;
+
+  // Calculate what specials would be unlocked at level 15 if itemSpecialsSeed is not 0
+  const futureSpecials = itemSpecialsSeed !== 0 && level < 15 ? ItemUtils.getSpecials(item.id, 15, itemSpecialsSeed) : null;
 
   // Calculate damage if there's a beast and this is an armor or weapon item
   let damage = null;
@@ -38,9 +41,17 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
   return (
     <Box sx={{ ...styles.tooltip, ...style }}>
       <Box sx={styles.header}>
-        <Typography variant="body2" sx={styles.itemName}>
-          {fullName}
-        </Typography>
+        <Box>
+          {specialName && (
+            <Typography>
+              {specialName}
+            </Typography>
+          )}
+
+          <Typography sx={styles.itemName}>
+            {metadata.name}
+          </Typography>
+        </Box>
         <Typography sx={{ ...styles.tier, backgroundColor: ItemUtils.getTierColor(tier), color: '#111111' }}>
           T{tier}
         </Typography>
@@ -75,21 +86,6 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
         />
       </Box>
 
-      {specials.special1 && (
-        <>
-          <Box sx={styles.divider} />
-          <Box sx={styles.specialContainer}>
-            <Typography variant="caption" sx={styles.special}>
-              {specials.special1}
-            </Typography>
-
-            <Typography variant="caption" sx={styles.special}>
-              {ItemUtils.getStatBonus(specials.special1)}
-            </Typography>
-          </Box>
-        </>
-      )}
-
       {(damage || damageTaken) && (
         <>
           <Box sx={styles.divider} />
@@ -106,6 +102,41 @@ export default function ItemTooltip({ itemSpecialsSeed, item, style }: ItemToolt
               )}
               {damageTaken && `-${damageTaken} health when hit`}
             </Typography>
+          </Box>
+        </>
+      )}
+
+      {specials.special1 && (
+        <>
+          <Box sx={styles.divider} />
+          <Box sx={styles.specialContainer}>
+            <Typography variant="caption" sx={styles.special}>
+              {specials.special1}
+            </Typography>
+
+            <Typography variant="caption" sx={styles.special}>
+              {ItemUtils.getStatBonus(specials.special1)}
+            </Typography>
+          </Box>
+        </>
+      )}
+
+      {futureSpecials && futureSpecials.special1 && (
+        <>
+          <Box sx={styles.divider} />
+          <Box sx={styles.futureSpecialContainer}>
+            <Typography sx={styles.futureSpecialLabel}>
+              Unlocks At 15
+            </Typography>
+            <Box sx={styles.futureSpecialContent}>
+              <Typography sx={styles.futureSpecial}>
+                {futureSpecials.special1}
+              </Typography>
+
+              <Typography sx={styles.futureSpecial}>
+                {ItemUtils.getStatBonus(futureSpecials.special1)}
+              </Typography>
+            </Box>
           </Box>
         </>
       )}
@@ -143,7 +174,7 @@ const styles = {
   },
   itemName: {
     color: '#d0c98d',
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     fontWeight: 'bold',
   },
   tier: {
@@ -209,7 +240,7 @@ const styles = {
   },
   special: {
     color: '#d0c98d',
-    fontSize: '0.9rem',
+    fontSize: '0.8rem',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
@@ -246,5 +277,26 @@ const styles = {
     color: '#d7c529',
     fontWeight: '500',
     opacity: 0.8
+  },
+  futureSpecialContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  futureSpecialLabel: {
+    color: '#808080',
+    fontSize: '0.8rem',
+    fontWeight: '500',
+    lineHeight: '1.0',
+    opacity: 0.9,
+  },
+  futureSpecialContent: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  futureSpecial: {
+    color: '#808080',
+    fontSize: '0.8rem',
+    opacity: 0.8,
   },
 }; 

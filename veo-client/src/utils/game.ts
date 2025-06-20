@@ -260,8 +260,13 @@ export const calculateCombatStats = (adventurer: Adventurer, bagItems: Item[], b
       }
     });
 
-    protection = Math.floor((totalDefense / ((maxDamage - BEAST_MIN_DAMAGE) * 5)) * 100);
-    bestProtection = Math.floor((totalBestDefense / ((maxDamage - BEAST_MIN_DAMAGE) * 5)) * 100);
+    if (maxDamage <= 2) {
+      protection = 100;
+      bestProtection = 100;
+    } else {
+      protection = Math.floor((totalDefense / ((maxDamage - BEAST_MIN_DAMAGE) * 5)) * 100);
+      bestProtection = Math.floor((totalBestDefense / ((maxDamage - BEAST_MIN_DAMAGE) * 5)) * 100);
+    }
   }
 
   let gearScore = 0;

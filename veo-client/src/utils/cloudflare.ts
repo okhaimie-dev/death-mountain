@@ -3,7 +3,8 @@ export const streamIds = {
   "start": "7047fe1ebb6312a09d3b4db9cb220d07",
   "death": "6ee71bf0141f82296ce37dbbc1f45636",
   "explore": "39308a8db1acbc0fa14a77ea5fe76683",
-  "level_up": "4e17b6b4cea1aad64bf9c3c648f0e250",
+  "level_up": "a815e6c3345eb629b09c5e9332fb8650",
+  "specials_unlocked": "c1ab8c6d53b43b39af5b905980ffbc47",
 
   // Discoveries
   "Gold": "b15b5f5960bbdc7708cea4e1c2d6c86d",

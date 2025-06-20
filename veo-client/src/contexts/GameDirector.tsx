@@ -138,8 +138,18 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
         setVideoQueue(prev => [...prev, streamIds.death]);
       }
 
+      if (!skipVideo && event.adventurer!.item_specials_seed && event.adventurer!.item_specials_seed !== adventurer?.item_specials_seed) {
+        setShowOverlay(false);
+        setVideoQueue(prev => [...prev, streamIds.specials_unlocked]);
+        setShowInventory(true);
+      }
+
       if (!skipVideo && event.adventurer!.stat_upgrades_available > 0) {
         setShowInventory(true);
+      }
+
+      if (!skipVideo && event.adventurer!.stat_upgrades_available === 0 && adventurer?.stat_upgrades_available! > 0) {
+        setShowInventory(false);
       }
     }
 

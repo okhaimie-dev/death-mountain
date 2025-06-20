@@ -7,6 +7,7 @@ import { Item } from '@/types/game';
 import { calculateLevel } from '@/utils/game';
 import { ItemUtils, typeIcons } from '@/utils/loot';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
+import { Star } from '@mui/icons-material';
 import { memo, useEffect, useState, useCallback } from 'react';
 import { isMobile } from 'react-device-detect';
 
@@ -37,6 +38,8 @@ const ItemSlot = memo(({
   const metadata = item ? ItemUtils.getMetadata(item.id) : null;
   const level = item ? calculateLevel(item.xp) : null;
   const xpProgress = item ? Math.min((item.xp / 400) * 100, 100) : 0;
+  const hasSpecials = level ? level >= 15 : false;
+  const hasGoldSpecials = level ? level >= 20 : false;
 
   return (
     <Tooltip
@@ -102,6 +105,11 @@ const ItemSlot = memo(({
                   ...styles.itemImage,
                 }}
               />
+              {hasSpecials && (
+                <Box sx={[styles.starOverlay, hasGoldSpecials ? styles.goldStarOverlay : styles.silverStarOverlay]}>
+                  <Star sx={[styles.starIcon, hasGoldSpecials ? styles.goldStarIcon : styles.silverStarIcon]} />
+                </Box>
+              )}
             </Box>
             <Box sx={styles.itemTypeContainer}>
               <Box sx={styles.xpBarContainer}>
@@ -627,5 +635,35 @@ const styles = {
     height: '100%',
     backgroundColor: '#EDCF33',
     transition: 'width 0.3s ease',
+  },
+  starOverlay: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    zIndex: 10,
+    background: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: '50%',
+    padding: '1px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  silverStarOverlay: {
+    background: 'rgba(192, 192, 192, 0.9)',
+  },
+  goldStarOverlay: {
+    background: 'rgba(255, 215, 0, 0.9)',
+  },
+  starIcon: {
+    width: 12,
+    height: 12,
+  },
+  silverStarIcon: {
+    color: '#C0C0C0',
+    filter: 'drop-shadow(0 0 2px rgba(192, 192, 192, 0.8))',
+  },
+  goldStarIcon: {
+    color: '#FFD700',
+    filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.8))',
   },
 };

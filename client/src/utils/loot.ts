@@ -255,7 +255,7 @@ export const ItemUtils = {
   },
 
   getItemSuffix: (seed: number) => {
-    return seed % 18 + 1;
+    return seed % 16 + 1;
   },
 
   getItemPrefix1: (seed: number) => {

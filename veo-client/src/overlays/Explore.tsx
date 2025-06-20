@@ -70,7 +70,7 @@ export default function ExploreOverlay() {
       {/* Middle Section for Event Log */}
       <Box sx={styles.middleSection}>
         <Box sx={styles.eventLogContainer}>
-          <Box sx={styles.encounterDetails}>
+          {event && <Box sx={styles.encounterDetails}>
             <Typography variant="h6">
               {getEventTitle(event)}
             </Typography>
@@ -146,7 +146,7 @@ export default function ExploreOverlay() {
                 </Typography>
               )}
             </Box>
-          </Box>
+          </Box>}
         </Box>
       </Box>
 

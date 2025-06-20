@@ -1,14 +1,13 @@
 import AdventurerStats from '@/components/AdventurerStats';
-import { Box, Typography, Button, Tooltip } from '@mui/material';
-import { DeleteOutline } from '@mui/icons-material';
-import { useState, useCallback, useEffect } from 'react';
-import { useGameStore } from '../stores/gameStore';
-import { ItemUtils } from '../utils/loot';
-import { useGameDirector } from '../contexts/GameDirector';
 import ItemTooltip from '@/components/ItemTooltip';
-import { calculateLevel, calculateCombatStats } from '@/utils/game';
-import { getItemTypeStrength, getItemTypeWeakness } from '@/utils/beast';
+import { calculateCombatStats, calculateLevel } from '@/utils/game';
 import { keyframes } from '@emotion/react';
+import { DeleteOutline, Star } from '@mui/icons-material';
+import { Box, Button, Tooltip, Typography } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import { useGameDirector } from '../contexts/GameDirector';
+import { useGameStore } from '../stores/gameStore';
+import { ItemUtils, Tier } from '../utils/loot';
 
 // Import SVG assets
 import chestIcon from '@/assets/types/chest.svg';
@@ -72,6 +71,8 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
           const isWeaponSlot = slot.key === 'weapon';
           const isNameMatchDanger = isNameMatch && isArmorSlot;
           const isNameMatchPower = isNameMatch && isWeaponSlot;
+          const hasSpecials = level >= 15;
+          const hasGoldSpecials = level >= 20;
 
           return (
             <Tooltip
@@ -123,6 +124,11 @@ function CharacterEquipment({ isDropMode, itemsToDrop, onItemClick, newItems, on
                       alt={metadata.name}
                       style={{ ...styles.equipmentIcon, position: 'relative' }}
                     />
+                    {hasSpecials && (
+                      <Box sx={[styles.starOverlay, hasGoldSpecials ? styles.goldStarOverlay : styles.silverStarOverlay]}>
+                        <Star sx={[styles.starIcon, hasGoldSpecials ? styles.goldStarIcon : styles.silverStarIcon]} />
+                      </Box>
+                    )}
                   </Box>
                 ) : (
                   <Box sx={styles.emptySlot} title={slot.label}>
@@ -147,7 +153,7 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
   onItemHover: (itemId: number) => void
 }) {
   const { bag, adventurer, beast } = useGameStore();
-  
+
   // Calculate combat stats to get bestItems for defense highlighting
   const combatStats = beast ? calculateCombatStats(adventurer!, bag, beast) : null;
   const bestItemIds = combatStats?.bestItems.map(item => item.id) || [];
@@ -174,6 +180,12 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
           const isNameMatchDanger = isNameMatch && isArmorSlot;
           const isNameMatchPower = isNameMatch && isWeaponSlot;
           const isDefenseItem = bestItemIds.includes(item.id);
+          const hasSpecials = level >= 15;
+          const hasGoldSpecials = level >= 20;
+
+          if (isNew && isWeaponSlot && [Tier.T1, Tier.T2, Tier.T3].includes(tier) && ItemUtils.getItemTier(adventurer?.equipment.weapon.id!) === Tier.T5) {
+            onItemClick(item);
+          }
 
           return (
             <Tooltip
@@ -223,6 +235,11 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
                     alt={metadata.name}
                     style={{ ...styles.bagIcon, position: 'relative' }}
                   />
+                  {hasSpecials && (
+                    <Box sx={[styles.starOverlay, hasGoldSpecials ? styles.goldStarOverlay : styles.silverStarOverlay]}>
+                      <Star sx={[styles.starIcon, hasGoldSpecials ? styles.goldStarIcon : styles.silverStarIcon]} />
+                    </Box>
+                  )}
                 </Box>
               </Box>
             </Tooltip>
@@ -697,5 +714,35 @@ const styles = {
   defenseItemSlot: {
     border: '1px solid rgba(128, 255, 0, 0.4)',
     boxShadow: '0 0 6px rgba(128, 255, 0, 0.2)',
+  },
+  starOverlay: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    zIndex: 10,
+    background: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: '50%',
+    padding: '1px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  silverStarOverlay: {
+    background: 'rgba(0, 0, 0, 0.9)',
+  },
+  goldStarOverlay: {
+    background: 'rgba(0, 0, 0, 0.9)',
+  },
+  starIcon: {
+    width: 10,
+    height: 10,
+  },
+  silverStarIcon: {
+    color: '#E5E5E5',
+    filter: 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.8))',
+  },
+  goldStarIcon: {
+    color: '#FFD700',
+    filter: 'drop-shadow(0 0 2px rgba(255, 215, 0, 0.8))',
   },
 };
