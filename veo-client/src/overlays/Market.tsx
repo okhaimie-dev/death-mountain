@@ -44,7 +44,7 @@ const renderTypeToggleButton = (type: keyof typeof typeIcons) => (
 export default function MarketOverlay() {
   const [isOpen, setIsOpen] = useState(false);
   const { adventurer, bag, marketItemIds, setShowInventory, setNewInventoryItems, newMarket, setNewMarket, gameSettings } = useGameStore();
-  const { executeGameAction } = useGameDirector();
+  const { executeGameAction, actionFailed } = useGameDirector();
   const {
     cart,
     slotFilter,
@@ -85,6 +85,10 @@ export default function MarketOverlay() {
 
     clearCart();
   }, [marketItemIds, adventurer?.gold, adventurer?.stats?.charisma]);
+
+  useEffect(() => {
+    setInProgress(false);
+  }, [actionFailed]);
 
   // Function to check if an item is already owned (in equipment or bag)
   const isItemOwned = useCallback((itemId: number) => {
@@ -380,10 +384,17 @@ export default function MarketOverlay() {
               {/* Items Grid */}
               <Box sx={styles.itemsGrid}>
                 {filteredItems.map((item) => {
+                  const canAfford = remainingGold >= item.price;
+                  const inCart = cart.items.some(cartItem => cartItem.id === item.id);
+                  const isOwned = isItemOwned(item.id);
+                  const shouldGrayOut = (!canAfford && !isOwned && !inCart) || isOwned;
                   return (
                     <Box
                       key={item.id}
-                      sx={styles.itemCard}
+                      sx={[
+                        styles.itemCard,
+                        shouldGrayOut && styles.itemUnaffordable
+                      ]}
                     >
                       <Box sx={styles.itemImageContainer}>
                         <Box
@@ -429,18 +440,18 @@ export default function MarketOverlay() {
                             {item.price} Gold
                           </Typography>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                            {cart.items.some(cartItem => cartItem.id === item.id) && (
+                            {inCart && (
                               <Typography sx={styles.inCartText}>
                                 In Cart
                               </Typography>
                             )}
                             <Button
                               variant="outlined"
-                              onClick={() => cart.items.some(cartItem => cartItem.id === item.id) ? handleRemoveItem(item) : handleBuyItem(item)}
-                              disabled={!cart.items.some(cartItem => cartItem.id === item.id) && (remainingGold < item.price || isItemOwned(item.id))}
+                              onClick={() => inCart ? handleRemoveItem(item) : handleBuyItem(item)}
+                              disabled={!inCart && (remainingGold < item.price || isItemOwned(item.id))}
                               sx={{
                                 height: '32px',
-                                ...(cart.items.some(cartItem => cartItem.id === item.id) && {
+                                ...(inCart && {
                                   background: 'rgba(215, 197, 41, 0.2)',
                                   color: 'rgba(215, 197, 41, 0.8)',
                                 })
@@ -448,7 +459,7 @@ export default function MarketOverlay() {
                               size="small"
                             >
                               <Typography textTransform={'none'}>
-                                {cart.items.some(cartItem => cartItem.id === item.id) ? 'Undo' : isItemOwned(item.id) ? 'Owned' : 'Buy'}
+                                {inCart ? 'Undo' : isItemOwned(item.id) ? 'Owned' : 'Buy'}
                               </Typography>
                             </Button>
                           </Box>
@@ -912,5 +923,8 @@ const styles = {
     color: '#222',
     fontWeight: 'bold',
     zIndex: 2
+  },
+  itemUnaffordable: {
+    opacity: 0.5,
   },
 };

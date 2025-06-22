@@ -1,6 +1,8 @@
+import discordIcon from '@/assets/images/discord.png';
 import AdventurersList from '@/components/AdventurersList';
 import WalletConnect from '@/components/WalletConnect';
 import { useController } from '@/contexts/controller';
+import { getMenuLeftOffset } from '@/utils/utils';
 import CameraIcon from '@mui/icons-material/Camera';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -14,8 +16,6 @@ import Typography from '@mui/material/Typography';
 import { AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMenuLeftOffset } from '@/utils/utils';
-import discordIcon from '@/assets/images/discord.png';
 
 export default function MainMenu() {
   const navigate = useNavigate();

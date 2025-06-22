@@ -5,13 +5,14 @@ import Adventurer from './Adventurer';
 import { getEventTitle } from '@/utils/events';
 import MarketOverlay from './Market';
 import InventoryOverlay from './Inventory';
+import TipsOverlay from './Tips';
 import { streamIds } from '@/utils/cloudflare';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMarketStore } from '@/stores/marketStore';
 import { ItemUtils } from '@/utils/loot';
 
 export default function ExploreOverlay() {
-  const { executeGameAction, setVideoQueue } = useGameDirector();
+  const { executeGameAction, actionFailed, setVideoQueue } = useGameDirector();
   const { exploreLog, adventurer, setShowOverlay } = useGameStore();
   const { cart, inProgress, setInProgress } = useMarketStore();
   const [isSelectingStats, setIsSelectingStats] = useState(false);
@@ -24,6 +25,11 @@ export default function ExploreOverlay() {
     charisma: 0,
     luck: 0
   });
+
+  useEffect(() => {
+    setIsSelectingStats(false);
+    setInProgress(false);
+  }, [actionFailed]);
 
   const handleExplore = async () => {
     setShowOverlay(false);
@@ -151,6 +157,7 @@ export default function ExploreOverlay() {
       </Box>
 
       <InventoryOverlay onStatsChange={handleStatsChange} />
+      <TipsOverlay />
 
       {adventurer?.stat_upgrades_available! === 0 && <MarketOverlay />}
 

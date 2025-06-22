@@ -1,10 +1,11 @@
 import { useGameStore } from '@/stores/gameStore';
 import { useMarketStore } from '@/stores/marketStore';
-import { calculateCombatStats, calculateLevel, calculateProgress } from '@/utils/game';
+import { CombatStats } from '@/types/game';
+import { calculateLevel, calculateProgress } from '@/utils/game';
 import { Box, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-export default function Adventurer() {
+export default function Adventurer({ combatStats }: { combatStats?: CombatStats }) {
   const { adventurer, metadata, battleEvent, setShowInventory, showInventory, beast, bag, gameSettings } = useGameStore();
   const { cart } = useMarketStore();
 
@@ -27,8 +28,7 @@ export default function Adventurer() {
   const potionHealth = cart.potions * 10;
   const previewHealth = Math.min(health + potionHealth, maxHealth);
   const previewHealthPercent = (previewHealth / maxHealth) * 100;
-  const combatStats = calculateCombatStats(adventurer!, bag, beast);
-  const previewProtection = combatStats.bestProtection;
+  const previewProtection = combatStats?.bestProtection || 0;
   const previewProtectionPercent = Math.min(100, previewProtection);
 
   return (
@@ -82,7 +82,7 @@ export default function Adventurer() {
           </Box>
           {/* XP Bar */}
           <Box sx={{ mt: 1, position: 'relative' }}>
-            {beast ? (
+            {beast && combatStats ? (
               <>
                 {/* Attack Bar */}
                 <Box sx={{ position: 'relative', mb: 0.5 }}>

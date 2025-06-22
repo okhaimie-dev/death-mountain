@@ -1,12 +1,13 @@
 import AnimatedText from '@/components/AnimatedText';
 import { useGameDirector } from '@/contexts/GameDirector';
 import { useGameStore } from '@/stores/gameStore';
-import { ability_based_percentage, calculateAttackDamage, getNewItemsEquipped } from '@/utils/game';
+import { ability_based_percentage, calculateAttackDamage, calculateCombatStats, getNewItemsEquipped } from '@/utils/game';
 import { Box, Button, Typography, Checkbox } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import Adventurer from './Adventurer';
 import Beast from './Beast';
 import InventoryOverlay from './Inventory';
+import TipsOverlay from './Tips';
 
 const attackMessage = "Attacking";
 const fleeMessage = "Attempting to flee";
@@ -83,7 +84,8 @@ export default function CombatOverlay() {
   };
 
   const fleePercentage = ability_based_percentage(adventurer!.xp, adventurer!.stats.dexterity);
-
+  const combatStats = calculateCombatStats(adventurer!, bag, beast);
+  
   const hasNewItemsEquipped = useMemo(() => {
     if (!adventurer?.equipment || !adventurerState?.equipment) return false;
     return getNewItemsEquipped(adventurer.equipment, adventurerState.equipment).length > 0;
@@ -94,7 +96,7 @@ export default function CombatOverlay() {
       <Box sx={[styles.imageContainer, { backgroundImage: `url('/images/battle_scenes/${beast!.baseName.toLowerCase()}.png')` }]} />
 
       {/* Adventurer */}
-      <Adventurer />
+      <Adventurer combatStats={combatStats} />
 
       {/* Beast */}
       <Beast />
@@ -108,6 +110,7 @@ export default function CombatOverlay() {
       </Box>
 
       <InventoryOverlay />
+      <TipsOverlay combatStats={combatStats} />
 
       {/* Combat Buttons */}
       <Box sx={styles.buttonContainer}>

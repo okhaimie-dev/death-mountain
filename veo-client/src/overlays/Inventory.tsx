@@ -265,9 +265,9 @@ function InventoryBag({ isDropMode, itemsToDrop, onItemClick, onDropModeToggle, 
 }
 
 export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProps) {
-  const { showInventory, setShowInventory } = useGameStore();
+  const { executeGameAction, actionFailed } = useGameDirector();
+  const { adventurer, bag, showInventory, setShowInventory } = useGameStore();
   const { equipItem, newInventoryItems, setNewInventoryItems } = useGameStore();
-  const { executeGameAction } = useGameDirector();
   const [isDropMode, setIsDropMode] = useState(false);
   const [itemsToDrop, setItemsToDrop] = useState<number[]>([]);
   const [dropInProgress, setDropInProgress] = useState(false);
@@ -280,6 +280,14 @@ export default function InventoryOverlay({ onStatsChange }: InventoryOverlayProp
       setNewInventoryItems([]);
     }
   }, [newInventoryItems, setNewInventoryItems]);
+
+  useEffect(() => {
+    if (dropInProgress) {
+      setDropInProgress(false);
+      setIsDropMode(false);
+      setItemsToDrop([]);
+    }
+  }, [adventurer?.equipment, bag, actionFailed]);
 
   const handleItemClick = useCallback((item: any) => {
     if (isDropMode) {
@@ -636,14 +644,14 @@ const styles = {
     },
   },
   selectedItem: {
-    border: '1px solid #FF0000',
+    border: '2px solid #FF0000',
     backgroundColor: 'rgba(255, 0, 0, 0.1)',
     '&:hover': {
       backgroundColor: 'rgba(255, 0, 0, 0.1)',
     },
   },
   highlight: {
-    border: '1px solid #80FF00',
+    border: '2px solid #80FF00',
     backgroundColor: 'rgba(128, 255, 0, 0.1)',
     '&:hover': {
       backgroundColor: 'rgba(128, 255, 0, 0.15)',
@@ -672,11 +680,11 @@ const styles = {
     },
   },
   strongItemSlot: {
-    border: '1px solid #80FF00',
+    border: '2px solid #80FF00',
     boxShadow: '0 0 8px rgba(128, 255, 0, 0.3)',
   },
   weakItemSlot: {
-    border: '1px solid rgb(248, 27, 27)',
+    border: '2px solid rgb(248, 27, 27)',
     boxShadow: '0 0 8px rgba(255, 68, 68, 0.3)',
   },
   nameMatchDangerSlot: {
@@ -712,7 +720,7 @@ const styles = {
     }
   },
   defenseItemSlot: {
-    border: '1px solid rgba(128, 255, 0, 0.4)',
+    border: '2px solid rgba(128, 255, 0, 0.4)',
     boxShadow: '0 0 6px rgba(128, 255, 0, 0.2)',
   },
   starOverlay: {

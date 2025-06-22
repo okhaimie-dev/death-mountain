@@ -38,7 +38,7 @@ export default function GamePage() {
   const { mintGame } = useSystemCalls();
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast, showOverlay, setShowOverlay } = useGameStore();
-  const { subscription, setVideoQueue, videoQueue } = useGameDirector();
+  const { subscription, setVideoQueue, actionFailed } = useGameDirector();
 
   const [padding, setPadding] = useState(getMenuLeftOffset());
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
@@ -46,6 +46,11 @@ export default function GamePage() {
   const [searchParams] = useSearchParams();
   const game_id = Number(searchParams.get('id'));
   const settings_id = Number(searchParams.get('settingsId'));
+
+  useEffect(() => {
+    setShowOverlay(true);
+    setVideoQueue([]);
+  }, [actionFailed]);
 
   useEffect(() => {
     function handleResize() {
