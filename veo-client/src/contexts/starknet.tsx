@@ -5,15 +5,10 @@ import { jsonRpcProvider, StarknetConfig, voyager } from "@starknet-react/core";
 import { dojoConfig } from "../../dojoConfig";
 
 import { PropsWithChildren, useCallback } from "react";
-const StarknetChainId = {
-  SN_MAIN: "0x534e5f4d41494e",
-  SN_SEPOLIA: "0x534e5f5345504f4c4941",
-}
+import { stringToFelt } from "@/utils/utils";
 
-const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE
-const game_systems = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
-const game_token_systems = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
-
+const game_systems = getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address
+const game_token_systems = getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_token_systems")?.address
 
 const cartridge = new ControllerConnector({
   policies: [
@@ -59,11 +54,11 @@ const cartridge = new ControllerConnector({
       description: "Allows requesting random numbers from the VRF provider",
     },
   ],
-  namespace,
-  slot: "lootsurvivor-sepolia-2",
+  namespace: dojoConfig.namespace,
+  slot: dojoConfig.slot,
   preset: "loot-survivor",
   chains: [{ rpcUrl: dojoConfig.rpcUrl }],
-  defaultChainId: import.meta.env.VITE_PUBLIC_CHAIN_ID === 'mainnet' ? StarknetChainId.SN_MAIN : StarknetChainId.SN_SEPOLIA,
+  defaultChainId: stringToFelt(dojoConfig.chainId).toString(),
 })
 
 export default function StarknetProvider({ children }: PropsWithChildren) {

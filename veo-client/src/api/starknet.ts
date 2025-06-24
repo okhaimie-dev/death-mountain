@@ -1,8 +1,6 @@
-import { dojoConfig } from "../../dojoConfig";
 import { getContractByName } from "@dojoengine/core";
 import { Adventurer } from "@/types/game";
-
-const ADVENTURER_ADDRESS = getContractByName(dojoConfig.manifest, import.meta.env.VITE_PUBLIC_NAMESPACE, "adventurer_systems")?.address
+import { dojoConfig } from "../../dojoConfig";
 
 export const fetchAdventurer = async (adventurerId: number): Promise<Adventurer | null> => {
   try {
@@ -16,7 +14,7 @@ export const fetchAdventurer = async (adventurerId: number): Promise<Adventurer 
         method: "starknet_call",
         params: [
           {
-            contract_address: ADVENTURER_ADDRESS,
+            contract_address: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "adventurer_systems")?.address,
             entry_point_selector: "0x3d3148be1dfdfcfcd22f79afe7aee5a3147ef412bfb2ea27949e7f8c8937a7",
             calldata: [adventurerId.toString(16)],
           },

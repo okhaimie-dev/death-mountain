@@ -1,10 +1,7 @@
 import { hexToAscii } from "@dojoengine/utils";
-import { dojoConfig } from "../../dojoConfig";
-import { Adventurer, Equipment, Item, Stats } from "@/types/game";
 import { addAddressPadding } from "starknet";
-
-const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
-let SQL_ENDPOINT = dojoConfig.toriiUrl + "/sql"
+import { Adventurer, Equipment, Item, Stats } from "@/types/game";
+import { dojoConfig } from "../../dojoConfig";
 
 export interface Settings {
   settings_id: number;
@@ -19,9 +16,9 @@ export interface Settings {
 
 export async function getRecommendedSettings(): Promise<Settings[]> {
   try {
-    let url = `${SQL_ENDPOINT}?query=
+    let url = `${dojoConfig.torii}/sql?query=
         SELECT settings_id, COUNT(*) as usage_count
-        FROM "${namespace}-TokenMetadata"
+        FROM "${dojoConfig.namespace}-TokenMetadata"
         GROUP BY settings_id
         ORDER BY usage_count DESC, settings_id ASC
         LIMIT 50`;
@@ -61,12 +58,12 @@ export async function getSettingsList(address: string | null, ids: number[] | nu
     ? `WHERE ${whereClause.join(' AND ')}`
     : '';
 
-  let url = `${SQL_ENDPOINT}?query=
+  let url = `${dojoConfig.torii}/sql?query=
       SELECT *
       FROM 
-        "${namespace}-GameSettingsMetadata" as metadata
+        "${dojoConfig.namespace}-GameSettingsMetadata" as metadata
       JOIN 
-        "${namespace}-GameSettings" as settings
+        "${dojoConfig.namespace}-GameSettings" as settings
       ON 
         metadata.settings_id = settings.settings_id
       ${whereStatement}

@@ -1,22 +1,18 @@
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { hexToAscii } from "@dojoengine/utils";
+import { addAddressPadding } from "starknet";
+import { dojoConfig } from "../../dojoConfig";
 
 import { useGameStore } from "@/stores/gameStore";
 import { getEntityModel } from "@/types/game";
 import { getShortNamespace } from "@/utils/utils";
 import { getContractByName } from "@dojoengine/core";
 import { gql, request } from 'graphql-request';
-import { addAddressPadding } from "starknet";
-import { dojoConfig } from "../../dojoConfig";
-
-const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
-const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
-const NS_SHORT = getShortNamespace(namespace)
 
 export const fetchGameTokenIds = async (address: string) => {
-  let url = `${dojoConfig.toriiUrl}/sql?query=
+  let url = `${dojoConfig.torii}/sql?query=
     SELECT token_id FROM token_balances
-    WHERE account_address = "${address.replace(/^0x0+/, "0x")}" AND contract_address = "${GAME_TOKEN_ADDRESS}"
+    WHERE account_address = "${address.replace(/^0x0+/, "0x")}" AND contract_address = "${getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_token_systems")?.address}"
     LIMIT 10000`
 
   const sql = await fetch(url, {
@@ -36,13 +32,13 @@ export async function fetchMetadata(sdk: any, tokenId: number, retryCount = 0) {
       .withClause(
         new ClauseBuilder().keys(
           [
-            `${namespace}-TokenMetadata`,
+            `${dojoConfig.namespace}-TokenMetadata`,
           ],
           [addAddressPadding(`0x${tokenId.toString(16)}`)]
         ).build()
       )
       .withEntityModels([
-        `${namespace}-TokenMetadata`,
+        `${dojoConfig.namespace}-TokenMetadata`,
       ])
       .includeHashedKeys()
   });
@@ -67,11 +63,12 @@ export async function fetchMetadata(sdk: any, tokenId: number, retryCount = 0) {
 }
 
 export const fetchGameTokensData = async (tokenIds: string[]) => {
+  let shortNamespace = getShortNamespace(dojoConfig.namespace)
   tokenIds = tokenIds.map(tokenId => `"${tokenId.toString()}"`);
 
   const document = gql`
   {
-    ${NS_SHORT}TokenMetadataModels (limit:10000, where:{
+    ${shortNamespace}TokenMetadataModels (limit:10000, where:{
       token_idIN:[${tokenIds}]}
     ){
       edges {
@@ -92,7 +89,7 @@ export const fetchGameTokensData = async (tokenIds: string[]) => {
       }
     }
 
-    ${NS_SHORT}GameEventModels (limit:10000, where:{
+    ${shortNamespace}GameEventModels (limit:10000, where:{
       adventurer_idIN:[${tokenIds}]}
     ){
       edges {
@@ -132,9 +129,9 @@ export const fetchGameTokensData = async (tokenIds: string[]) => {
   }`
 
   try {
-    const res: any = await request(dojoConfig.toriiUrl + "/graphql", document)
-    let tokenMetadata = res?.[`${NS_SHORT}TokenMetadataModels`]?.edges.map((edge: any) => edge.node) ?? []
-    let gameEvents = res?.[`${NS_SHORT}GameEventModels`]?.edges.map((edge: any) => edge.node) ?? []
+    const res: any = await request(dojoConfig.torii + "/graphql", document)
+    let tokenMetadata = res?.[`${shortNamespace}TokenMetadataModels`]?.edges.map((edge: any) => edge.node) ?? []
+    let gameEvents = res?.[`${shortNamespace}GameEventModels`]?.edges.map((edge: any) => edge.node) ?? []
 
     let games = tokenMetadata.map((metaData: any) => {
       let adventurerData = gameEvents.find((event: any) => event.adventurer_id === metaData.token_id)

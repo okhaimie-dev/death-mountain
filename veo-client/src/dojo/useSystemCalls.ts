@@ -1,13 +1,8 @@
 import { getContractByName } from "@dojoengine/core";
+import { dojoConfig } from "../../dojoConfig";
 import { useAccount } from "@starknet-react/core";
 import { CallData } from 'starknet';
-import { dojoConfig } from "../../dojoConfig";
 import { ItemPurchase, Stats } from "../types/game";
-
-const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
-const VRF_PROVIDER_ADDRESS = import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS;
-const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
-const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
 
 /**
  * Custom hook to handle system calls and state management in the Dojo application.
@@ -59,7 +54,7 @@ export const useSystemCalls = () => {
     try {
       let tx = await account!.execute([
         {
-          contractAddress: GAME_TOKEN_ADDRESS,
+          contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_token_systems")?.address,
           entrypoint: 'mint',
           calldata: [
             '0x' + name.split('').map((char: any) => char.charCodeAt(0).toString(16)).join(''),
@@ -92,7 +87,7 @@ export const useSystemCalls = () => {
 
     let calls: any[] = [
       {
-        contractAddress: GAME_ADDRESS,
+        contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
         entrypoint: 'start_game',
         calldata: [gameId, weapon]
       }
@@ -110,10 +105,10 @@ export const useSystemCalls = () => {
    */
   const requestRandom = () => {
     return {
-      contractAddress: VRF_PROVIDER_ADDRESS,
+      contractAddress: import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS,
       entrypoint: 'request_random',
       calldata: CallData.compile({
-        caller: GAME_ADDRESS,
+        caller: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
         source: { type: 0, address: account!.address }
       })
     }
@@ -126,7 +121,7 @@ export const useSystemCalls = () => {
    */
   const explore = (gameId: number, tillBeast: boolean) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'explore',
       calldata: [gameId, tillBeast]
     }
@@ -139,7 +134,7 @@ export const useSystemCalls = () => {
    */
   const attack = (gameId: number, toTheDeath: boolean) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'attack',
       calldata: [gameId, toTheDeath]
     }
@@ -152,7 +147,7 @@ export const useSystemCalls = () => {
    */
   const flee = (gameId: number, toTheDeath: boolean) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'flee',
       calldata: [gameId, toTheDeath]
     }
@@ -165,7 +160,7 @@ export const useSystemCalls = () => {
    */
   const equip = (gameId: number, items: number[]) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'equip',
       calldata: [gameId, items]
     }
@@ -178,7 +173,7 @@ export const useSystemCalls = () => {
    */
   const drop = (gameId: number, items: number[]) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'drop',
       calldata: [gameId, items]
     }
@@ -193,7 +188,7 @@ export const useSystemCalls = () => {
    */
   const buyItems = (gameId: number, potions: number, items: ItemPurchase[]) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'buy_items',
       calldata: [gameId, potions, items]
     }
@@ -201,7 +196,7 @@ export const useSystemCalls = () => {
 
   const selectStatUpgrades = (gameId: number, statUpgrades: Stats) => {
     return {
-      contractAddress: GAME_ADDRESS,
+      contractAddress: getContractByName(dojoConfig.manifest, dojoConfig.namespace, "game_systems")?.address,
       entrypoint: 'select_stat_upgrades',
       calldata: [gameId, statUpgrades]
     }
