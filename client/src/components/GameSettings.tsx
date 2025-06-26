@@ -89,7 +89,7 @@ export default function GameSettings() {
         setGameSettings(settings[0] ?? DEFAULT_SETTINGS)
       })
     }
-  }, [selectedSettingsId, getSettingsList]);
+  }, [selectedSettingsId])
 
   useEffect(() => {
     if (gameSettings.in_battle && gameSettings.game_seed !== 0 && gameSettings.adventurer.xp !== 0) {
