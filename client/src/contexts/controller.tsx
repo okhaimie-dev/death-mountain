@@ -25,12 +25,14 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
 
   const [userName, setUserName] = useState<string>();
 
-  // Auto-disconnect if network mismatch
   useEffect(() => {
-    if (account && (account as any).walletProvider?.account?.channel?.nodeUrl !== currentNetworkConfig.chains[0].rpcUrl) {
-      disconnect();
+    if (account) {
+      // Handle mixed networks
+      if ((account as any).walletProvider?.account?.channel?.nodeUrl && (account as any).walletProvider.account.channel.nodeUrl !== currentNetworkConfig.chains[0].rpcUrl) {
+        return disconnect()
+      }
     }
-  }, [account, currentNetworkConfig, disconnect]);
+  }, [account]);
 
   // Get username when connector changes
   useEffect(() => {
@@ -52,23 +54,17 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
       if (controllerConnector) connect({ connector: controllerConnector });
       return;
     }
-    
+
     (connector as any)?.controller?.openProfile();
   };
 
   const login = async () => {
     const controllerConnector = connectors.find(conn => conn.id === "controller");
-    
+
     if (!controllerConnector || account || isConnecting || isPending) {
       return;
     }
-    
-    // Wait for controller to be ready
-    const controller = (controllerConnector as any)?.controller;
-    if (!controller?.iframes?.keychain) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-    
+
     connect({ connector: controllerConnector });
   };
 
