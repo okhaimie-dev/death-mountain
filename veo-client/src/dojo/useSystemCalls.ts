@@ -25,7 +25,6 @@ export const useSystemCalls = () => {
   const namespace = dojoConfig.namespace;
   const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
   const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
-  const SETTINGS_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "settings_systems")?.address
 
   /**
    * Executes a list of calls with optional VRF

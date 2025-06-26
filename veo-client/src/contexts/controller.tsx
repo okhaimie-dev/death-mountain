@@ -48,35 +48,15 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
     if (connector) getUsername();
   }, [connector]);
 
-  const openProfile = () => {
-    if (!account) {
-      const controllerConnector = connectors.find(conn => conn.id === "controller");
-      if (controllerConnector) connect({ connector: controllerConnector });
-      return;
-    }
-    
-    (connector as any)?.controller?.openProfile();
-  };
-
-  const login = async () => {
-    const controllerConnector = connectors.find(conn => conn.id === "controller");
-    
-    if (!controllerConnector || account || isConnecting || isPending) {
-      return;
-    }
-    
-    connect({ connector: controllerConnector });
-  };
-
   return (
     <ControllerContext.Provider value={{
       account,
       address,
       playerName: userName || "Adventurer",
       isPending: isConnecting || isPending,
-      openProfile,
-      login,
-      logout: disconnect
+      openProfile: () => (connector as any)?.controller?.openProfile(),
+      login: () => connect({ connector: connectors.find(conn => conn.id === "controller") }),
+      logout: () => disconnect()
     }}>
       {children}
     </ControllerContext.Provider>
