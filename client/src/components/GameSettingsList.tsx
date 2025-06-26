@@ -1,4 +1,4 @@
-import { getRecommendedSettings, getSettingsList, Settings } from '@/dojo/useGameSettings';
+import { useGameSettings, Settings } from '@/dojo/useGameSettings';
 import { useUIStore } from '@/stores/uiStore';
 import AddIcon from '@mui/icons-material/Add';
 import { LoadingButton } from '@mui/lab';
@@ -12,6 +12,7 @@ import { fadeVariant } from "../utils/animations";
 function GameSettingsList() {
   const navigate = useNavigate();
   const { account } = useAccount();
+  const { getRecommendedSettings, getSettingsList } = useGameSettings();
   const {
     isGameSettingsListOpen,
     setGameSettingsListOpen,

@@ -1,10 +1,10 @@
-import { useSound } from '@/contexts/Sound';
 import { useGameStore } from '@/stores/gameStore';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Box, IconButton } from '@mui/material';
 import { useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import SettingsMenu from './HeaderMenu';
+import Network from './Network';
 import WalletConnect from './WalletConnect';
 
 function Header() {
@@ -26,7 +26,14 @@ function Header() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
       </Box>
 
+
       <Box sx={styles.headerButtons}>
+        <Box sx={styles.networkContainer}>
+          <Network />
+        </Box>
+
+        <WalletConnect />
+
         <IconButton
           onClick={handleSettingsClick}
           sx={{ color: 'white' }}
@@ -39,7 +46,6 @@ function Header() {
           handleClose={handleSettingsClose}
         />
 
-        <WalletConnect />
       </Box>
     </Box>
   );
@@ -58,6 +64,11 @@ const styles = {
     justifyContent: 'space-between',
     boxSizing: 'border-box',
     px: '10px'
+  },
+  networkContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100px'
   },
   headerButtons: {
     display: 'flex',

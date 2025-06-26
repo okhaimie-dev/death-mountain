@@ -1,15 +1,16 @@
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import WatchIcon from '@mui/icons-material/Watch';
+import adventurerImg from '@/assets/images/adventurer.png';
 import { useController } from '@/contexts/controller';
-import { fetchGameTokenIds, fetchGameTokensData } from '@/dojo/useGameTokens';
+import { useGameTokens } from '@/dojo/useGameTokens';
+import { calculateLevel } from '@/utils/game';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import WatchIcon from '@mui/icons-material/Watch';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import adventurerImg from '@/assets/images/adventurer.png';
-import { calculateLevel } from '@/utils/game';
 
 export default function GameTokensList() {
+  const { fetchGameTokenIds, fetchGameTokensData } = useGameTokens();
   const { account } = useController();
   const navigate = useNavigate();
 
@@ -18,7 +19,7 @@ export default function GameTokensList() {
   const [includeDead, setIncludeDead] = useState(false);
 
   useEffect(() => {
-    async function fetchGames() {
+    async function loadTokens() {
       setLoading(true)
 
       const gameTokenIds = await fetchGameTokenIds(account.address)
@@ -30,10 +31,10 @@ export default function GameTokensList() {
 
       setGameTokens(games.sort((a: any, b: any) => b.adventurer_id - a.adventurer_id))
       setLoading(false)
-    }
+    };
 
     if (account) {
-      fetchGames()
+      loadTokens();
     }
   }, [account]);
 

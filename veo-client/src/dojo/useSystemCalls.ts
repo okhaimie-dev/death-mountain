@@ -1,13 +1,8 @@
 import { getContractByName } from "@dojoengine/core";
+import { useDojoConfig } from "@/contexts/starknet";
 import { useAccount } from "@starknet-react/core";
 import { CallData } from 'starknet';
-import { dojoConfig } from "../../dojoConfig";
 import { ItemPurchase, Stats } from "../types/game";
-
-const namespace = import.meta.env.VITE_PUBLIC_NAMESPACE;
-const VRF_PROVIDER_ADDRESS = import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS;
-const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
-const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
 
 /**
  * Custom hook to handle system calls and state management in the Dojo application.
@@ -25,6 +20,12 @@ const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "ga
  */
 export const useSystemCalls = () => {
   const { account } = useAccount();
+  const dojoConfig = useDojoConfig();
+  
+  const namespace = dojoConfig.namespace;
+  const GAME_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_systems")?.address
+  const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
+  const SETTINGS_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "settings_systems")?.address
 
   /**
    * Executes a list of calls with optional VRF
@@ -110,7 +111,7 @@ export const useSystemCalls = () => {
    */
   const requestRandom = () => {
     return {
-      contractAddress: VRF_PROVIDER_ADDRESS,
+      contractAddress: import.meta.env.VITE_PUBLIC_VRF_PROVIDER_ADDRESS,
       entrypoint: 'request_random',
       calldata: CallData.compile({
         caller: GAME_ADDRESS,

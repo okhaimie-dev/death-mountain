@@ -3,12 +3,11 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useController } from '@/contexts/controller';
-import { fetchGameTokenIds, fetchGameTokensData } from '@/dojo/useGameTokens';
+import { useGameTokens } from '@/dojo/useGameTokens';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import WatchIcon from '@mui/icons-material/Watch';
 import { calculateLevel } from '@/utils/game';
-import adventurerImg from '@/assets/images/adventurer.png';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface AdventurersListProps {
@@ -18,6 +17,7 @@ interface AdventurersListProps {
 export default function AdventurersList({ onBack }: AdventurersListProps) {
   const navigate = useNavigate();
   const { address } = useController();
+  const { fetchGameTokenIds, fetchGameTokensData } = useGameTokens();
   const [gameTokens, setGameTokens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [includeDead, setIncludeDead] = useState(false);

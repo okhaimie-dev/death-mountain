@@ -1,5 +1,6 @@
 import discordIcon from '@/assets/images/discord.png';
 import AdventurersList from '@/components/AdventurersList';
+import Network from '@/components/Network';
 import WalletConnect from '@/components/WalletConnect';
 import { useController } from '@/contexts/controller';
 import { getMenuLeftOffset } from '@/utils/utils';
@@ -80,6 +81,7 @@ export default function MainMenu() {
             </Button>
 
             <Box sx={styles.bottom}>
+              <Network />
               <WalletConnect />
               <Box sx={styles.bottomRow}>
                 <Typography sx={styles.alphaVersion}>

@@ -1,5 +1,6 @@
 import { ClauseBuilder, ParsedEntity, UnionOfModelData, HistoricalToriiQueryBuilder } from '@dojoengine/sdk';
 import { SchemaType } from '../generated/models.gen.ts';
+import { useDojoConfig } from "@/contexts/starknet";
 
 export interface Item {
   id: number;
@@ -133,6 +134,12 @@ export type GameEntity = ParsedEntity<GameSchemaType>;
 export class GameQueryBuilder extends HistoricalToriiQueryBuilder<GameSchemaType> { }
 export class GameClauseBuilder extends ClauseBuilder<GameSchemaType> { }
 
-export const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames | GameComponentModelNames): M => (
-  entity?.models[`${import.meta.env.VITE_PUBLIC_NAMESPACE}`]?.[modelName] as M
-)
+export const useEntityModel = () => {
+  const dojoConfig = useDojoConfig();
+  
+  const getEntityModel = <M extends GameModelType>(entity: GameEntity, modelName: GameSchemaModelNames | GameComponentModelNames): M => (
+    entity?.models[`${dojoConfig.namespace}`]?.[modelName] as M
+  );
+  
+  return { getEntityModel };
+};
