@@ -17,19 +17,19 @@ export const useGameTokens = () => {
   const GAME_TOKEN_ADDRESS = getContractByName(dojoConfig.manifest, namespace, "game_token_systems")?.address
   const NS_SHORT = getShortNamespace(namespace)
 
-  const getTokens = async (address: string) => {
+  const fetchGameTokenIds = async (address: string) => {
     let url = `${dojoConfig.toriiUrl}/sql?query=
-      SELECT * FROM "${namespace}-TokenBalance" 
+      SELECT token_id FROM token_balances
       WHERE account_address = "${address.replace(/^0x0+/, "0x")}" AND contract_address = "${GAME_TOKEN_ADDRESS}"
-    `;
-
+      LIMIT 10000`
+  
     const sql = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
       }
     })
-
+  
     let data = await sql.json()
     return data.map((token: any) => parseInt(token.token_id.split(":")[1], 16))
   }
@@ -168,7 +168,7 @@ export const useGameTokens = () => {
   }
 
   return {
-    getTokens,
+    fetchGameTokenIds,
     fetchMetadata,
     fetchGameTokensData
   }

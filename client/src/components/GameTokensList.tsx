@@ -1,47 +1,42 @@
+import adventurerImg from '@/assets/images/adventurer.png';
+import { useController } from '@/contexts/controller';
+import { useGameTokens } from '@/dojo/useGameTokens';
+import { calculateLevel } from '@/utils/game';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import WatchIcon from '@mui/icons-material/Watch';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import WatchIcon from '@mui/icons-material/Watch';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import adventurerImg from '@/assets/images/adventurer.png';
-import { calculateLevel } from '@/utils/game';
-import { useGameTokens } from '@/dojo/useGameTokens';
-import { useUIStore } from '@/stores/uiStore';
-import { useAccount } from '@starknet-react/core';
 
 export default function GameTokensList() {
-  const { getTokens, fetchGameTokensData } = useGameTokens();
-  const { account } = useAccount();
+  const { fetchGameTokenIds, fetchGameTokensData } = useGameTokens();
+  const { account } = useController();
   const navigate = useNavigate();
 
-  const [tokens, setTokens] = useState<any[]>([]);
+  const [gameTokens, setGameTokens] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [includeDead, setIncludeDead] = useState(false);
 
   useEffect(() => {
-    const loadTokens = async () => {
-      if (!account?.address) return;
-      
-      setLoading(true);
-      try {
-        const tokenIds = await getTokens(account.address);
-        if (tokenIds.length > 0) {
-          const tokenData = await fetchGameTokensData(tokenIds.map((id: number) => id.toString()));
-          setTokens(tokenData);
-        } else {
-          setTokens([]);
-        }
-      } catch (error) {
-        console.error('Error loading tokens:', error);
-        setTokens([]);
-      } finally {
-        setLoading(false);
+    async function loadTokens() {
+      setLoading(true)
+
+      const gameTokenIds = await fetchGameTokenIds(account.address)
+      let games = await fetchGameTokensData(gameTokenIds)
+
+      if (!includeDead) {
+        games = games.filter((game: any) => !game.dead && !game.expired)
       }
+
+      setGameTokens(games.sort((a: any, b: any) => b.adventurer_id - a.adventurer_id))
+      setLoading(false)
     };
 
-    loadTokens();
-  }, [account?.address, getTokens, fetchGameTokensData]);
+    if (account) {
+      loadTokens();
+    }
+  }, [account]);
 
   function handleResumeGame(gameId: number) {
     navigate(`/play?id=${gameId}`)
@@ -79,7 +74,7 @@ export default function GameTokensList() {
 
   return (
     <Box sx={styles.listContainer}>
-      {tokens.map((game: any) => (
+      {gameTokens.map((game: any) => (
         <Box
           key={game.adventurer_id}
           sx={styles.listItem}

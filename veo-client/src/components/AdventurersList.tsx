@@ -17,7 +17,7 @@ interface AdventurersListProps {
 export default function AdventurersList({ onBack }: AdventurersListProps) {
   const navigate = useNavigate();
   const { address } = useController();
-  const { getTokens, fetchGameTokensData } = useGameTokens();
+  const { fetchGameTokenIds, fetchGameTokensData } = useGameTokens();
   const [gameTokens, setGameTokens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [includeDead, setIncludeDead] = useState(false);
@@ -26,7 +26,7 @@ export default function AdventurersList({ onBack }: AdventurersListProps) {
     async function fetchGames() {
       if (!address) return;
       setLoading(true);
-      const gameTokenIds = await getTokens(address);
+      const gameTokenIds = await fetchGameTokenIds(address);
       let games = await fetchGameTokensData(gameTokenIds);
 
       if (!includeDead) {
@@ -37,7 +37,7 @@ export default function AdventurersList({ onBack }: AdventurersListProps) {
       setLoading(false);
     }
     fetchGames();
-  }, [address, getTokens, fetchGameTokensData, includeDead]);
+  }, [address]);
 
   const handleResumeGame = (gameId: number) => {
     navigate(`/play?id=${gameId}`);
