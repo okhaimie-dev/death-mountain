@@ -6,7 +6,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { GameAction, useEntityModel } from '@/types/game';
 import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, GameEvent, useEvents } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
-import { gameEventsQuery } from '@/utils/queries';
+import { useQueries } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
@@ -62,6 +62,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { sdk } = useDojoSDK();
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
+  const { getAdventurer } = useStarknetApi();
+  const { getSettingsList } = useGameSettings();
+  const { fetchMetadata } = useGameTokens();
+  const { getEntityModel } = useEntityModel();
+  const { formatGameEvent } = useEvents();
+  const { gameEventsQuery } = useQueries();
+
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
     setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings } = useGameStore();
@@ -75,13 +82,6 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
   const [eventsProcessed, setEventsProcessed] = useState(0);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
-
-  // Add hook usage for dynamic functions
-  const { getAdventurer } = useStarknetApi();
-  const { getSettingsList } = useGameSettings();
-  const { fetchMetadata } = useGameTokens();
-  const { getEntityModel } = useEntityModel();
-  const { formatGameEvent } = useEvents();
 
   useEffect(() => {
     if (gameId) {

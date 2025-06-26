@@ -6,30 +6,6 @@ import { addAddressPadding } from "starknet";
 export const useQueries = () => {
   const dojoConfig = useDojoConfig();
   
-  const getGameEvents = async (adventurerId: number) => {
-    const response = await fetch(`${dojoConfig.toriiUrl}/sql?query=
-      SELECT * FROM "${dojoConfig.namespace}-GameEvent"
-      WHERE adventurer_id = "${adventurerId.toString(16)}"
-      ORDER BY timestamp DESC
-      LIMIT 100
-    `);
-
-    const data = await response.json();
-    return data;
-  };
-
-  const getGameEventsByType = async (adventurerId: number, eventType: string) => {
-    const response = await fetch(`${dojoConfig.toriiUrl}/sql?query=
-      SELECT * FROM "${dojoConfig.namespace}-GameEvent"
-      WHERE adventurer_id = "${adventurerId.toString(16)}" AND event_type = "${eventType}"
-      ORDER BY timestamp DESC
-      LIMIT 100
-    `);
-
-    const data = await response.json();
-    return data;
-  };
-
   const gameEventsQuery = (gameId: number) => {
     return new GameQueryBuilder()
       .withClause(
@@ -46,5 +22,5 @@ export const useQueries = () => {
       .withLimit(10000)
   };
 
-  return { getGameEvents, getGameEventsByType, gameEventsQuery };
+  return { gameEventsQuery };
 };
