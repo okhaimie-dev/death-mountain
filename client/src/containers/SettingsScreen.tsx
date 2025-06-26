@@ -1,51 +1,27 @@
-import { Box, Typography, Slider, Button } from '@mui/material';
-import { useGameStore } from '@/stores/gameStore';
-import { useNavigate } from 'react-router-dom';
+import { useStarknetApi } from '@/api/starknet';
 import { useSound } from '@/contexts/Sound';
 import { useController } from '@/contexts/controller';
+import { useGameStore } from '@/stores/gameStore';
+import { ellipseAddress } from '@/utils/utils';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import MusicOffIcon from '@mui/icons-material/MusicOff';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { ellipseAddress } from '@/utils/utils';
-import { useStarknetApi } from '@/api/starknet';
-import { useUIStore } from '@/stores/uiStore';
-import { useAccount } from '@starknet-react/core';
-import { useEffect, useState } from 'react';
+import { Box, Button, Slider, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
-  const { gameId, exitGame, setAdventurer } = useGameStore();
+  const { gameId, setAdventurer } = useGameStore();
   const { playing, setPlaying, volume, setVolume } = useSound();
   const { account, address, playerName, login, openProfile } = useController();
   const { getAdventurer } = useStarknetApi();
-  // const { setShowSettings } = useUIStore();
-  const [adventurer, setAdventurerState] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadAdventurer = async () => {
-      if (!account?.address) return;
-      
-      setLoading(true);
-      try {
-        const adventurerData = await getAdventurer(parseInt(account.address, 16));
-        setAdventurerState(adventurerData);
-      } catch (error) {
-        console.error('Error loading adventurer:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAdventurer();
-  }, [account?.address, getAdventurer]);
 
   const handleExitGame = () => {
     navigate('/');
   };
 
   const handleUnstuck = async () => {
-    const adventurer = await getAdventurer(parseInt(account.address, 16));
+    const adventurer = await getAdventurer(gameId!);
 
     if (adventurer) {
       setAdventurer(adventurer);
