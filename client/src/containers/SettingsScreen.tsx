@@ -7,20 +7,45 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import MusicOffIcon from '@mui/icons-material/MusicOff';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { ellipseAddress } from '@/utils/utils';
-import { fetchAdventurer } from '@/api/starknet';
+import { useStarknetApi } from '@/api/starknet';
+import { useUIStore } from '@/stores/uiStore';
+import { useAccount } from '@starknet-react/core';
+import { useEffect, useState } from 'react';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
   const { gameId, exitGame, setAdventurer } = useGameStore();
   const { playing, setPlaying, volume, setVolume } = useSound();
   const { account, address, playerName, login, openProfile } = useController();
+  const { getAdventurer } = useStarknetApi();
+  // const { setShowSettings } = useUIStore();
+  const [adventurer, setAdventurerState] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAdventurer = async () => {
+      if (!account?.address) return;
+      
+      setLoading(true);
+      try {
+        const adventurerData = await getAdventurer(parseInt(account.address, 16));
+        setAdventurerState(adventurerData);
+      } catch (error) {
+        console.error('Error loading adventurer:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAdventurer();
+  }, [account?.address, getAdventurer]);
 
   const handleExitGame = () => {
     navigate('/');
   };
 
   const handleUnstuck = async () => {
-    const adventurer = await fetchAdventurer(gameId!);
+    const adventurer = await getAdventurer(parseInt(account.address, 16));
 
     if (adventurer) {
       setAdventurer(adventurer);

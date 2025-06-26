@@ -1,5 +1,5 @@
 import { MAX_BAG_SIZE } from '@/constants/game';
-import { getSettingsList, Settings } from '@/dojo/useGameSettings';
+import { useGameSettings, Settings } from '@/dojo/useGameSettings';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useUIStore } from '@/stores/uiStore';
 import { Adventurer, Beast, Equipment, Item } from '@/types/game';
@@ -65,9 +65,10 @@ const DEFAULT_SETTINGS: GameSettingsData = {
   bag: []
 };
 
-function GameSettings() {
+export default function GameSettings() {
   const navigate = useNavigate();
   const { createSettings } = useSystemCalls()
+  const { getSettingsList } = useGameSettings();
   const { isGameSettingsDialogOpen, setGameSettingsDialogOpen, gameSettingsEdit, setGameSettingsListOpen,
     setGameSettingsEdit, setSelectedSettingsId, selectedSettingsId } = useUIStore();
 
@@ -88,7 +89,7 @@ function GameSettings() {
         setGameSettings(settings[0] ?? DEFAULT_SETTINGS)
       })
     }
-  }, [selectedSettingsId])
+  }, [selectedSettingsId, getSettingsList]);
 
   useEffect(() => {
     if (gameSettings.in_battle && gameSettings.game_seed !== 0 && gameSettings.adventurer.xp !== 0) {
@@ -1099,5 +1100,3 @@ const styles: Record<string, any> = {
     objectFit: 'contain' as const,
   },
 };
-
-export default GameSettings;

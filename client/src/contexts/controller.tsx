@@ -1,12 +1,12 @@
 import { useAccount, useConnect, useDisconnect } from '@starknet-react/core';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { dojoConfig } from "../../dojoConfig";
+import { useDynamicConnector } from './starknet';
 
 export interface ControllerContext {
   account: any;
   address: string | undefined;
   playerName: string;
-  isPending: boolean | undefined;
+  isPending: boolean;
 
   openProfile: () => void;
   login: () => void;
@@ -18,34 +18,59 @@ const ControllerContext = createContext<ControllerContext>({} as ControllerConte
 
 // Create a provider component
 export const ControllerProvider = ({ children }: PropsWithChildren) => {
-  const { account, address, isConnecting } = useAccount()
+  const { account, address, isConnecting } = useAccount();
   const { connector, connectors, connect, isPending } = useConnect();
-  const { disconnect } = useDisconnect()
+  const { disconnect } = useDisconnect();
+  const { currentNetworkConfig } = useDynamicConnector();
 
-  const [userName, setUserName] = useState()
+  const [userName, setUserName] = useState<string>();
 
+  // Auto-disconnect if network mismatch
   useEffect(() => {
-    if (account) {
-      // Handle mixed networks
-      if ((account as any).walletProvider?.account?.channel?.nodeUrl && (account as any).walletProvider.account.channel.nodeUrl !== dojoConfig.rpcUrl) {
-        return disconnect()
-      }
+    if (account && (account as any).walletProvider?.account?.channel?.nodeUrl !== currentNetworkConfig.chains[0].rpcUrl) {
+      disconnect();
     }
-  }, [account]);
+  }, [account, currentNetworkConfig, disconnect]);
 
+  // Get username when connector changes
   useEffect(() => {
-    async function controllerName() {
+    const getUsername = async () => {
       try {
-        const name = await (connector as any)?.username()
-        if (name) {
-          setUserName(name)
-        }
+        const name = await (connector as any)?.username();
+        if (name) setUserName(name);
       } catch (error) {
+        console.error('Error getting username:', error);
       }
-    }
+    };
 
-    controllerName()
-  }, [connector])
+    if (connector) getUsername();
+  }, [connector]);
+
+  const openProfile = () => {
+    if (!account) {
+      const controllerConnector = connectors.find(conn => conn.id === "controller");
+      if (controllerConnector) connect({ connector: controllerConnector });
+      return;
+    }
+    
+    (connector as any)?.controller?.openProfile();
+  };
+
+  const login = async () => {
+    const controllerConnector = connectors.find(conn => conn.id === "controller");
+    
+    if (!controllerConnector || account || isConnecting || isPending) {
+      return;
+    }
+    
+    // Wait for controller to be ready
+    const controller = (controllerConnector as any)?.controller;
+    if (!controller?.iframes?.keychain) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    connect({ connector: controllerConnector });
+  };
 
   return (
     <ControllerContext.Provider value={{
@@ -53,10 +78,9 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
       address,
       playerName: userName || "Adventurer",
       isPending: isConnecting || isPending,
-
-      openProfile: () => (connector as any)?.controller?.openProfile(),
-      login: () => connect({ connector: connectors.find(conn => conn.id === "controller") }),
-      logout: () => disconnect()
+      openProfile,
+      login,
+      logout: disconnect
     }}>
       {children}
     </ControllerContext.Provider>
@@ -64,6 +88,10 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
 };
 
 export const useController = () => {
-  return useContext(ControllerContext);
+  const context = useContext(ControllerContext);
+  if (!context) {
+    throw new Error('useController must be used within a ControllerProvider');
+  }
+  return context;
 };
 

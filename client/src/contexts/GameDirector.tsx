@@ -1,10 +1,10 @@
-import { fetchAdventurer } from '@/api/starknet';
-import { getSettingsList, Settings } from '@/dojo/useGameSettings';
-import { fetchMetadata } from '@/dojo/useGameTokens';
+import { useStarknetApi } from '@/api/starknet';
+import { Settings, useGameSettings } from '@/dojo/useGameSettings';
+import { useGameTokens } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
-import { GameAction, getEntityModel } from '@/types/game';
-import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent } from '@/utils/events';
+import { GameAction, useEntityModel } from '@/types/game';
+import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, GameEvent, useEvents } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
 import { gameEventsQuery } from '@/utils/queries';
 import { delay } from '@/utils/utils';
@@ -75,6 +75,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
   const [eventsProcessed, setEventsProcessed] = useState(0);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
+
+  // Add hook usage for dynamic functions
+  const { getAdventurer } = useStarknetApi();
+  const { getSettingsList } = useGameSettings();
+  const { fetchMetadata } = useGameTokens();
+  const { getEntityModel } = useEntityModel();
+  const { formatGameEvent } = useEvents();
 
   useEffect(() => {
     if (gameId) {
@@ -155,7 +162,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     }
 
     // Fetch adventurer state
-    const adventurer = await fetchAdventurer(gameId!);
+    const adventurer = await getAdventurer(gameId!);
     if (!adventurer) {
       return navigate('/');
     }
