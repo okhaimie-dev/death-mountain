@@ -8,32 +8,61 @@ import { DojoSdkProvider } from "@dojoengine/sdk/react";
 import { setupWorld } from "./generated/contracts.gen.ts";
 import type { SchemaType } from "./generated/models.gen.ts";
 
-import { dojoConfig } from "../dojoConfig.ts";
-
 import { createDojoConfig } from "@dojoengine/core";
-import StarknetProvider from "./contexts/starknet";
+import { useEffect, useState } from "react";
+import { DynamicConnectorProvider, useDynamicConnector } from "./contexts/starknet";
 import "./index.css";
 
-async function main() {
-  const sdk = await init<SchemaType>({
-    client: {
-      toriiUrl: dojoConfig.torii,
-      worldAddress: dojoConfig.manifest.world.address,
-    },
-    domain: {
-      name: "Loot Survivor",
-      version: "1.0",
-      chainId: dojoConfig.chainId,
-      revision: "1",
-    }
-  });
+function DojoApp() {
+  const { dojoConfig } = useDynamicConnector();
+  const [sdk, setSdk] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  createRoot(document.getElementById("root")!).render(
+  useEffect(() => {
+    async function initializeSdk() {
+      try {
+        setLoading(true);
+        const initializedSdk = await init<SchemaType>({
+          client: {
+            toriiUrl: dojoConfig.toriiUrl,
+            worldAddress: dojoConfig.manifest.world.address,
+          },
+          domain: {
+            name: "Loot Survivor",
+            version: "1.0",
+            chainId: dojoConfig.chainId,
+            revision: "1",
+          }
+        });
+        setSdk(initializedSdk);
+      } catch (error) {
+        console.error("Failed to initialize SDK:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (dojoConfig) {
+      initializeSdk();
+    }
+  }, [dojoConfig]);
+
+  if (loading || !sdk) {
+    return <div>Loading...</div>;
+  }
+
+  return (
     <DojoSdkProvider sdk={sdk} dojoConfig={createDojoConfig(dojoConfig)} clientFn={setupWorld}>
-      <StarknetProvider>
-        <App />
-      </StarknetProvider>
+      <App />
     </DojoSdkProvider>
+  );
+}
+
+async function main() {
+  createRoot(document.getElementById("root")!).render(
+    <DynamicConnectorProvider>
+      <DojoApp />
+    </DynamicConnectorProvider>
   );
 }
 

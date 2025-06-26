@@ -1,10 +1,16 @@
+import { useDynamicConnector } from '@/contexts/starknet';
+import { NETWORKS } from '@/utils/networkConfig';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { Box, Button, Menu, MenuItem } from '@mui/material';
+import { useAccount, useDisconnect } from '@starknet-react/core';
 import { useState } from 'react';
-import { dojoConfig, NETWORKS } from '../../dojoConfig';
 
 function Network() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { switchToNetwork, currentNetworkConfig } = useDynamicConnector();
+  const { isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -13,7 +19,18 @@ function Network() {
     setAnchorEl(null);
   };
 
-  const handleNetworkSelect = (name: string) => {
+  const handleNetworkSwitch = async (networkKey: keyof typeof NETWORKS) => {
+    const network = NETWORKS[networkKey];
+
+    // If connected, logout first to ensure clean state
+    if (isConnected) {
+      disconnect();
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // Always update our internal config
+    switchToNetwork(network.chainId);
+
     handleClose();
   };
 
@@ -43,10 +60,10 @@ function Network() {
           padding: '8px 16px'
         }}
       >
-        {dojoConfig.name}
+        {currentNetworkConfig.name}
         <FiberManualRecordIcon
           sx={{
-            color: getStatusColor(dojoConfig.status),
+            color: getStatusColor(currentNetworkConfig.status),
             fontSize: 12
           }}
         />
@@ -66,15 +83,19 @@ function Network() {
           }
         }}
       >
-        {Object.values(NETWORKS).map((network) => (
+        {Object.entries(NETWORKS).map(([key, network]) => (
           <MenuItem
             key={network.name}
-            onClick={() => handleNetworkSelect(network.name)}
+            onClick={() => handleNetworkSwitch(key as keyof typeof NETWORKS)}
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              gap: 1
+              gap: 1,
+              backgroundColor: key === currentNetworkConfig.chainId ? 'rgba(215, 197, 41, 0.1)' : 'transparent',
+              '&:hover': {
+                backgroundColor: key === currentNetworkConfig.chainId ? 'rgba(215, 197, 41, 0.2)' : 'rgba(215, 197, 41, 0.05)',
+              }
             }}
           >
             {network.name}
@@ -91,4 +112,4 @@ function Network() {
   );
 }
 
-export default Network
+export default Network;

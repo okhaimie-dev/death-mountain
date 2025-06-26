@@ -1,12 +1,12 @@
-import { getSettingsList, Settings } from '@/dojo/useGameSettings';
-import { fetchMetadata } from '@/dojo/useGameTokens';
+import { useGameSettings, Settings } from '@/dojo/useGameSettings';
+import { useGameTokens } from '@/dojo/useGameTokens';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import { useGameStore } from '@/stores/gameStore';
-import { GameAction, getEntityModel } from '@/types/game';
+import { GameAction, useEntityModel } from '@/types/game';
 import { streamIds } from '@/utils/cloudflare';
-import { BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, formatGameEvent, GameEvent, getVideoId } from '@/utils/events';
+import { useEvents, BattleEvents, ExplorerLogEvents, ExplorerReplayEvents, getVideoId } from '@/utils/events';
 import { getNewItemsEquipped } from '@/utils/game';
-import { gameEventsQuery } from '@/utils/queries';
+import { useQueries } from '@/utils/queries';
 import { delay } from '@/utils/utils';
 import { useDojoSDK } from '@dojoengine/sdk/react';
 import { createContext, PropsWithChildren, useContext, useEffect, useReducer, useState } from 'react';
@@ -37,6 +37,11 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const { sdk } = useDojoSDK();
   const { startGame, executeAction, requestRandom, explore, attack,
     flee, buyItems, selectStatUpgrades, equip, drop } = useSystemCalls();
+  const { getSettingsList } = useGameSettings();
+  const { fetchMetadata } = useGameTokens();
+  const { getEntityModel } = useEntityModel();
+  const { processGameEvent } = useEvents();
+  const { gameEventsQuery } = useQueries();
 
   const { gameId, adventurer, adventurerState, setAdventurer, setBag, setBeast, setExploreLog, setBattleEvent, newInventoryItems,
     setMarketItemIds, setNewMarket, setNewInventoryItems, metadata, gameSettings, setGameSettings, setShowInventory, setShowOverlay } = useGameStore();
@@ -46,7 +51,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [actionFailed, setActionFailed] = useReducer(x => x + 1, 0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [eventQueue, setEventQueue] = useState<GameEvent[]>([]);
+  const [eventQueue, setEventQueue] = useState<any[]>([]);
 
   const [videoQueue, setVideoQueue] = useState<string[]>([]);
 
@@ -101,7 +106,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
       callback: ({ data, error }: { data?: any[]; error?: Error }) => {
         if (data && data.length > 0) {
           let events = data.filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
-            .map((entity: any) => formatGameEvent(entity));
+            .map((entity: any) => processGameEvent(entity));
 
           setEventQueue(prev => [...prev, ...events]);
         }
@@ -110,7 +115,7 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
 
     let events = (initialData?.getItems() || [])
       .filter((entity: any) => Boolean(getEntityModel(entity, "GameEvent")))
-      .map((entity: any) => formatGameEvent(entity))
+      .map((entity: any) => processGameEvent(entity))
       .sort((a, b) => a.action_count - b.action_count);
 
 
@@ -123,13 +128,13 @@ export const GameDirector = ({ children }: PropsWithChildren) => {
     setSubscription(sub);
   }
 
-  const reconnectGameEvents = async (events: GameEvent[]) => {
+  const reconnectGameEvents = async (events: any[]) => {
     events.forEach(event => {
       processEvent(event, true);
     });
   }
 
-  const processEvent = async (event: GameEvent, skipVideo: boolean) => {
+  const processEvent = async (event: any, skipVideo: boolean) => {
     if (event.type === 'adventurer') {
       setAdventurer(event.adventurer!);
 
