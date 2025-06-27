@@ -81,7 +81,6 @@ function useDynamicControllerConnector(networkConfig: NetworkConfig) {
 interface DynamicConnectorContext {
   currentNetworkConfig: NetworkConfig;
   switchToNetwork: (networkKey: ChainId) => void;
-  connector: ControllerConnector;
   dojoConfig: {
     manifest: any;
     rpcUrl: string;
@@ -175,7 +174,6 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
     <DynamicConnectorContext.Provider value={{
       currentNetworkConfig,
       switchToNetwork,
-      connector,
       dojoConfig
     }}>
       <StarknetConfig

@@ -1,7 +1,6 @@
 import VideoPlayer from '@/components/VideoPlayer';
 import { useController } from '@/contexts/controller';
 import { useGameDirector } from '@/contexts/GameDirector';
-import { useDynamicConnector } from '@/contexts/starknet';
 import { useSystemCalls } from '@/dojo/useSystemCalls';
 import CombatOverlay from '@/overlays/Combat';
 import DeathOverlay from '@/overlays/Death';
@@ -40,7 +39,6 @@ export default function GamePage() {
   const { account, address, playerName, login, isPending } = useController();
   const { gameId, adventurer, exitGame, setGameId, beast, showOverlay, setShowOverlay } = useGameStore();
   const { subscription, setVideoQueue, actionFailed } = useGameDirector();
-  const { connector } = useDynamicConnector();
 
   const [padding, setPadding] = useState(getMenuLeftOffset());
   const [update, forceUpdate] = useReducer(x => x + 1, 0);
@@ -69,7 +67,7 @@ export default function GamePage() {
   }, [account]);
 
   useEffect(() => {
-    if (!sdk || isPending || !connector) return;
+    if (!sdk || isPending) return;
 
     if (!address) return login();
 
@@ -83,7 +81,7 @@ export default function GamePage() {
     } else if (game_id === 0) {
       mint();
     }
-  }, [game_id, address, isPending, sdk, update, connector]);
+  }, [game_id, address, isPending, sdk, update]);
 
   useEffect(() => {
     return () => {

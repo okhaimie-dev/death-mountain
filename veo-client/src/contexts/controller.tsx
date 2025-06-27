@@ -48,14 +48,6 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
     if (connector) getUsername();
   }, [connector]);
 
-  const login = () => {
-    try {
-      connect({ connector: connectors.find(conn => conn.id === "controller") });
-    } catch (error) {
-      console.error('Error logging in:', error);
-    }
-  }
-
   return (
     <ControllerContext.Provider value={{
       account,
@@ -63,7 +55,7 @@ export const ControllerProvider = ({ children }: PropsWithChildren) => {
       playerName: userName || "Adventurer",
       isPending: isConnecting || isPending,
       openProfile: () => (connector as any)?.controller?.openProfile(),
-      login,
+      login: () => connect({ connector: connectors.find(conn => conn.id === "controller") }),
       logout: () => disconnect()
     }}>
       {children}
