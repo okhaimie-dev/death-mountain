@@ -137,3 +137,17 @@ export function getNetworkConfig(networkKey: ChainId): NetworkConfig | null {
     tokens: network.tokens,
   };
 }
+
+export function translateName(network: string): ChainId | null {
+  network = network.toLowerCase();
+
+  if (network === 'mainnet') {
+    return ChainId.SN_MAIN;
+  } else if (network === 'sepolia') {
+    return ChainId.SN_SEPOLIA;
+  } else if (network === 'katana') {
+    return ChainId.KATANA;
+  }
+
+  return null;
+}

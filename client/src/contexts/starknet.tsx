@@ -1,4 +1,4 @@
-import { ChainId, getNetworkConfig, NetworkConfig, NETWORKS } from "@/utils/networkConfig";
+import { ChainId, getNetworkConfig, NetworkConfig, NETWORKS, translateName } from "@/utils/networkConfig";
 import { stringToFelt } from "@/utils/utils";
 import { ControllerConnector } from "@cartridge/connector";
 import { mainnet, sepolia } from "@starknet-react/chains";
@@ -98,6 +98,18 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
 
   // Get the saved network or fall back to default
   const getInitialNetwork = (): ChainId => {
+    // First, check URL parameters
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const networkParam = urlParams.get('network');
+      if (networkParam && translateName(networkParam)) {
+        return translateName(networkParam) as ChainId;
+      }
+    } catch (error) {
+      console.warn('Failed to read network from URL parameters:', error);
+    }
+
+    // Second, check localStorage
     try {
       const savedNetwork = localStorage.getItem(NETWORK_STORAGE_KEY);
       if (savedNetwork && Object.values(ChainId).includes(savedNetwork as ChainId)) {
@@ -106,6 +118,7 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
     } catch (error) {
       console.warn('Failed to read saved network from localStorage:', error);
     }
+
     return defaultNetworkKey as ChainId;
   };
 
