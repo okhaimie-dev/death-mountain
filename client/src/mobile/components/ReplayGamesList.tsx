@@ -2,6 +2,7 @@ import { useController } from "@/contexts/controller";
 import { useDynamicConnector } from "@/contexts/starknet";
 import { useGameTokens } from "@/dojo/useGameTokens";
 import { useStatistics } from "@/contexts/Statistics";
+import { useStarknetApi } from "@/api/starknet";
 import { calculateLevel } from "@/utils/game";
 import { ChainId } from "@/utils/networkConfig";
 import { getContractByName } from "@dojoengine/core";
@@ -37,6 +38,7 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
   const { fetchAdventurerData } = useGameTokens();
   const { currentNetworkConfig } = useDynamicConnector();
   const { remainingSurvivorTokens } = useStatistics();
+  const { checkRewardClaimed } = useStarknetApi();
 
   const namespace = currentNetworkConfig.namespace;
   const gameTokenAddress = getContractByName(
@@ -57,10 +59,10 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
   const [gameTokens, setGameTokens] = useState<GameWithClaims[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check if a specific game has claimable rewards based on known criteria
+  // Check if a specific game has claimable rewards
   const checkClaimableReward = async (game: any): Promise<boolean> => {
     try {
-      // Check basic eligibility criteria
+      // Check basic eligibility criteria first
       if (
         currentNetworkConfig.chainId === ChainId.WP_PG_SLOT ||
         !game.xp ||
@@ -76,7 +78,11 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
         return false;
       }
 
-      return true;
+      // Now check if the reward has already been claimed
+      const alreadyClaimed = await checkRewardClaimed(game.adventurer_id);
+
+      // Return true only if eligible AND not yet claimed
+      return !alreadyClaimed;
     } catch (error) {
       console.error(
         `Error checking claim status for game ${game.adventurer_id}:`,
@@ -177,6 +183,7 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
               color="warning"
               variant="outlined"
               sx={{ ml: 1, fontSize: "12px" }}
+              title="These games have verified unclaimed rewards ready to claim."
             />
           )}
         </Box>
@@ -245,6 +252,7 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
                           color="warning"
                           size="small"
                           sx={{ fontSize: "8px", height: "16px" }}
+                          title="Reward available - click to claim"
                         />
                       )}
                       {game.isCheckingClaim && (

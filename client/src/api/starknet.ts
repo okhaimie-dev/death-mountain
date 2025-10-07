@@ -12,7 +12,9 @@ export const useStarknetApi = () => {
   const { currentNetworkConfig } = useDynamicConnector();
   const { address } = useAccount();
 
-  const getTokenBalances = async (tokens: any[]): Promise<Record<string, string>> => {
+  const getTokenBalances = async (
+    tokens: any[],
+  ): Promise<Record<string, string>> => {
     const calls = tokens.map((token, i) => ({
       id: i + 1,
       jsonrpc: "2.0",
@@ -20,25 +22,33 @@ export const useStarknetApi = () => {
       params: [
         {
           contract_address: token.address,
-          entry_point_selector: "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e",
-          calldata: [address]
+          entry_point_selector:
+            "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e",
+          calldata: [address],
         },
-        "latest"
-      ]
+        "latest",
+      ],
     }));
 
-    const response = await fetch(NETWORKS[import.meta.env.VITE_PUBLIC_CHAIN as keyof typeof NETWORKS].rpcUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(calls),
-    });
+    const response = await fetch(
+      NETWORKS[import.meta.env.VITE_PUBLIC_CHAIN as keyof typeof NETWORKS]
+        .rpcUrl,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(calls),
+      },
+    );
 
     const data = await response.json();
 
     return parseBalances(data || [], tokens);
-  }
+  };
 
-  const goldenPassReady = async (goldenPassAddress: string, tokenIds: number[]): Promise<number[]> => {
+  const goldenPassReady = async (
+    goldenPassAddress: string,
+    tokenIds: number[],
+  ): Promise<number[]> => {
     try {
       const calls = tokenIds.map((tokenId, i) => ({
         id: i + 1,
@@ -47,11 +57,12 @@ export const useStarknetApi = () => {
         params: [
           {
             contract_address: currentNetworkConfig.dungeon,
-            entry_point_selector: "0x02f6ca94ed3ceec9e8b907a11317d8d624f94cf62d9c8112c658fd4d9f02b2d8",
-            calldata: [goldenPassAddress, num.toHex(tokenId)]
+            entry_point_selector:
+              "0x02f6ca94ed3ceec9e8b907a11317d8d624f94cf62d9c8112c658fd4d9f02b2d8",
+            calldata: [goldenPassAddress, num.toHex(tokenId)],
           },
-          "latest"
-        ]
+          "latest",
+        ],
       }));
 
       const response = await fetch(currentNetworkConfig.rpcUrl, {
@@ -65,10 +76,10 @@ export const useStarknetApi = () => {
       // Filter token IDs where the response is true (0x1)
       return tokenIds.filter((_, index) => data[index]?.result?.[0] === "0x1");
     } catch (error) {
-      console.error('Error in goldenPassReady:', error);
+      console.error("Error in goldenPassReady:", error);
       return [];
     }
-  }
+  };
 
   const getRewardTokensClaimed = async (): Promise<number | null> => {
     try {
@@ -82,21 +93,22 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.dungeon,
-              entry_point_selector: "0x00f35723a44bb7019f945d4e33d732e4c70779272d603c301add5c3edc68ff06",
-              calldata: []
+              entry_point_selector:
+                "0x00f35723a44bb7019f945d4e33d732e4c70779272d603c301add5c3edc68ff06",
+              calldata: [],
             },
-            "latest"
-          ]
+            "latest",
+          ],
         }),
       });
 
       const data = await response.json();
       return parseInt(data.result[0], 16);
     } catch (error) {
-      console.error('Error in getRewardTokensClaimed:', error);
+      console.error("Error in getRewardTokensClaimed:", error);
       return null;
     }
-  }
+  };
 
   const getAdventurerState = async (adventurerId: number) => {
     try {
@@ -110,8 +122,13 @@ export const useStarknetApi = () => {
           method: "starknet_call",
           params: [
             {
-              contract_address: getContractByName(currentNetworkConfig.manifest, currentNetworkConfig.namespace, "adventurer_systems")?.address,
-              entry_point_selector: "0x3d3148be1dfdfcfcd22f79afe7aee5a3147ef412bfb2ea27949e7f8c8937a7",
+              contract_address: getContractByName(
+                currentNetworkConfig.manifest,
+                currentNetworkConfig.namespace,
+                "adventurer_systems",
+              )?.address,
+              entry_point_selector:
+                "0x3d3148be1dfdfcfcd22f79afe7aee5a3147ef412bfb2ea27949e7f8c8937a7",
               calldata: [num.toHex(adventurerId)],
             },
             "latest",
@@ -123,14 +140,14 @@ export const useStarknetApi = () => {
       const data = await response.json();
       return {
         beast_health: parseInt(data?.result[3], 16),
-        action_count: parseInt(data?.result[29], 16)
-      }
+        action_count: parseInt(data?.result[29], 16),
+      };
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
 
     return null;
-  }
+  };
 
   const getGameState = async (adventurerId: number) => {
     try {
@@ -144,8 +161,13 @@ export const useStarknetApi = () => {
           method: "starknet_call",
           params: [
             {
-              contract_address: getContractByName(currentNetworkConfig.manifest, currentNetworkConfig.namespace, "game_systems")?.address,
-              entry_point_selector: "0x2305fda54e31f8525bf15eaf4f22b11a7d1d2a03f1b4d0602b9ead3c29533e",
+              contract_address: getContractByName(
+                currentNetworkConfig.manifest,
+                currentNetworkConfig.namespace,
+                "game_systems",
+              )?.address,
+              entry_point_selector:
+                "0x2305fda54e31f8525bf15eaf4f22b11a7d1d2a03f1b4d0602b9ead3c29533e",
               calldata: [num.toHex(adventurerId)],
             },
             "latest",
@@ -286,11 +308,11 @@ export const useStarknetApi = () => {
           is_collectable: parseInt(data?.result[68], 16) === 1,
         },
         market: data?.result.slice(70).map((item: any) => parseInt(item, 16)),
-      }
+      };
 
       return gameState;
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
 
     return null;
@@ -309,7 +331,8 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.beasts,
-              entry_point_selector: "0x226ad7e84c1fe08eb4c525ed93cccadf9517670341304571e66f7c4f95cbe54",
+              entry_point_selector:
+                "0x226ad7e84c1fe08eb4c525ed93cccadf9517670341304571e66f7c4f95cbe54",
               calldata: [num.toHex(beastId), "0x0"],
             },
             "latest",
@@ -327,7 +350,7 @@ export const useStarknetApi = () => {
 
       return data?.result;
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
 
     return null;
@@ -345,8 +368,13 @@ export const useStarknetApi = () => {
           method: "starknet_call",
           params: [
             {
-              contract_address: getContractByName(currentNetworkConfig.manifest, currentNetworkConfig.namespace, "settings_systems")?.address,
-              entry_point_selector: "0x212a142d787b7ccdf7549cce575f25c05823490271d294b08eceda21119475",
+              contract_address: getContractByName(
+                currentNetworkConfig.manifest,
+                currentNetworkConfig.namespace,
+                "settings_systems",
+              )?.address,
+              entry_point_selector:
+                "0x212a142d787b7ccdf7549cce575f25c05823490271d294b08eceda21119475",
               calldata: [num.toHex(settingsId)],
             },
             "latest",
@@ -369,15 +397,15 @@ export const useStarknetApi = () => {
         stats_mode: parseInt(data.result[66]) === 0 ? "Dodge" : "Reduction",
         base_damage_reduction: parseInt(data.result[67]),
         market_size: parseInt(data.result[68]),
-      }
+      };
 
       return settings;
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
 
     return null;
-  }
+  };
 
   const getTokenMetadata = async (tokenId: number) => {
     try {
@@ -393,7 +421,8 @@ export const useStarknetApi = () => {
             params: [
               {
                 contract_address: currentNetworkConfig.denshokan,
-                entry_point_selector: "0x20d82cc6889093dce20d92fc9daeda4498c9b99ae798fc2a6f4757e38fb1729",
+                entry_point_selector:
+                  "0x20d82cc6889093dce20d92fc9daeda4498c9b99ae798fc2a6f4757e38fb1729",
                 calldata: [num.toHex(tokenId)],
               },
               "latest",
@@ -406,13 +435,14 @@ export const useStarknetApi = () => {
             params: [
               {
                 contract_address: currentNetworkConfig.denshokan,
-                entry_point_selector: "0x170ac5a9fd747db6517bea85af33fcc77a61d4442c966b646a41fdf9ecca233",
+                entry_point_selector:
+                  "0x170ac5a9fd747db6517bea85af33fcc77a61d4442c966b646a41fdf9ecca233",
                 calldata: [num.toHex(tokenId)],
               },
               "latest",
             ],
             id: 1,
-          }
+          },
         ]),
       });
 
@@ -425,30 +455,33 @@ export const useStarknetApi = () => {
         expires_at: parseInt(data[0].result[3], 16) * 1000,
         available_at: parseInt(data[0].result[4], 16) * 1000,
         minted_by: data[0].result[5],
-      }
+      };
 
       return tokenMetadata;
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
 
     return null;
-  }
+  };
 
-  const unclaimedBeast = async (gameId: number, beast: Beast): Promise<boolean> => {
+  const unclaimedBeast = async (
+    gameId: number,
+    beast: Beast,
+  ): Promise<boolean> => {
     let prefix = 0;
     let suffix = 0;
 
     if (beast.specialPrefix) {
       const prefixKey = Object.keys(BEAST_NAME_PREFIXES).find(
-        (key) => BEAST_NAME_PREFIXES[parseInt(key)] === beast.specialPrefix
+        (key) => BEAST_NAME_PREFIXES[parseInt(key)] === beast.specialPrefix,
       );
       prefix = prefixKey ? parseInt(prefixKey) : 0;
     }
 
     if (beast.specialSuffix) {
       const suffixKey = Object.keys(BEAST_NAME_SUFFIXES).find(
-        (key) => BEAST_NAME_SUFFIXES[parseInt(key)] === beast.specialSuffix
+        (key) => BEAST_NAME_SUFFIXES[parseInt(key)] === beast.specialSuffix,
       );
       suffix = suffixKey ? parseInt(suffixKey) : 0;
     }
@@ -464,18 +497,22 @@ export const useStarknetApi = () => {
         AND suffix = "${suffix}"
         LIMIT 1`;
 
-      console.log('Torii URL', toriiUrl)
+      console.log("Torii URL", toriiUrl);
       const sqlResponse = await fetch(toriiUrl, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       const collectableData = await sqlResponse.json();
-      console.log('Collectable Data', collectableData)
+      console.log("Collectable Data", collectableData);
 
-      if (!collectableData || collectableData.length === 0 || parseInt(collectableData[0].killed_by, 16) !== gameId) {
+      if (
+        !collectableData ||
+        collectableData.length === 0 ||
+        parseInt(collectableData[0].killed_by, 16) !== gameId
+      ) {
         return false;
       }
 
@@ -489,37 +526,81 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.beasts,
-              entry_point_selector: "0x019b8444cb075fa118a2d8dc7d0597d114a82ad3e7bba431638c00966674670e",
-              calldata: [num.toHex(beast.id), num.toHex(prefix), num.toHex(suffix)]
+              entry_point_selector:
+                "0x019b8444cb075fa118a2d8dc7d0597d114a82ad3e7bba431638c00966674670e",
+              calldata: [
+                num.toHex(beast.id),
+                num.toHex(prefix),
+                num.toHex(suffix),
+              ],
             },
-            "latest"
-          ]
+            "latest",
+          ],
         }),
       });
 
       const mintedData = await mintedResponse.json();
-      console.log('Minted Data', mintedData)
+      console.log("Minted Data", mintedData);
       const minted = parseInt(mintedData.result[0], 16);
 
       return minted === 0;
     } catch (error) {
-      console.error('Error in unclaimedBeast:', error);
+      console.error("Error in unclaimedBeast:", error);
       return false;
     }
-  }
+  };
+
+  const checkRewardClaimed = async (gameId: number): Promise<boolean> => {
+    try {
+      // Call the has_adventurer_claimed_reward function on the dungeon contract
+      const response = await fetch(currentNetworkConfig.rpcUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: 0,
+          jsonrpc: "2.0",
+          method: "starknet_call",
+          params: [
+            {
+              contract_address:
+                "0x00a67ef20b61a9846e1c82b411175e6ab167ea9f8632bd6c2091823c3629ec42", // rewards contract
+              entry_point_selector: hash.getSelectorFromName(
+                "has_adventurer_claimed_reward",
+              ),
+              calldata: [num.toHex(gameId)],
+            },
+            "latest",
+          ],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.result && data.result[0]) {
+        // Return true if the reward has been claimed (result is 1)
+        return parseInt(data.result[0], 16) === 1;
+      }
+
+      return false; // Default to unclaimed if we can't determine
+    } catch (error) {
+      console.error("Error checking reward claim status:", error);
+      return false; // Conservative approach: assume unclaimed on error
+    }
+  };
 
   const createBurnerAccount = async (rpcProvider: RpcProvider) => {
     const privateKey = stark.randomAddress();
     const publicKey = ec.starkCurve.getStarkKey(privateKey);
 
-    const accountClassHash = "0x07dc7899aa655b0aae51eadff6d801a58e97dd99cf4666ee59e704249e51adf2"
+    const accountClassHash =
+      "0x07dc7899aa655b0aae51eadff6d801a58e97dd99cf4666ee59e704249e51adf2";
     // Calculate future address of the account
     const constructorCalldata = CallData.compile({ publicKey });
     const contractAddress = hash.calculateContractAddressFromHash(
       publicKey,
       accountClassHash,
       constructorCalldata,
-      0
+      0,
     );
 
     const account = new Account({
@@ -534,12 +615,17 @@ export const useStarknetApi = () => {
       addressSalt: publicKey,
     });
 
-    const receipt = await account.waitForTransaction(transaction_hash, { retryInterval: 100 });
+    const receipt = await account.waitForTransaction(transaction_hash, {
+      retryInterval: 100,
+    });
 
     if (receipt) {
-      localStorage.setItem('burner', JSON.stringify({ address: contractAddress, privateKey }))
-      localStorage.setItem('burner_version', "6")
-      return account
+      localStorage.setItem(
+        "burner",
+        JSON.stringify({ address: contractAddress, privateKey }),
+      );
+      localStorage.setItem("burner_version", "6");
+      return account;
     }
   };
 
@@ -554,5 +640,6 @@ export const useStarknetApi = () => {
     getAdventurerState,
     getRewardTokensClaimed,
     unclaimedBeast,
+    checkRewardClaimed,
   };
 };
