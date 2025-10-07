@@ -1,12 +1,14 @@
 import { useController } from "@/contexts/controller";
 import { useDynamicConnector } from "@/contexts/starknet";
 import { useGameTokens } from "@/dojo/useGameTokens";
+import { useStatistics } from "@/contexts/Statistics";
 import { calculateLevel } from "@/utils/game";
 import { ChainId } from "@/utils/networkConfig";
 import { getContractByName } from "@dojoengine/core";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Box, Button, Typography } from "@mui/material";
+import RedeemIcon from "@mui/icons-material/Redeem";
+import { Box, Button, Typography, Chip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useGameTokens as useMetagameTokens } from "metagame-sdk/sql";
 import { useEffect, useState } from "react";
@@ -17,17 +19,32 @@ interface ReplayGamesListProps {
   onBack: () => void;
 }
 
+interface GameWithClaims {
+  adventurer_id: number;
+  player_name: string;
+  xp?: number;
+  dead?: boolean;
+  expired?: boolean;
+  game_over?: boolean;
+  hasClaimableReward: boolean;
+  isCheckingClaim: boolean;
+  [key: string]: any; // Allow additional properties
+}
+
 export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
   const navigate = useNavigate();
   const { account } = useController();
   const { fetchAdventurerData } = useGameTokens();
   const { currentNetworkConfig } = useDynamicConnector();
+  const { remainingSurvivorTokens } = useStatistics();
+
   const namespace = currentNetworkConfig.namespace;
   const gameTokenAddress = getContractByName(
     currentNetworkConfig.manifest,
     namespace,
-    "game_token_systems"
+    "game_token_systems",
   )?.address;
+
   const { games: gamesData, loading: gamesLoading } = useMetagameTokens({
     mintedByAddress:
       currentNetworkConfig.chainId === ChainId.WP_PG_SLOT
@@ -36,30 +53,93 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
     owner: account?.address,
     limit: 10000,
   });
-  const [gameTokens, setGameTokens] = useState<any[]>([]);
+
+  const [gameTokens, setGameTokens] = useState<GameWithClaims[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Check if a specific game has claimable rewards based on known criteria
+  const checkClaimableReward = async (game: any): Promise<boolean> => {
+    try {
+      // Check basic eligibility criteria
+      if (
+        currentNetworkConfig.chainId === ChainId.WP_PG_SLOT ||
+        !game.xp ||
+        game.xp < 9 ||
+        !remainingSurvivorTokens ||
+        remainingSurvivorTokens <= 0
+      ) {
+        return false;
+      }
+
+      // Additional check: game must be completed (dead, expired, or game_over)
+      if (!game.dead && !game.expired && !game.game_over) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error(
+        `Error checking claim status for game ${game.adventurer_id}:`,
+        error,
+      );
+      return false;
+    }
+  };
 
   useEffect(() => {
     async function fetchAdventurers() {
       if (!gamesData) return;
 
       const games = await fetchAdventurerData(gamesData);
-
       const completedRuns = games.filter(
-        (game: any) => game.dead || game.expired || game.game_over
+        (game: any) => game.dead || game.expired || game.game_over,
       );
 
-      setGameTokens(
-        completedRuns.sort((a: any, b: any) => b.adventurer_id - a.adventurer_id)
+      // Sort by adventurer ID (newest first)
+      const sortedGames = completedRuns.sort(
+        (a: any, b: any) => b.adventurer_id - a.adventurer_id,
       );
+
+      // Initialize games with claim checking status
+      const gamesWithClaimStatus: GameWithClaims[] = sortedGames.map(
+        (game) => ({
+          ...game,
+          hasClaimableReward: false,
+          isCheckingClaim: true,
+        }),
+      );
+
+      setGameTokens(gamesWithClaimStatus);
       setLoading(false);
+
+      // Check claims for each game asynchronously
+      sortedGames.forEach(async (game: any, index: number) => {
+        const hasClaimableReward = await checkClaimableReward(game);
+
+        setGameTokens((prev) =>
+          prev.map((g, i) =>
+            i === index
+              ? { ...g, hasClaimableReward, isCheckingClaim: false }
+              : g,
+          ),
+        );
+      });
     }
+
     fetchAdventurers();
-  }, [gamesData]);
+  }, [gamesData, remainingSurvivorTokens]);
 
   const handleWatchGame = (gameId: number) => {
     navigate(`/survivor/watch?id=${gameId}`);
   };
+
+  const handleClaim = (adventurerId: number) => {
+    navigate(`/survivor/claim?id=${adventurerId}`);
+  };
+
+  const claimableCount = gameTokens.filter(
+    (game) => game.hasClaimableReward,
+  ).length;
 
   return (
     <motion.div
@@ -90,6 +170,15 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
               Replay Games
             </Typography>
           </Button>
+          {claimableCount > 0 && (
+            <Chip
+              icon={<RedeemIcon />}
+              label={`${claimableCount} Claimable`}
+              color="warning"
+              variant="outlined"
+              sx={{ ml: 1, fontSize: "12px" }}
+            />
+          )}
         </Box>
       </Box>
 
@@ -99,7 +188,7 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
             Loading...
           </Typography>
         ) : (
-          gameTokens.map((game: any, index: number) => (
+          gameTokens.map((game: GameWithClaims, index: number) => (
             <motion.div
               key={game.adventurer_id}
               initial={{ opacity: 0, x: -50 }}
@@ -112,7 +201,13 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
                 delay: index * 0.1,
               }}
             >
-              <Box sx={styles.listItem} className="container">
+              <Box
+                sx={[
+                  styles.listItem,
+                  game.hasClaimableReward && styles.claimableItem,
+                ]}
+                className="container"
+              >
                 <Box
                   sx={{
                     display: "flex",
@@ -129,19 +224,37 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
                       overflow: "hidden",
                     }}
                   >
-                    <Typography
-                      variant="h6"
-                      color="primary"
-                      lineHeight={1}
-                      sx={{
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        width: "100%",
-                      }}
-                    >
-                      {game.player_name}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography
+                        variant="h6"
+                        color="primary"
+                        lineHeight={1}
+                        sx={{
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          width: "100%",
+                        }}
+                      >
+                        {game.player_name}
+                      </Typography>
+                      {game.hasClaimableReward && (
+                        <Chip
+                          icon={<RedeemIcon />}
+                          label="CLAIM"
+                          color="warning"
+                          size="small"
+                          sx={{ fontSize: "8px", height: "16px" }}
+                        />
+                      )}
+                      {game.isCheckingClaim && (
+                        <Chip
+                          label="..."
+                          size="small"
+                          sx={{ fontSize: "6px", height: "14px", opacity: 0.5 }}
+                        />
+                      )}
+                    </Box>
 
                     <Typography color="text.secondary">
                       ID: #{game.adventurer_id}
@@ -181,6 +294,17 @@ export default function ReplayGamesList({ onBack }: ReplayGamesListProps) {
                 )}
 
                 <Box sx={styles.actionColumn}>
+                  {game.hasClaimableReward && (
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      size="small"
+                      sx={styles.claimButton}
+                      onClick={() => handleClaim(game.adventurer_id)}
+                    >
+                      <RedeemIcon fontSize="small" />
+                    </Button>
+                  )}
                   <Button
                     variant="contained"
                     color="primary"
@@ -206,6 +330,7 @@ const styles = {
     alignItems: "center",
     width: "100%",
     mb: 1,
+    justifyContent: "space-between",
   },
   backButton: {
     minWidth: "auto",
@@ -232,11 +357,29 @@ const styles = {
     border: "1px solid rgba(8, 62, 34, 0.5)",
     borderRadius: "4px",
   },
+  claimableItem: {
+    border: "2px solid rgba(255, 193, 7, 0.6)",
+    background: "rgba(255, 193, 7, 0.1)",
+    boxShadow: "0 0 15px rgba(255, 193, 7, 0.3)",
+  },
   actionColumn: {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 0.5,
+  },
+  claimButton: {
+    width: "40px",
+    height: "34px",
+    fontSize: "12px",
+    mr: 0.5,
+    background: "linear-gradient(135deg, #ffe082 0%, #ffb300 100%)",
+    color: "#1a1a1a",
+    boxShadow: "0 0 10px rgba(255, 193, 7, 0.4)",
+    "&:hover": {
+      transform: "scale(1.05)",
+      boxShadow: "0 0 15px rgba(255, 193, 7, 0.6)",
+    },
   },
   watchButton: {
     width: "50px",
