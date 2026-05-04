@@ -82,18 +82,25 @@ export default function LandingPage() {
                 </Typography>
               </Box>
 
+              <Box sx={styles.migrationNotice}>
+                <Typography sx={styles.migrationTitle}>MIGRATION IN PROGRESS</Typography>
+                <Typography sx={styles.migrationMessage}>
+                  Migration to new dungeon starting soon. Starting new games have been disabled.
+                </Typography>
+              </Box>
+
               <Button
                 fullWidth
                 variant="contained"
                 size="large"
                 onClick={handleMainButtonClick}
-                disabled={disableGameButtons}
+                disabled={true}
                 startIcon={
                   <img
                     src={"/images/mobile/dice.png"}
                     alt="dice"
                     height="20px"
-                    style={{ opacity: disableGameButtons ? 0.3 : 1 }}
+                    style={{ opacity: 0.3 }}
                   />
                 }
                 sx={{
@@ -105,9 +112,7 @@ export default function LandingPage() {
               >
                 <Typography
                   variant="h5"
-                  color={
-                    disableGameButtons ? "rgba(208, 201, 141, 0.4)" : "#111111"
-                  }
+                  color="rgba(208, 201, 141, 0.4)"
                 >
                   {dungeon.mainButtonText}
                 </Typography>
@@ -303,6 +308,30 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+  },
+  migrationNotice: {
+    width: "100%",
+    bgcolor: "rgba(0, 0, 0, 0.8)",
+    borderRadius: "8px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    boxSizing: "border-box",
+    px: 2,
+    py: 1.5,
+    mb: 2,
+    textAlign: "center",
+  },
+  migrationTitle: {
+    fontSize: "0.85rem",
+    fontWeight: 600,
+    letterSpacing: 1.2,
+    mb: 0.5,
+  },
+  migrationMessage: {
+    fontSize: "0.8rem",
+    color: "#fff",
+    lineHeight: 1.4,
   },
   adventurersHeader: {
     display: "flex",

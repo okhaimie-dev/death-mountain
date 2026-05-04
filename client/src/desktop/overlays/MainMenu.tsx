@@ -111,7 +111,7 @@ export default function MainMenu() {
                 fullWidth
                 size="large"
                 onClick={handleMainButtonClick}
-                disabled={disableGameButtons}
+                disabled={true}
                 sx={{
                   px: 1,
                   display: "flex",
@@ -127,9 +127,7 @@ export default function MainMenu() {
                       fontSize: "0.85rem",
                       fontWeight: 500,
                       letterSpacing: 0.5,
-                      color: disableGameButtons
-                        ? "rgba(208, 201, 141, 0.3)"
-                        : "#d0c98d",
+                      color: "rgba(208, 201, 141, 0.3)",
                     }}
                   >
                     {dungeon.mainButtonText}
@@ -329,6 +327,13 @@ export default function MainMenu() {
         <DungeonRewards />
       </Box> : null}
 
+      <Box sx={styles.migrationNotice}>
+        <Typography sx={styles.migrationTitle}>MIGRATION IN PROGRESS</Typography>
+        <Typography sx={styles.migrationMessage}>
+          Migration to new dungeon starting soon. Starting new games have been disabled.
+        </Typography>
+      </Box>
+
       <ActivePlayers />
     </>
   );
@@ -366,6 +371,37 @@ const styles = {
     boxSizing: "border-box",
     p: 2.5,
     zIndex: 10,
+  },
+  migrationNotice: {
+    position: "absolute",
+    top: 32,
+    left: "50%",
+    transform: "translateX(-50%)",
+    bgcolor: "rgba(24, 40, 24, 0.55)",
+    border: "2px solid #083e22",
+    borderRadius: "12px",
+    backdropFilter: "blur(8px)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    px: 3,
+    py: 2,
+    zIndex: 10,
+    maxWidth: 420,
+    textAlign: "center",
+  },
+  migrationTitle: {
+    fontSize: "1rem",
+    fontWeight: 600,
+    letterSpacing: 1.5,
+    color: "#d0c98d",
+    mb: 1,
+  },
+  migrationMessage: {
+    fontSize: "0.9rem",
+    color: "#fff",
+    letterSpacing: 0.3,
+    lineHeight: 1.4,
   },
   headerBox: {
     display: "flex",
